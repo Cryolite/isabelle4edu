@@ -1,5 +1,5 @@
 theory Matsuzaka1968
-  imports Main
+  imports Main "HOL-Cardinals.Cardinals"
 begin
 
 proposition prop_1_1_4:
@@ -1814,5 +1814,475 @@ proof -
   finally have "?RHS = a" .
   with * show "?LHS = ?RHS" by simp
 qed
+
+proposition problem_1_4_9_a:
+  (*assumes "P \<subseteq> A"*)
+  shows "(g \<circ> f) ` P = g ` (f ` P)"
+proof (intro equalityI)
+  {
+    fix c
+    assume "c \<in> (g \<circ> f) ` P"
+    then obtain a where "a \<in> P" and "c = (g \<circ> f) a" by auto
+    from this(2) have "c = g (f a)" by simp
+    moreover from \<open>a \<in> P\<close> have "f a \<in> f ` P" by simp
+    ultimately have "c \<in> g ` (f ` P)" by auto
+  }
+  thus "(g \<circ> f) ` P \<subseteq> g ` (f ` P)" by (intro subsetI)
+next
+  {
+    fix c
+    assume "c \<in> g ` (f ` P)"
+    then obtain b where "b \<in> f ` P" and "c = g b" by auto
+    from \<open>b \<in> f ` P\<close> obtain a where "a \<in> P" and "b = f a" by auto
+    from \<open>c = g b\<close> and \<open>b = f a\<close> have "c = (g \<circ> f) a" by simp
+    with \<open>a \<in> P\<close> have "c \<in> (g \<circ> f) ` P" by auto
+  }
+  thus "g ` (f ` P) \<subseteq> (g \<circ> f) ` P" by (intro subsetI)
+qed
+
+proposition problem_1_4_9_b:
+  (*assumes "R \<subseteq> C"*)
+  shows "(g \<circ> f) -` R = f -` (g -` R)"
+proof (intro equalityI)
+  {
+    fix a
+    assume "a \<in> (g \<circ> f) -` R"
+    then obtain c where "c \<in> R" and "c = (g \<circ> f) a" by auto
+    from \<open>c = (g \<circ> f) a\<close> have "c = g (f a)" by simp
+    with \<open>c \<in> R\<close> have "f a \<in> g -` R" by auto
+    hence "a \<in> f -` (g -` R)" by auto
+  }
+  thus "(g \<circ> f) -` R \<subseteq> f -` (g -` R)" by (intro subsetI)
+next
+  {
+    fix a
+    assume "a \<in> f -` (g -` R)"
+    then obtain b where "b \<in> g -` R" and "b = f a" by auto
+    from \<open>b \<in> g -` R\<close> obtain c where "c \<in> R" and "c = g b" by auto
+    with \<open>b = f a\<close> have "c = (g \<circ> f) a" by simp
+    with \<open>c \<in> R\<close> have "a \<in> (g \<circ> f) -` R" by auto
+  }
+  thus "f -` (g -` R) \<subseteq> (g \<circ> f) -` R" by (intro subsetI)
+qed
+
+proposition problem_1_4_10_a:
+  assumes "f ` A \<subseteq> B" and "g ` B \<subseteq> C" and "(g \<circ> f) ` A = C"
+  shows "g ` B = C"
+proof (intro equalityI)
+  show "g ` B \<subseteq> C" by (fact assms(2))
+next
+  {
+    fix c
+    assume "c \<in> C"
+    with assms(3) obtain a where "a \<in> A" and "c = (g \<circ> f) a" by auto
+    from \<open>a \<in> A\<close> and assms(1) have "f a \<in> B" by auto
+    from \<open>c = (g \<circ> f) a\<close> have "c = g (f a)" by auto
+    with \<open>f a \<in> B\<close> have "c \<in> g ` B" by auto
+  }
+  thus "C \<subseteq> g ` B" by (intro subsetI)
+qed
+
+proposition problem_1_4_10_b:
+  assumes "inj_on (g \<circ> f) A"
+  shows "inj_on f A"
+proof (intro inj_onI)
+  fix a a'
+  assume "a \<in> A" and "a' \<in> A" and "f a = f a'"
+  from this(3) have "g (f a) = g (f a')" by simp
+  hence "(g \<circ> f) a = (g \<circ> f) a'" by simp
+  with \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> and assms show "a = a'" by (elim inj_onD)
+qed
+
+proposition problem_1_4_11:
+  assumes "f ` A = B" and "\<And>a. a \<in> A \<Longrightarrow> (g \<circ> f) a = (g' \<circ> f) a" and "b \<in> B"
+  shows "g b = g' b"
+proof -
+  from assms(1) and assms(3) obtain a where "a \<in> A" and "b = f a" by auto
+  from \<open>a \<in> A\<close> and assms(2) have "(g \<circ> f) a = (g' \<circ> f) a" by simp
+  with \<open>b = f a\<close> show "g b = g' b" by auto
+qed
+
+proposition problem_1_4_12:
+  assumes "f ` A \<subseteq> B"
+    and "f' ` A \<subseteq> B"
+    and "inj_on g B"
+    and "\<And>a. a \<in> A \<Longrightarrow> (g \<circ> f) a = (g \<circ> f') a"
+    and "a \<in> A"
+  shows "f a = f' a"
+proof -
+  from assms(4,5) have "g (f a) = g (f' a)" by simp
+  moreover from assms(1) and assms(5) have "f a \<in> B" by auto
+  moreover from assms(2) and assms(5) have "f' a \<in> B" by auto
+  moreover note assms(3)
+  ultimately show "f a = f' a" by (elim inj_onD)
+qed
+
+proposition problem_1_4_13_a:
+  assumes "f ` A \<subseteq> B" and "g ` B \<subseteq> C" and "(g \<circ> f) ` A = C" and "inj_on g B"
+  shows "f ` A = B"
+proof (intro equalityI)
+  show "f ` A \<subseteq> B" by (fact assms(1))
+next
+  {
+    fix b
+    assume "b \<in> B"
+    with assms(2) have "g b \<in> C" by auto
+    with assms(3) obtain a where "a \<in> A" and "g b = (g \<circ> f) a" by auto
+    from this(2) have "g b = g (f a)" by simp
+    moreover note \<open>b \<in> B\<close>
+    moreover from assms(1) and \<open>a \<in> A\<close> have "f a \<in> B" by auto
+    moreover note assms(4)
+    ultimately have "b = f a" by (elim inj_onD)
+    with \<open>a \<in> A\<close> have "b \<in> f ` A" by auto
+  }
+  thus "B \<subseteq> f ` A" by (intro subsetI)
+qed
+
+proposition problem_1_4_13_b:
+  assumes "inj_on (g \<circ> f) A" and "f ` A = B"
+  shows "inj_on g B"
+proof (intro inj_onI)
+  fix b b'
+  assume "b \<in> B" and "b' \<in> B" and "g b = g b'"
+  from this(1) and assms(2) obtain a where "a \<in> A" and "b = f a" by auto
+  from \<open>b' \<in> B\<close> and assms(2) obtain a' where "a' \<in> A" and "b' = f a'" by auto
+  from \<open>g b = g b'\<close> and \<open>b = f a\<close> and \<open>b' = f a'\<close> have "(g \<circ> f) a = (g \<circ> f) a'" by simp
+  with \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> and assms(1) have "a = a'" by (elim inj_onD)
+  with \<open>b = f a\<close> and \<open>b' = f a'\<close> show "b = b'" by simp
+qed
+
+proposition problem_1_4_14:
+  assumes "f ` A \<subseteq> B" and "g ` B \<subseteq> A" and "g' ` B \<subseteq> A"
+    and "\<And>a. a \<in> A \<Longrightarrow> (g \<circ> f) a = a" and "\<And>b. b \<in> B \<Longrightarrow> (f \<circ> g') b = b" and "b \<in> B"
+  shows "bij_betw f A B" and "g b = g' b" and "g b = the_inv_into A f b"
+proof -
+  have "inj_on f A"
+  proof (intro inj_onI)
+    fix a a'
+    assume "a \<in> A" and "a' \<in> A" and "f a = f a'"
+    from this(3) have "(g \<circ> f) a = (g \<circ> f) a'" by simp
+    moreover from assms(4) and \<open>a \<in> A\<close> have "(g \<circ> f) a = a" by simp
+    moreover from assms(4) and \<open>a' \<in> A\<close> have "(g \<circ> f) a' = a'" by simp
+    ultimately show "a = a'" by simp
+  qed
+  moreover have "f ` A = B"
+  proof (intro equalityI)
+    show "f ` A \<subseteq> B" by (fact assms(1))
+  next
+    {
+      fix b'
+      assume "b' \<in> B"
+      with assms(5) have "(f \<circ> g') b' = b'" by simp
+      hence "b' = f (g' b')" by simp
+      moreover from \<open>b' \<in> B\<close> and assms(3) have "g' b' \<in> A" by auto
+      ultimately have "b' \<in> f ` A" by auto
+    }
+    thus "B \<subseteq> f ` A" by (intro subsetI)
+  qed
+  ultimately show "bij_betw f A B" by (intro bij_betw_imageI)
+  have "g ` B \<subseteq> A" by (fact assms(2))
+  moreover note assms(3)
+  moreover note \<open>inj_on f A\<close>
+  moreover have "(f \<circ> g) b = (f \<circ> g') b" if "b \<in> B" for b
+  proof -
+    from that have "(f \<circ> g') b = b" by (fact assms(5))
+    from \<open>f ` A = B\<close> and \<open>b \<in> B\<close> obtain a where "a \<in> A" and "b = f a" by auto
+    from \<open>a \<in> A\<close> and assms(4) have "(g \<circ> f) a = a" by simp
+    with \<open>b = f a\<close> have "g b = a" by simp
+    with \<open>b = f a\<close> have "(f \<circ> g) b = b" by simp
+    with \<open>(f \<circ> g') b = b\<close> show "?thesis" by simp
+  qed
+  moreover note assms(6)
+  ultimately show "g b = g' b" by (intro problem_1_4_12[where f = g])
+  show "g b = the_inv_into A f b"
+  proof (intro the_inv_into_f_eq[THEN sym])
+    show "inj_on f A" by (fact \<open>inj_on f A\<close>)
+    show "f (g b) = b"
+    proof -
+      from \<open>g b = g' b\<close> have "f (g b) = (f \<circ> g') b" by simp
+      also from \<open>b \<in> B\<close> have "\<dots> = b" by (fact assms(5))
+      finally show "?thesis" .
+    qed
+    from \<open>b \<in> B\<close> and assms(2) show "g b \<in> A" by auto
+  qed
+qed
+
+definition \<chi> :: "'a set \<Rightarrow> 'a \<Rightarrow> int"
+  where "\<chi> A a = (if a \<in> A then 1 else 0)"
+
+lemma chi_0_1:
+  shows "\<chi> A a \<in> {0, 1}"
+  by (simp add: \<chi>_def)
+
+lemma zero_leq_chi:
+  shows "0 \<le> \<chi> A a"
+  by (simp add: \<chi>_def)
+
+lemma chi_leq_1:
+  shows "\<chi> A a \<le> 1"
+  by (simp add: \<chi>_def)
+
+lemma chi_eq_0I:
+  assumes "a \<notin> A"
+  shows "\<chi> A a = 0"
+  using assms \<chi>_def by metis
+
+lemma chi_eq_1I:
+  assumes "a \<in> A"
+  shows "\<chi> A a = 1"
+  using assms \<chi>_def by metis
+
+lemma chi_eq_0D:
+  assumes "\<chi> A a = 0"
+  shows "a \<notin> A"
+  using assms \<chi>_def zero_neq_one by metis
+
+lemma chi_eq_1D:
+  assumes "\<chi> A a = 1"
+  shows "a \<in> A"
+  using assms \<chi>_def one_neq_zero by metis
+
+lemma one_leq_chi_imp_chi_eq_1:
+  assumes "1 \<le> \<chi> A a"
+  shows "\<chi> A a = 1"
+  using assms chi_0_1 by force
+
+proposition problem_1_4_15:
+  assumes "A \<subseteq> X" and "B \<subseteq> X"
+  shows "(\<forall>x \<in> X. \<chi> A x \<le> \<chi> B x) \<longleftrightarrow> A \<subseteq> B"
+proof (intro iffI)
+  assume "\<forall>x \<in> X. \<chi> A x \<le> \<chi> B x"
+  {
+    fix a
+    assume "a \<in> A"
+    with assms(1) and \<open>\<forall>x \<in> X. \<chi> A x \<le> \<chi> B x\<close> have "\<chi> A a \<le> \<chi> B a" by auto
+    moreover from \<open>a \<in> A\<close> and \<chi>_def have "\<chi> A a = 1" by metis
+    ultimately have "1 \<le> \<chi> B a" by simp
+    hence "\<chi> B a = 1" by (fact one_leq_chi_imp_chi_eq_1)
+    hence "a \<in> B" by (fact chi_eq_1D)
+  }
+  thus "A \<subseteq> B" by (intro subsetI)
+next
+  assume "A \<subseteq> B"
+  {
+    fix x
+    assume "x \<in> X"
+    {
+      assume "x \<in> A"
+      with \<open>A \<subseteq> B\<close> have "x \<in> B" by auto
+      hence "\<chi> B x = 1" by (fact chi_eq_1I)
+      with chi_leq_1 have "\<chi> A x \<le> \<chi> B x" by metis
+    }
+    moreover {
+      assume "x \<notin> A"
+      hence "\<chi> A x = 0" by (fact chi_eq_0I)
+      with zero_leq_chi have "\<chi> A x \<le> \<chi> B x" by simp
+    }
+    ultimately have "\<chi> A x \<le> \<chi> B x" by auto
+  }
+  thus "\<forall>x \<in> X. \<chi> A x \<le> \<chi> B x" by auto
+qed
+
+proposition problem_1_4_15_a:
+  shows "\<chi> (A \<inter> B) a = \<chi> A a * \<chi> B a"
+proof -
+  consider (a) "a \<notin> A" | (b) "a \<notin> B" | (c) "a \<in> A \<inter> B" by blast
+  thus "?thesis"
+  proof cases
+    case a
+    from a have "a \<notin> A \<inter> B" by auto
+    hence "\<chi> (A \<inter> B) a = 0" by (fact chi_eq_0I)
+    moreover have "\<chi> A a * \<chi> B a = 0"
+    proof -
+      from a have "\<chi> A a = 0" by (fact chi_eq_0I)
+      thus "?thesis" by simp
+    qed
+    ultimately show "?thesis" by simp
+  next
+    case b
+    from b have "a \<notin> A \<inter> B" by auto
+    hence "\<chi> (A \<inter> B) a = 0" by (fact chi_eq_0I)
+    moreover have "\<chi> A a * \<chi> B a = 0"
+    proof -
+      from b have "\<chi> B a = 0" by (fact chi_eq_0I)
+      thus "?thesis" by simp
+    qed
+    ultimately show "?thesis" by simp
+  next
+    case c
+    hence "\<chi> (A \<inter> B) a = 1" by (fact chi_eq_1I)
+    moreover have "\<chi> A a * \<chi> B a = 1"
+    proof -
+      from c have "a \<in> A" by simp
+      hence "\<chi> A a = 1" by (fact chi_eq_1I)
+      moreover have "\<chi> B a = 1"
+      proof (intro chi_eq_1I)
+        from c show "a \<in> B" ..
+      qed
+      ultimately show "?thesis" by simp
+    qed
+    ultimately show "?thesis" by simp
+  qed
+qed
+
+proposition problem_1_4_15_b:
+  shows "\<chi> (A \<union> B) a = \<chi> A a + \<chi> B a - \<chi> (A \<inter> B) a"
+proof -
+  consider (a) "a \<in> A \<union> B" | (b) "a \<notin> A \<union> B" by auto
+  thus "?thesis"
+  proof cases
+    case a
+    from a have "\<chi> (A \<union> B) a = 1" by (fact chi_eq_1I)
+    consider (aa) "a \<in> A" and "a \<in> B" | (bb) "a \<in> A" and "a \<notin> B"
+      | (cc) "a \<notin> A" and "a \<in> B" | (dd) "a \<notin> A" and "a \<notin> B" by auto
+    hence "\<chi> A a + \<chi> B a - \<chi> (A \<inter> B) a = 1"
+    proof cases
+      case aa
+      thus "?thesis" by (simp add: chi_eq_1I)
+    next
+      case bb
+      thus "?thesis" by (simp add: chi_eq_0I chi_eq_1I)
+    next
+      case cc
+      thus "?thesis" by (simp add: chi_eq_0I chi_eq_1I)
+    next
+      case dd
+      with a show "?thesis" by simp
+    qed
+    with \<open>\<chi> (A \<union> B) a = 1\<close> show "?thesis" by simp
+  next
+    case b
+    hence "\<chi> (A \<union> B) a = 0" by (fact chi_eq_0I)
+    moreover have "\<chi> A a + \<chi> B a - \<chi> (A \<inter> B) a = 0"
+    proof -
+      from b have "a \<notin> A" and "a \<notin> B" by auto
+      from \<open>a \<notin> A\<close> have "\<chi> A a = 0" by (fact chi_eq_0I)
+      moreover from \<open>a \<notin> B\<close> have "\<chi> B a = 0" by (fact chi_eq_0I)
+      moreover have "\<chi> (A \<inter> B) a = 0"
+      proof -
+        from \<open>a \<notin> A\<close> have "a \<notin> A \<inter> B" by simp
+        thus "?thesis" by (fact chi_eq_0I)
+      qed
+      ultimately show "?thesis" by simp
+    qed
+    ultimately show "?thesis" by simp
+  qed
+qed
+
+proposition problem_1_4_15_c:
+  assumes (*"A \<subseteq> X" and*) "x \<in> X"
+  shows "\<chi> (X - A) x = 1 - \<chi> A x"
+proof -
+  consider (a) "x \<in> A" | (b) "x \<notin> A" by auto
+  thus "?thesis"
+  proof cases
+    case a
+    from a and assms have "x \<notin> X - A" by auto
+    hence "\<chi> (X - A) x = 0" by (fact chi_eq_0I)
+    moreover from a have "1 - \<chi> A x = 0" by (simp add: chi_eq_1I)
+    ultimately show "?thesis" by simp
+  next
+    case b
+    with assms have "x \<in> X - A" by auto
+    hence "\<chi> (X - A) x = 1" by (fact chi_eq_1I)
+    moreover from b have "1 - \<chi> A x = 1" by (simp add: chi_eq_0I)
+    ultimately show "?thesis" by simp
+  qed
+qed
+
+lemma
+  shows "-A = UNIV - A"
+proof (intro set_eqI)
+  fix x
+  have "x \<in> -A \<longleftrightarrow> x \<in> UNIV \<and> x \<notin> A" by simp
+  also have "\<dots> \<longleftrightarrow> x \<in> UNIV - A" by auto
+  finally show "x \<in> -A \<longleftrightarrow> x \<in> UNIV - A" .
+qed
+
+(* From now on, we can use @{thm Compl_eq_Diff_UNIV}. *)
+
+lemma
+  shows "A - B = A \<inter> -B"
+proof (intro set_eqI)
+  fix x
+  have "x \<in> A - B \<longleftrightarrow> x \<in> A \<and> x \<notin> B" by auto
+  also have "\<dots> \<longleftrightarrow> x \<in> A \<and> x \<in> -B" by simp
+  also have "\<dots> \<longleftrightarrow> x \<in> A \<inter> -B" by auto
+  finally show "x \<in> A - B \<longleftrightarrow> x \<in> A \<inter> -B" .
+qed
+
+(* From now on, we can use @{thm Diff_eq}. *)
+
+proposition problem_1_4_15_c':
+  shows "\<chi> (-A) x = 1 - \<chi> A x"
+proof -
+  consider (a) "x \<in> A" | (b) "x \<notin> A" by auto
+  thus "?thesis"
+  proof cases
+    case a
+    hence "x \<notin> -A" by simp
+    hence "\<chi> (-A) x = 0" by (fact chi_eq_0I)
+    moreover from a have "1 - \<chi> A x = 0" by (simp add: chi_eq_1I)
+    ultimately show "?thesis" by simp
+  next
+    case b
+    hence "x \<in> -A" by simp
+    hence "\<chi> (-A) x = 1" by (fact chi_eq_1I)
+    moreover from b have "1 - \<chi> A x = 1" by (simp add: chi_eq_0I)
+    ultimately show "?thesis" by simp
+  qed
+qed
+
+proposition problem_1_4_15_d:
+  shows "\<chi> (A - B) x = \<chi> A x * (1 - (\<chi> B x))"
+proof -
+  have "\<chi> (A - B) x = \<chi> (A \<inter> -B) x" by (simp add: Diff_eq)
+  also have "\<dots> = \<chi> A x * \<chi> (-B) x" by (fact problem_1_4_15_a)
+  also have "\<dots> = \<chi> A x * (1 - \<chi> B x)" by (simp add: problem_1_4_15_c')
+  finally show "?thesis" .
+qed
+
+proposition problem_1_4_15_e:
+  shows "\<chi> (sym_diff A B) x = \<bar>\<chi> A x - \<chi> B x\<bar>"
+proof -
+  consider (a) "x \<in> A" and "x \<in> B"
+    | (b) "x \<in> A" and "x \<notin> B"
+    | (c) "x \<notin> A" and "x \<in> B"
+    | (d) "x \<notin> A" and "x \<notin> B"
+    by auto
+  thus "?thesis"
+  proof cases
+    case a
+    hence "x \<notin> sym_diff A B" by (simp add: sym_diff_def)
+    hence "\<chi> (sym_diff A B) x = 0" by (fact chi_eq_0I)
+    moreover from a have "\<bar>\<chi> A x - \<chi> B x\<bar> = 0" by (simp add: chi_eq_1I)
+    ultimately show "?thesis" by simp
+  next
+    case b
+    hence "x \<in> sym_diff A B" by (simp add: sym_diff_def)
+    hence "\<chi> (sym_diff A B) x = 1" by (fact chi_eq_1I)
+    moreover from b have "\<bar>\<chi> A x - \<chi> B x\<bar> = 1" by (simp add: chi_eq_0I chi_eq_1I)
+    ultimately show "?thesis" by simp
+  next
+    case c
+    hence "x \<in> sym_diff A B" by (simp add: sym_diff_def)
+    hence "\<chi> (sym_diff A B) x = 1" by (fact chi_eq_1I)
+    moreover from c have "\<bar>\<chi> A x - \<chi> B x\<bar> = 1" by (simp add: chi_eq_0I chi_eq_1I)
+    ultimately show "?thesis" by simp
+  next
+    case d
+    hence "x \<notin> sym_diff A B" by (simp add: sym_diff_def)
+    hence "\<chi> (sym_diff A B) x = 0" by (fact chi_eq_0I)
+    moreover from d have "\<bar>\<chi> A x - \<chi> B x\<bar> = 0" by (simp add: chi_eq_0I)
+    ultimately show "?thesis" by simp
+  qed
+qed
+
+(* TODO: problem_1_4_16 *)
+(* TODO: problem_1_4_17 *)
+(* TODO: problem_1_4_18 *)
+(* TODO: problem_1_4_19 *)
+
+section "Indexed Families, General Products"
 
 end
