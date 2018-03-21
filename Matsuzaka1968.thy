@@ -2285,4 +2285,170 @@ qed
 
 section "Indexed Families, General Products"
 
+proposition prop_1_5_1:
+  shows "(\<Union>l \<in> \<Lambda>. A l) \<inter> B = (\<Union>l \<in> \<Lambda>. (A l \<inter> B))"
+proof (intro set_eqI)
+  fix x
+  have "x \<in> (\<Union>l \<in> \<Lambda>. A l) \<inter> B \<longleftrightarrow> x \<in> (\<Union>l \<in> \<Lambda>. A l) \<and> x \<in> B" by simp
+  also have "\<dots> \<longleftrightarrow> (\<exists>l \<in> \<Lambda>. x \<in> A l) \<and> x \<in> B" by simp
+  also have "\<dots> \<longleftrightarrow> (\<exists>l \<in> \<Lambda>. x \<in> A l \<and> x \<in> B)" by simp
+  also have "\<dots> \<longleftrightarrow> (\<exists>l \<in> \<Lambda>. x \<in> A l \<inter> B)" by simp
+  also have "\<dots> \<longleftrightarrow> x \<in> (\<Union>l \<in> \<Lambda>. A l \<inter> B)" by simp
+  finally show "x \<in> (\<Union>l \<in> \<Lambda>. A l) \<inter> B \<longleftrightarrow> x \<in> (\<Union>l \<in> \<Lambda>. (A l \<inter> B))" .
+qed
+
+proposition prop_1_5_1':
+  shows "(\<Inter>l \<in> \<Lambda>. A l) \<union> B = (\<Inter>l \<in> \<Lambda>. A l \<union> B)"
+proof (intro set_eqI)
+  fix x
+  have "x \<in> (\<Inter>l \<in> \<Lambda>. A l) \<union> B \<longleftrightarrow> x \<in> (\<Inter>l \<in> \<Lambda>. A l) \<or> x \<in> B" by simp
+  also have "\<dots> \<longleftrightarrow> (\<forall>l \<in> \<Lambda>. x \<in> A l) \<or> x \<in> B" by simp
+  also have "\<dots> \<longleftrightarrow> (\<forall>l \<in> \<Lambda>. x \<in> A l \<or> x \<in> B)" by simp
+  also have "\<dots> \<longleftrightarrow> (\<forall>l \<in> \<Lambda>. x \<in> A l \<union> B)" by simp
+  also have "\<dots> \<longleftrightarrow> x \<in> (\<Inter>l \<in> \<Lambda>. A l \<union> B)" by simp
+  finally show "x \<in> (\<Inter>l \<in> \<Lambda>. A l) \<union> B \<longleftrightarrow> x \<in> (\<Inter>l \<in> \<Lambda>. A l \<union> B)" .
+qed
+
+proposition prop_1_5_2:
+  assumes "\<Lambda> \<noteq> {}" and "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<subseteq> X"
+  shows "X - (\<Union>l \<in> \<Lambda>. A l) = (\<Inter>l \<in> \<Lambda>. (X - A l))"
+proof (intro equalityI)
+  {
+    fix x
+    assume "x \<in> X - (\<Union>l \<in> \<Lambda>. A l)"
+    hence "x \<in> X" and "x \<notin> (\<Union>l \<in> \<Lambda>. A l)" by auto
+    from this(2) have "\<not>(\<exists>l \<in> \<Lambda>. x \<in> A l)" by simp
+    hence "\<forall>l \<in> \<Lambda>. x \<notin> A l" by simp
+    with \<open>x \<in> X\<close> have "\<forall>l \<in> \<Lambda>. x \<in> X \<and> x \<notin> A l" by simp
+    hence "\<forall>l \<in> \<Lambda>. x \<in> X - A l" by simp
+    hence "x \<in> (\<Inter>l \<in> \<Lambda>. X - A l)" by auto
+  }
+  thus "X - (\<Union>l \<in> \<Lambda>. A l) \<subseteq> (\<Inter>l \<in> \<Lambda>. X - A l)" by (intro subsetI)
+  {
+    fix x
+    assume "x \<in> (\<Inter>l \<in> \<Lambda>. X - A l)"
+    hence "\<forall>l \<in> \<Lambda>. x \<in> X - A l" by blast
+    hence "\<forall>l \<in> \<Lambda>. x \<in> X \<and> x \<notin> A l" by auto
+    hence "\<forall>l \<in> \<Lambda>. x \<notin> A l" by auto
+    hence "\<not>(\<exists>l \<in> \<Lambda>. x \<in> A l)" by auto
+    hence "x \<notin> (\<Union>l \<in> \<Lambda>. A l)" by auto
+    moreover have "x \<in> X"
+    proof -
+      from assms(1) obtain l where "l \<in> \<Lambda>" by auto
+      with \<open>\<forall>l \<in> \<Lambda>. x \<in> X \<and> x \<notin> A l\<close> have "x \<in> X \<and> x \<notin> A l" by auto
+      thus "?thesis" ..
+    qed
+    ultimately have "x \<in> X - (\<Union>l \<in> \<Lambda>. A l)" by auto
+  }
+  thus "(\<Inter>l \<in> \<Lambda>. X - A l) \<subseteq> X - (\<Union>l \<in> \<Lambda>. A l)" by (intro subsetI)
+qed
+
+proposition prop_1_5_2':
+  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<subseteq> X"
+  shows "X - (\<Inter>l \<in> \<Lambda>. A l) = (\<Union>l \<in> \<Lambda>. X - A l)"
+proof (intro set_eqI)
+  fix x
+  have "x \<in> X - (\<Inter>l \<in> \<Lambda>. A l) \<longleftrightarrow> x \<in> X \<and> x \<notin> (\<Inter>l \<in> \<Lambda>. A l)" by auto
+  also have "\<dots> \<longleftrightarrow> x \<in> X \<and> \<not>(\<forall>l \<in> \<Lambda>. x \<in> A l)" by auto
+  also have "\<dots> \<longleftrightarrow> x \<in> X \<and> (\<exists>l \<in> \<Lambda>. x \<notin> A l)" by auto
+  also have "\<dots> \<longleftrightarrow> (\<exists>l \<in> \<Lambda>. x \<in> X \<and> x \<notin> A l)" by auto
+  also have "\<dots> \<longleftrightarrow> (\<exists>l \<in> \<Lambda>. x \<in> X - A l)" by auto
+  also have "\<dots> \<longleftrightarrow> x \<in> (\<Union>l \<in> \<Lambda>. X - A l)" by auto
+  finally show "x \<in> X - (\<Inter>l \<in> \<Lambda>. A l) \<longleftrightarrow> x \<in> (\<Union>l \<in> \<Lambda>. X - A l)" .
+qed
+
+proposition prop_1_5_3:
+  shows "f ` (\<Union>l \<in> \<Lambda>. P l) = (\<Union>l \<in> \<Lambda>. f ` (P l))"
+proof (intro equalityI)
+  {
+    fix b
+    assume "b \<in> f ` (\<Union>l \<in> \<Lambda>. P l)"
+    then obtain a where "a \<in> (\<Union>l \<in> \<Lambda>. P l)" and "b = f a" by auto
+    from this(1) have "\<exists>l \<in> \<Lambda>. a \<in> P l" by auto
+    then obtain l where "l \<in> \<Lambda>" and "a \<in> P l" by auto
+    from this(2) \<open>b = f a\<close> have "b \<in> f ` P l" by auto
+    with \<open>l \<in> \<Lambda>\<close> have "b \<in> (\<Union>l \<in> \<Lambda>. f ` P l)" by auto
+  }
+  thus "f ` (\<Union>l \<in> \<Lambda>. P l) \<subseteq> (\<Union>l \<in> \<Lambda>. f ` (P l))" by (intro subsetI)
+  {
+    fix b
+    assume "b \<in> (\<Union>l \<in> \<Lambda>. f ` (P l))"
+    then obtain l where "l \<in> \<Lambda>" and "b \<in> f ` P l" by auto
+    from this(2) obtain a where "a \<in> P l" and "b = f a" by auto
+    from this(1) and \<open>l \<in> \<Lambda>\<close> have "a \<in> (\<Union>l \<in> \<Lambda>. P l)" by auto
+    with \<open>b = f a\<close> have "b \<in> f ` (\<Union>l \<in> \<Lambda>. P l)" by auto
+  }
+  thus "(\<Union>l \<in> \<Lambda>. f ` (P l)) \<subseteq> f ` (\<Union>l \<in> \<Lambda>. P l)" by (intro subsetI)
+qed
+
+proposition prop_1_5_4:
+  shows "f ` (\<Inter>l \<in> \<Lambda>. P l) \<subseteq> (\<Inter>l \<in> \<Lambda>. f ` (P l))"
+proof (intro subsetI)
+  fix b
+  assume "b \<in> f ` (\<Inter>l \<in> \<Lambda>. P l)"
+  then obtain a where "a \<in> (\<Inter>l \<in> \<Lambda>. P l)" and "b = f a" by auto
+  from this(1) have "\<forall>l \<in> \<Lambda>. a \<in> P l" by auto
+  {
+    fix l
+    assume "l \<in> \<Lambda>"
+    with \<open>\<forall>l \<in> \<Lambda>. a \<in> P l\<close> have "a \<in> P l" by auto
+    with \<open>b = f a\<close> have "b \<in> f ` (P l)" by auto
+  }
+  thus "b \<in> (\<Inter>l \<in> \<Lambda>. f ` (P l))" by auto
+qed
+
+proposition prop_1_5_3':
+  shows "f -` (\<Union>\<mu> \<in> M. Q \<mu>) = (\<Union>\<mu> \<in> M. f -` (Q \<mu>))"
+proof (intro equalityI)
+  {
+    fix a
+    assume "a \<in> f -` (\<Union>\<mu> \<in> M. Q \<mu>)"
+    hence "f a \<in> (\<Union>\<mu> \<in> M. Q \<mu>)" by auto
+    then obtain \<mu> where "\<mu> \<in> M" and "f a \<in> Q \<mu>" by auto
+    from this(2) have "a \<in> f -` Q \<mu>" by auto
+    with \<open>\<mu> \<in> M\<close> have "a \<in> (\<Union>\<mu> \<in> M. f -` (Q \<mu>))" by auto
+  }
+  thus "f -` (\<Union>\<mu> \<in> M. Q \<mu>) \<subseteq> (\<Union>\<mu> \<in> M. f -` (Q \<mu>))" by (intro subsetI)
+  {
+    fix a
+    assume "a \<in> (\<Union>\<mu> \<in> M. f -` (Q \<mu>))"
+    then obtain \<mu> where "\<mu> \<in> M" and "a \<in> f -` (Q \<mu>)" by auto
+    from this(2) have "f a \<in> Q \<mu>" by auto
+    with \<open>\<mu> \<in> M\<close> have "f a \<in> (\<Union>\<mu> \<in> M. Q \<mu>)" by auto
+    hence "a \<in> f -` (\<Union>\<mu> \<in> M. Q \<mu>)" by auto
+  }
+  thus "(\<Union>\<mu> \<in> M. f -` (Q \<mu>)) \<subseteq> f -` (\<Union>\<mu> \<in> M. Q \<mu>)" by (intro subsetI)
+qed
+
+proposition prop_1_5_4':
+  shows "f -` (\<Inter>\<mu> \<in> M. Q \<mu>) = (\<Inter>\<mu> \<in> M. f -` (Q \<mu>))"
+proof (intro equalityI)
+  {
+    fix a
+    assume "a \<in> f -` (\<Inter>\<mu> \<in> M. Q \<mu>)"
+    hence "f a \<in> (\<Inter>\<mu> \<in> M. Q \<mu>)" by auto
+    {
+      fix \<mu>
+      assume "\<mu> \<in> M"
+      with \<open>f a \<in> (\<Inter>\<mu> \<in> M. Q \<mu>)\<close> have "f a \<in> Q \<mu>" by auto
+      hence "a \<in> f -` (Q \<mu>)" by auto
+    }
+    hence "a \<in> (\<Inter>\<mu> \<in> M. f -` (Q \<mu>))" by auto
+  }
+  thus "f -` (\<Inter>\<mu> \<in> M. Q \<mu>) \<subseteq> (\<Inter>\<mu> \<in> M. f -` (Q \<mu>))" by (intro subsetI)
+  {
+    fix a
+    assume "a \<in> (\<Inter>\<mu> \<in> M. f -` (Q \<mu>))"
+    {
+      fix \<mu>
+      assume "\<mu> \<in> M"
+      with \<open>a \<in> (\<Inter>\<mu> \<in> M. f -` (Q \<mu>))\<close> have "a \<in> f -` (Q \<mu>)" by auto
+      hence "f a \<in> Q \<mu>" by auto
+    }
+    hence "f a \<in> (\<Inter>\<mu> \<in> M. Q \<mu>)" by auto
+    hence "a \<in> f -` (\<Inter>\<mu> \<in> M. Q \<mu>)" by auto
+  }
+  thus "(\<Inter>\<mu> \<in> M. f -` (Q \<mu>)) \<subseteq> f -` (\<Inter>\<mu> \<in> M. Q \<mu>)" by (intro subsetI)
+qed
+
 end
