@@ -1,0 +1,13 @@
+session "Matsuzaka1968" = "HOL" +
+  sessions "HOL-Library"
+  theories [browser_info = false, document = false]
+    "HOL-Library.FuncSet"
+  theories [browser_info = true, document = pfd]
+    "Section_1_1"
+    "Section_1_2"
+    "Section_1_3"
+    "Section_1_4"
+    "Section_1_5"
+    "Section_1_6"
+  document_files
+    "root.tex"
