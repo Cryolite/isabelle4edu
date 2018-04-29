@@ -13,19 +13,19 @@ text {*
   theory and even how to prove a proposition. I begin with a core set of inference rules of natural
   deduction, i.e.,
 
-    - @{thm conjI} as @{text \<and>}-I,
-    - @{thm conjunct1} as @{text \<and>}-E1 and @{thm conjunct2} as @{text \<and>}-E2,
-    - @{thm disjI1} as @{text \<or>}-I1 and @{thm disjI2} as @{text \<or>}-I2,
-    - @{thm disjE} as @{text \<or>}-E,
-    - @{thm impI} as @{text \<longrightarrow>}-I,
-    - @{thm mp} as @{text \<longrightarrow>}-E,
-    - @{thm notI} as @{text \<not>}-I,
-    - @{thm notE} as @{text \<not>}-E,
-    - @{thm ccontr} and @{thm notnotD} as equivalences of the law of exclusive middle,
-    - @{thm allI} as @{text \<forall>}-I,
-    - @{thm spec} as @{text \<forall>}-E,
-    - @{thm exI} as @{text \<exists>}-I, and
-    - obtain as the improved usage of @{text \<exists>}-E.
+    \<^item> @{thm conjI} as @{text \<and>}-I,
+    \<^item> @{thm conjunct1} as @{text \<and>}-E1 and @{thm conjunct2} as @{text \<and>}-E2,
+    \<^item> @{thm disjI1} as @{text \<or>}-I1 and @{thm disjI2} as @{text \<or>}-I2,
+    \<^item> @{thm disjE} as @{text \<or>}-E,
+    \<^item> @{thm impI} as @{text \<longrightarrow>}-I,
+    \<^item> @{thm mp} as @{text \<longrightarrow>}-E,
+    \<^item> @{thm notI} as @{text \<not>}-I,
+    \<^item> @{thm notE} as @{text \<not>}-E,
+    \<^item> @{thm ccontr} and @{thm notnotD} as equivalences of the law of exclusive middle,
+    \<^item> @{thm allI} as @{text \<forall>}-I,
+    \<^item> @{thm spec} as @{text \<forall>}-E,
+    \<^item> @{thm exI} as @{text \<exists>}-I, and
+    \<^item> obtain as the improved usage of @{text \<exists>}-E.
 
   In addition, I use some method (subst, subst (asm), unfold, and fold) and some facts (@{thm refl}
   and @{thm arg_cong}) to rewrite (simplify) terms.

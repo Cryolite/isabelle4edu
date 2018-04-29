@@ -1,0 +1,624 @@
+theory Section_2_1
+  imports Main
+    Section_1_6
+begin
+
+definition equipotent :: "'a set \<Rightarrow> 'b set \<Rightarrow> bool"
+  where "equipotent A B \<longleftrightarrow> (\<exists>f. bij_betw f A B)"
+
+lemma equipotentI:
+  assumes "bij_betw f A B"
+  shows "equipotent A B"
+  unfolding equipotent_def using assms by auto
+
+lemma equipotentE:
+  assumes "equipotent A B"
+  obtains f where "bij_betw f A B"
+  using assms unfolding equipotent_def by auto
+
+lemma equipotent_emptyD1:
+  assumes "equipotent {} B"
+  shows "B = {}"
+proof -
+  from assms obtain f :: "'a \<Rightarrow> 'b" where "bij_betw f {} B" by (elim equipotentE)
+  thus "B = {}" by (fact bij_betw_empty1)
+qed
+
+lemma equipotent_emptyD2:
+  assumes "equipotent A {}"
+  shows "A = {}"
+proof -
+  from assms obtain f :: "'a \<Rightarrow> 'b" where "bij_betw f A {}" by (elim equipotentE)
+  thus "A = {}" by (fact bij_betw_empty2)
+qed
+
+proposition prop_2_1_1:
+  shows "equipotent A A"
+proof -
+  have "bij_betw id A A" by simp
+  thus "?thesis" unfolding equipotent_def by auto
+qed
+
+proposition prop_2_1_2:
+  assumes "equipotent A B"
+  shows "equipotent B A"
+proof -
+  from assms obtain f where "bij_betw f A B" unfolding equipotent_def by auto
+  hence "bij_betw (the_inv_into A f) B A" by (fact bij_betw_the_inv_into)
+  thus "?thesis" unfolding equipotent_def by auto
+qed
+
+proposition prop_2_1_3:
+  assumes "equipotent A B" and
+    "equipotent B C"
+  shows "equipotent A C"
+proof -
+  from assms obtain f and g where "bij_betw f A B" and "bij_betw g B C"
+    unfolding equipotent_def by auto
+  hence "bij_betw (g \<circ> f) A C" by (rule theorem_1_5_c)
+  thus "?thesis" unfolding equipotent_def by auto
+qed
+
+fun bernstein_seq :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> nat \<Rightarrow> 'a set" and
+  bernstein_seq' :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> nat \<Rightarrow> 'b set" where
+  "bernstein_seq' A B f g 0 = B - f ` A" |
+  "bernstein_seq A B f g n = g ` bernstein_seq' A B f g n" |
+  "bernstein_seq' A B f g (Suc n) = f ` bernstein_seq A B f g n"
+
+lemma bernstein_seq_subset:
+  assumes "f ` A \<subseteq> B" and
+    "g ` B \<subseteq> A"
+  shows "bernstein_seq A B f g n \<subseteq> A"
+proof (induct n)
+  case 0
+  have "bernstein_seq A B f g 0 = g ` (B - f ` A)" by simp
+  also from assms have "\<dots> \<subseteq> A" by auto
+  finally show "?case" .
+next
+  case (Suc n)
+  have "bernstein_seq A B f g (Suc n) = g ` f ` bernstein_seq A B f g n" by simp
+  with assms and Suc.hyps show "?case" by fastforce
+qed
+
+lemma bernstein_seq'_subset:
+  assumes "f ` A \<subseteq> B" and
+    "g ` B \<subseteq> A"
+  shows "bernstein_seq' A B f g n \<subseteq> B"
+proof (induct n)
+  case 0
+  have "bernstein_seq' A B f g 0 = B - f ` A" by simp
+  also have "\<dots> \<subseteq> B" by auto
+  finally show "?case" .
+next
+  case (Suc n)
+  have "bernstein_seq' A B f g (Suc n) = f ` g ` bernstein_seq' A B f g n" by simp
+  with assms and Suc.hyps show "?case" by fastforce
+qed
+
+lemma zero_Un_UNION_Suc_eq:
+  shows "A 0 \<union> (\<Union>n. A (Suc n)) = (\<Union>n. A n)"
+proof -
+  have "A 0 \<union> (\<Union>n. A (Suc n)) = (\<Union>n \<in> {0}. A n) \<union>(\<Union>n \<in> {Suc n | n. True}. A n)" by auto
+  also have "\<dots> = (\<Union>n \<in> {0} \<union> {Suc n | n. True}. A n)" by simp
+  also have "\<dots> = (\<Union>n. A n)"
+  proof -
+    {
+      fix n
+      have "n \<in> {0} \<union> {Suc n | n. True}"
+      proof (induct n)
+        case 0
+        show "?case" by simp
+      next
+        case (Suc n)
+        show "?case" by simp
+      qed
+    }
+    hence "{0} \<union> {Suc n | n. True} = UNIV" by blast
+    thus "?thesis" by simp
+  qed
+  finally show "?thesis" .
+qed
+
+theorem theorem_2_2:
+  assumes "f ` A \<subseteq> B" and
+    "inj_on f A" and
+    "g ` B \<subseteq> A" and
+    "inj_on g B"
+  shows "equipotent A B"
+proof -
+  let ?A = "\<Union>n. bernstein_seq A B f g n"
+  let ?A' = "A - ?A"
+  let ?B = "\<Union>n. bernstein_seq' A B f g n"
+  let ?B' = "B - ?B"
+  {
+    fix n
+    from assms(1,3) have "bernstein_seq A B f g n \<subseteq> A" by (rule bernstein_seq_subset)
+  }
+  hence "?A \<subseteq> A" by auto
+  hence "?A' \<subseteq> A" by auto
+  {
+    fix n
+    from assms(1,3) have "bernstein_seq' A B f g n \<subseteq> B" by (rule bernstein_seq'_subset)
+  }
+  hence "?B \<subseteq> B" by auto
+  hence "?B' \<subseteq> B" by auto
+  have "f ` ?A' = ?B'"
+  proof -
+    from \<open>?A \<subseteq> A\<close> and assms(2) have "f ` ?A' = f ` A - f ` ?A" by (intro problem_1_4_5_c)
+    also have "\<dots> = f ` A - (\<Union>n. f ` bernstein_seq A B f g n)" by blast
+    also have "\<dots> = f ` A - (\<Union>n. bernstein_seq' A B f g (Suc n))" by simp
+    also from assms(1) have "\<dots> = B - (B - f ` A) - (\<Union>n. bernstein_seq' A B f g (Suc n))" by auto
+    also have "\<dots> = B - bernstein_seq' A B f g 0 - (\<Union>n. bernstein_seq' A B f g (Suc n))" by simp
+    also have "\<dots> = B - (bernstein_seq' A B f g 0 \<union> (\<Union>n. bernstein_seq' A B f g (Suc n)))" by auto
+    also have "\<dots> = ?B'"
+      by (simp only: zero_Un_UNION_Suc_eq[where A = "\<lambda>n. bernstein_seq' A B f g n"])
+    finally show "?thesis" .
+  qed
+  moreover from assms(2) have "inj_on f ?A'" by (fact inj_on_diff)
+  ultimately have "bij_betw f ?A' ?B'" by (intro bij_betw_imageI)
+  have "g ` ?B = ?A"
+  proof (rule surj_onI)
+    fix b
+    assume "b \<in> ?B"
+    then obtain n where "b \<in> bernstein_seq' A B f g n" by fast
+    hence "g b \<in> bernstein_seq A B f g n" by simp
+    thus "g b \<in> ?A" by auto
+  next
+    fix a
+    assume "a \<in> ?A"
+    then obtain n where "a \<in> bernstein_seq A B f g n" by blast
+    hence "a \<in> g ` bernstein_seq' A B f g n" by simp
+    then obtain b where "b \<in> bernstein_seq' A B f g n" and "a = g b" by auto
+    from this(1) have "b \<in> ?B" by auto
+    with \<open>a = g b\<close> show "\<exists>b \<in> ?B. g b = a" by fast
+  qed
+  moreover from \<open>?B \<subseteq> B\<close> and assms(4) have "inj_on g ?B" by (elim inj_on_subset)
+  ultimately have "bij_betw g ?B ?A" by (intro bij_betw_imageI)
+  then obtain f' where "bij_betw f' ?A ?B" using bij_betw_inv by blast
+  hence "f' ` ?A = ?B" by (fact bij_betw_imp_surj_on)
+  let ?F = "\<lambda>a. if a \<in> ?A' then f a else f' a"
+  have "?F ` A = B"
+  proof (rule surj_onI)
+    fix a
+    assume "a \<in> A"
+    {
+      assume "a \<in> ?A'"
+      hence "?F a = f a" by simp
+      with \<open>a \<in> A\<close> and assms(1) have "?F a \<in> B" by fast
+    }
+    moreover {
+      assume "a \<notin> ?A'"
+      hence "?F a = f' a" by argo
+      also have "\<dots> \<in> ?B"
+      proof -
+        from \<open>a \<in> A\<close> and \<open>a \<notin> ?A'\<close> have "a \<in> ?A" by simp
+        moreover note \<open>f' ` ?A = ?B\<close>
+        ultimately show "f' a \<in> ?B" by blast
+      qed
+      also note \<open>\<dots> \<subseteq> B\<close>
+      finally have "?F a \<in> B" .
+    }
+    ultimately show "?F a \<in> B" by blast
+  next
+    fix b
+    assume "b \<in> B"
+    {
+      assume "b \<in> ?B"
+      with \<open>f' ` ?A = ?B\<close> obtain a where "a \<in> ?A" and "b = f' a" by blast
+      hence "?F a = b" by simp
+      moreover from \<open>a \<in> ?A\<close> and \<open>?A \<subseteq> A\<close> have "a \<in> A" ..
+      ultimately have "\<exists>a \<in> A. ?F a = b" by blast
+    }
+    moreover {
+      assume "b \<notin> ?B"
+      with \<open>b \<in> B\<close> have "b \<in> ?B'" by simp
+      with \<open>f ` ?A' = ?B'\<close> have "b \<in> f ` ?A'" by simp
+      then obtain a where "a \<in> ?A'" and "b = f a" by blast
+      hence "?F a = b" by argo
+      moreover from \<open>a \<in> ?A'\<close> and \<open>?A' \<subseteq> A\<close> have "a \<in> A" ..
+      ultimately have "\<exists>a \<in> A. ?F a = b" by blast
+    }
+    ultimately show "\<exists>a \<in> A. ?F a = b" by blast
+  qed
+  moreover have "inj_on ?F A"
+  proof (rule inj_onI)
+    fix a and a'
+    assume "a \<in> A" and
+      "a' \<in> A" and
+      "?F a = ?F a'"
+    consider (A) "a \<in> ?A'" and "a' \<in> ?A'" |
+      (B) "a \<in> ?A'" and "a' \<notin> ?A'" |
+      (C) "a \<notin> ?A'" and "a' \<in> ?A'" |
+      (D) "a \<notin> ?A'" and "a' \<notin> ?A'" by blast
+    thus "a = a'"
+    proof cases
+      case A
+      with \<open>?F a = ?F a'\<close> have "f a = f a'" by argo
+      with A and \<open>inj_on f ?A'\<close> show "?thesis" by (elim inj_onD)
+    next
+      case B
+      from B(2) and \<open>a' \<in> A\<close> have "a' \<in> ?A" by blast
+      from B and \<open>?F a = ?F a'\<close> have "f a = f' a'" by argo
+      moreover from \<open>a \<in> ?A'\<close> and \<open>f ` ?A' = ?B'\<close> have "f a \<in> ?B'" by blast
+      moreover from \<open>a' \<in> ?A\<close> and \<open>f' ` ?A = ?B\<close> have "f' a' \<in> ?B" by blast
+      ultimately have "False" by simp
+      thus "?thesis" ..
+    next
+      case C
+      from C(1) and \<open>a \<in> A\<close> have "a \<in> ?A" by simp
+      from C and \<open>?F a = ?F a'\<close> have "f' a = f a'" by argo
+      moreover from \<open>a \<in> ?A\<close> and \<open>f' ` ?A = ?B\<close> have "f' a \<in> ?B" by blast
+      moreover from \<open>a' \<in> ?A'\<close> and \<open>f ` ?A' = ?B'\<close> have "f a' \<in> ?B'" by blast
+      ultimately have "False" by simp
+      thus "?thesis" ..
+    next
+      case D
+      from D and \<open>?F a = ?F a'\<close> have "f' a = f' a'" by argo
+      moreover from D and \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> have "a \<in> ?A" and "a' \<in> ?A" by simp+
+      moreover from \<open>bij_betw f' ?A ?B\<close> have "inj_on f' ?A" by (fact bij_betw_imp_inj_on)
+      ultimately show "?thesis" by (elim inj_onD)
+    qed
+  qed
+  ultimately have "bij_betw ?F A B" by (intro bij_betw_imageI)
+  thus "?thesis" by (fact equipotentI)
+qed
+
+theorem theorem_2_2':
+  assumes "f ` A \<subseteq> B" and
+    "inj_on f A" and
+    "f' ` A = B"
+  shows "equipotent A B"
+proof -
+  from assms(3) obtain g where "g ` B \<subseteq> A" and "inj_on g B" by (elim corollary_1_1'')
+  moreover from assms(3) have "f' ` A \<subseteq> B" by simp
+  moreover note assms(1,2)
+  ultimately show "equipotent A B" by (intro theorem_2_2)
+qed
+
+theorem theorem_2_2'':
+  assumes "f ` A = B" and
+    "g ` B = A"
+  shows "equipotent A B"
+proof -
+  from assms(2) obtain f' where "f' ` A \<subseteq> B" and "inj_on f' A" by (elim corollary_1_1'')
+  with assms(1) show "?thesis" by (intro theorem_2_2')
+qed
+
+lemma surj_on_from_subset_imp_surj_on:
+  assumes "f ` A' = B" and
+    "A' \<subseteq> A" and
+    "A' = {} \<Longrightarrow> A = {}"
+  obtains f' where "f' ` A = B"
+proof -
+  {
+    assume "A' = {}"
+    with assms(1,3) have "A = {}" and "B = {}" by simp+
+    hence "\<exists>f'. f' ` A = B" by simp
+  }
+  moreover {
+    assume "A' \<noteq> {}"
+    with assms(1) have "B \<noteq> {}" by auto
+    then obtain b where "b \<in> B" by auto
+    let ?f' = "\<lambda>a. if a \<in> A' then f a else b"
+    have "?f' ` A = B"
+    proof (rule surj_onI)
+      fix a
+      assume "a \<in> A"
+      {
+        assume "a \<in> A'"
+        with assms(1) have "?f' a \<in> B" by auto
+      }
+      moreover {
+        assume "a \<notin> A'"
+        with \<open>b \<in> B\<close> have "?f' a \<in> B" by simp
+      }
+      ultimately show "?f' a \<in> B" by simp
+    next
+      fix b'
+      assume "b' \<in> B"
+      with assms(1) obtain a where "a \<in> A'" and "f a = b'" by blast
+      hence "?f' a = b'" by simp
+      moreover from \<open>a \<in> A'\<close> and assms(2) have "a \<in> A" ..
+      ultimately show "\<exists>a \<in> A. ?f' a = b'" by blast
+    qed
+    hence "\<exists>f'. f' ` A = B" by blast
+  }
+  ultimately show "thesis" using that by auto
+qed
+
+theorem theorem_2_2''':
+  assumes "B\<^sub>1 \<subseteq> B" and
+    "equipotent A B\<^sub>1" and
+    "A\<^sub>1 \<subseteq> A" and
+    "equipotent B A\<^sub>1"
+  shows "equipotent A B"
+proof -
+  from assms(2) obtain f where "bij_betw f A B\<^sub>1" by (elim equipotentE)
+  then obtain g where "bij_betw g B\<^sub>1 A" by (auto dest: bij_betw_inv)
+  hence "g ` B\<^sub>1 = A" by (elim bij_betw_imp_surj_on)
+  moreover have "B\<^sub>1 = {} \<Longrightarrow> B = {}"
+  proof -
+    assume "B\<^sub>1 = {}"
+    with assms(2) have "A = {}" by (simp only: equipotent_emptyD2)
+    with assms(3) have "A\<^sub>1 = {}" by simp
+    with assms(4) show "B = {}" by (simp only: equipotent_emptyD2)
+  qed
+  moreover note assms(1)
+  ultimately obtain g' where "g' ` B = A" using surj_on_from_subset_imp_surj_on by blast
+  from assms(4) obtain g'' where "bij_betw g'' B A\<^sub>1" by (elim equipotentE)
+  then obtain f' where "bij_betw f' A\<^sub>1 B" by (auto dest: bij_betw_inv)
+  hence "f' ` A\<^sub>1 = B" by (elim bij_betw_imp_surj_on)
+  moreover have "A\<^sub>1 = {} \<Longrightarrow> A = {}"
+  proof -
+    assume "A\<^sub>1 = {}"
+    with assms(4) have "B = {}" by (simp only: equipotent_emptyD2)
+    with assms(1) have "B\<^sub>1 = {}" by simp
+    with assms(2) show "A = {}" by (simp only: equipotent_emptyD2)
+  qed
+  moreover note assms(3)
+  ultimately obtain f'' where "f'' ` A = B" using surj_on_from_subset_imp_surj_on by blast
+  with \<open>g' ` B = A\<close> show "equipotent A B" by (intro theorem_2_2'')
+qed
+
+syntax "_card_on" :: "'a set \<Rightarrow> 'a rel" ("|_|")
+
+translations "|A|" \<rightleftharpoons> "CONST card_of A"
+
+syntax "_ordLeq3" :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "\<le>o" 50)
+
+translations "\<mm> \<le>o \<nn>" \<rightleftharpoons> "CONST ordLeq3 \<mm> \<nn>"
+
+syntax "_ordLess2" :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "<o" 50)
+
+translations "\<mm> <o \<nn>" \<rightleftharpoons> "CONST ordLess2 \<mm> \<nn>"
+
+syntax "_ordIso2" :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "=o" 50)
+
+translations "\<mm> =o \<nn>" \<rightleftharpoons> "CONST ordIso2 \<mm> \<nn>"
+
+proposition card_eq_definition:
+  shows "|A| =o |B| \<longleftrightarrow> equipotent A B"
+proof (rule iffI)
+  assume "|A| =o |B|"
+  then obtain f where "bij_betw f A B" by (auto dest: card_of_ordIso[THEN iffD2])
+  thus "equipotent A B" by (fact equipotentI)
+next
+  assume "equipotent A B"
+  then obtain f where "bij_betw f A B" by (elim equipotentE)
+  thus "|A| =o |B|" by (fact card_of_ordIsoI)
+qed
+
+lemma card_eqI:
+  assumes "equipotent A B"
+  shows "|A| =o |B|"
+  using assms by (simp only: card_eq_definition)
+
+proposition card_leq_definition:
+  shows "|A| \<le>o |B| \<longleftrightarrow> (\<exists>f. f ` A \<subseteq> B \<and> inj_on f A)"
+proof -
+  have "|A| \<le>o |B| \<longleftrightarrow> (\<exists>f. inj_on f A \<and> f ` A \<subseteq> B)" by (fact card_of_ordLeq[THEN sym])
+  also have "\<dots> \<longleftrightarrow> (\<exists>f. f ` A \<subseteq> B \<and> inj_on f A)" by auto
+  finally show "?thesis" .
+qed
+
+lemma card_leqI:
+  assumes "inj_on f A" and
+    "f ` A \<subseteq> B"
+  shows "|A| \<le>o |B|"
+proof -
+  from assms have "\<exists>f. f ` A \<subseteq> B \<and> inj_on f A" by auto
+  thus "?thesis" by (fact card_leq_definition[THEN iffD2])
+qed
+
+lemma card_leqE:
+  assumes "|A| \<le>o |B|"
+  obtains f where "f ` A \<subseteq> B" and "inj_on f A"
+  using assms by (auto dest: card_leq_definition[THEN iffD1])
+
+theorem theorem_2_3_1:
+  shows "|A| \<le>o |A|"
+proof -
+  have "id ` A = A" by simp
+  hence "id ` A \<subseteq> A" by simp
+  moreover have "inj_on id A" by simp
+  ultimately show "|A| \<le>o |A|" by (intro card_leqI)
+qed
+
+theorem theorem_2_3_2:
+  assumes "|A| \<le>o |B|" and
+    "|B| \<le>o |A|"
+  shows "|A| =o |B|"
+proof -
+  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by (elim card_leqE)
+  moreover from assms(2) obtain g where "g ` B \<subseteq> A" and "inj_on g B" by (elim card_leqE)
+  ultimately have "equipotent A B" by (rule theorem_2_2)
+  thus "|A| =o |B|" by (fact card_eqI)
+qed
+
+theorem theorem_2_3_3:
+  assumes "|A| \<le>o |B|" and
+    "|B| \<le>o |C|"
+  shows "|A| \<le>o |C|"
+proof -
+  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by (elim card_leqE)
+  from assms(2) obtain g where "g ` B \<subseteq> C" and "inj_on g B" by (elim card_leqE)
+  from \<open>f ` A \<subseteq> B\<close> and \<open>g ` B \<subseteq> C\<close> have "(g \<circ> f) ` A \<subseteq> C" by fastforce
+  moreover from \<open>f ` A \<subseteq> B\<close> and \<open>inj_on f A\<close> and \<open>inj_on g B\<close> have "inj_on (g \<circ> f) A"
+    by (rule theorem_1_5_b)
+  ultimately show "?thesis" by (intro card_leqI)
+qed
+
+proposition problem_2_1_2:
+  fixes X :: "'a set"
+  assumes "X \<subseteq> Y" and
+    "Y \<subseteq> Z" and
+    "equipotent X Z"
+  obtains "equipotent X Y" and "equipotent Y Z"
+proof -
+  from assms(3) obtain h where "bij_betw h X Z" by (elim equipotentE)
+  have "equipotent X Y"
+  proof -
+    from \<open>bij_betw h X Z\<close> obtain h' where "bij_betw h' Z X" by (auto dest: bij_betw_inv)
+    have "equipotent X X" by (fact prop_2_1_1)
+    moreover note assms(1)
+    moreover have "equipotent Y (h' ` Y)"
+    proof (rule equipotentI)
+      from \<open>bij_betw h' Z X\<close> and assms(2) have "bij_betw h' Y (h' ` Y)"
+        by (auto dest: bij_betw_subset)
+      moreover have "bij_betw id Y Y" by simp
+      ultimately show "bij_betw (h' \<circ> id) Y (h' ` Y)" by simp
+    qed
+    moreover from \<open>bij_betw h' Z X\<close> and assms(2) have "h' ` Y \<subseteq> X" by (auto dest: bij_betwE)
+    ultimately show "?thesis" by (auto dest: theorem_2_2''')
+  qed
+  moreover have "equipotent Y Z"
+  proof -
+    from \<open>equipotent X Y\<close> have "equipotent Y X" by (fact prop_2_1_2)
+    with assms(3) show "?thesis" by (auto dest: prop_2_1_3)
+  qed
+  ultimately show "thesis" by (fact that)
+qed
+
+(* TODO: problem_2_1_3 *)
+
+proposition problem_2_1_4:
+  fixes A :: "'a set"
+  assumes "B \<noteq> {}"
+  shows "|A| \<le>o |A \<times> B|"
+proof -
+  from assms obtain b where "b \<in> B" by auto
+  let ?f = "\<lambda>a :: 'a. (a, b)"
+  {
+    fix a
+    assume "a \<in> A"
+    with \<open>b \<in> B\<close> have "?f a \<in> A \<times> B" by simp
+  }
+  hence "?f ` A \<subseteq> A \<times> B" by auto
+  moreover have "inj_on ?f A"
+  proof (rule inj_onI)
+    fix a and a'
+    assume "?f a = ?f a'"
+    thus "a = a'" by simp
+  qed
+  ultimately show "?thesis" by (intro card_leqI)
+qed
+
+proposition problem_2_1_5:
+  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<noteq> {}" and
+    "pairwise_disjnt_idx \<Lambda> A"
+  shows "|\<Lambda>| \<le>o |\<Union>l \<in> \<Lambda>. A l|"
+proof -
+  let ?f = "\<lambda>a. (THE l. l \<in> \<Lambda> \<and> a \<in> A l)"
+  have *: "?f a = l" if "l \<in> \<Lambda>" and "a \<in> A l" for a and l
+  proof -
+    from that have "a \<in> (\<Union>l \<in> \<Lambda>. A l)" by auto
+    with assms have "\<exists>!l \<in> \<Lambda>. a \<in> A l" by (intro pairwise_disjnt_idx_imp_uniq_idx)
+    with that show "?thesis" by auto
+  qed
+  have "?f ` (\<Union>l \<in> \<Lambda>. A l) = \<Lambda>"
+  proof (rule surj_onI)
+    fix a
+    assume "a \<in> (\<Union>l \<in> \<Lambda>. A l)"
+    then obtain l where "l \<in> \<Lambda>" and "a \<in> A l" by auto
+    hence "?f a = l" by (fact *)
+    with \<open>l \<in> \<Lambda>\<close> show "?f a \<in> \<Lambda>" by simp
+  next
+    fix l
+    assume "l \<in> \<Lambda>"
+    moreover from this and assms(1) obtain a where "a \<in> A l" by auto
+    ultimately have "a \<in> (\<Union>l \<in> \<Lambda>. A l)" and "?f a = l" by (auto dest: *)
+    thus "\<exists>a \<in> (\<Union>l \<in> \<Lambda>. A l). ?f a = l" by blast
+  qed
+  then obtain g where "g ` \<Lambda> \<subseteq> (\<Union>l \<in> \<Lambda>. A l)" and "inj_on g \<Lambda>" by (elim corollary_1_1'')
+  thus "?thesis" by (intro card_leqI)
+qed
+
+proposition problem_2_1_6:
+  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> \<exists>a \<in> A l. \<exists>b \<in> A l. a \<noteq> b"
+  shows "|\<Lambda>| \<le>o |\<Pi>\<^sub>E l \<in> \<Lambda>. A l|"
+proof -
+  {
+    fix l
+    assume "l \<in> \<Lambda>"
+    with assms have "A l \<noteq> {}" by auto
+  }
+  then obtain a where "a \<in> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l)" by (elim AC_E)
+  {
+    fix l
+    assume "l \<in> \<Lambda>"
+    with assms have "A l - {a l} \<noteq> {}" by auto
+  }
+  then obtain b where "b \<in> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l - {a l})" by (elim AC_E)
+  let ?f = "\<lambda>l. \<lambda>l'. if l' = l then a l' else b l'"
+  have "?f ` \<Lambda> \<subseteq> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l)"
+  proof (rule subsetI)
+    fix c
+    assume "c \<in> ?f ` \<Lambda>"
+    then obtain l where "l \<in> \<Lambda>" and "c = ?f l" by auto
+    {
+      fix l'
+      assume "l' \<in> \<Lambda>"
+      from \<open>c = ?f l\<close> have "c l' = ?f l l'" by simp
+      {
+        assume "l' = l"
+        hence "?f l l' = a l'" by simp
+        also from this and \<open>a \<in> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l)\<close> and \<open>l' \<in> \<Lambda>\<close> have "a l' \<in> A l'" by auto
+        finally have "?f l l' \<in> A l'" .
+      }
+      moreover {
+        assume "l' \<noteq> l"
+        hence "?f l l' = b l'" by simp
+        also from this and \<open>b \<in> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l - {a l})\<close> and \<open>l' \<in> \<Lambda>\<close> have "b l' \<in> A l'" by auto
+        finally have "?f l l' \<in> A l'" .
+      }
+      ultimately have "?f l l' \<in> A l'" by simp
+      with \<open>c l' = ?f l l'\<close> have "c l' \<in> A l'" by simp
+    }
+    moreover {
+      fix l'
+      assume "l' \<notin> \<Lambda>"
+      with \<open>l \<in> \<Lambda>\<close> have "l' \<noteq> l" by auto
+      from \<open>c = ?f l\<close> have "c l' = ?f l l'"  by simp
+      also from \<open>l' \<noteq> l\<close> have "?f l l' = b l'" by simp
+      also from \<open>l' \<notin> \<Lambda>\<close> and \<open>b \<in> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l - {a l})\<close> have "b l' = undefined" by auto
+      finally have "c l' = undefined" .
+    }
+    ultimately show "c \<in> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l)" by (intro PiE_I)
+  qed
+  moreover have "inj_on ?f \<Lambda>"
+  proof (rule inj_onI)
+    fix l and l'
+    assume "l \<in> \<Lambda>" and
+      "l' \<in> \<Lambda>" and
+      "?f l = ?f l'"
+    {
+      assume "l \<noteq> l'"
+      hence "?f l' l = b l" by simp
+      moreover have "?f l l = a l" by simp
+      moreover note \<open>?f l = ?f l'\<close>
+      ultimately have "a l = b l" by metis
+      also from \<open>l \<in> \<Lambda>\<close> and \<open>b \<in> (\<Pi>\<^sub>E l \<in> \<Lambda>. A l - {a l})\<close> have "b l \<in> A l - {a l}" by blast
+      finally have "a l \<in> A l - {a l}" .
+      hence "False" by simp
+    }
+    thus "l = l'" by auto
+  qed
+  ultimately show "?thesis" by (intro card_leqI)
+qed
+
+proposition problem_2_1_7:
+  assumes "f ` A = B"
+  obtains R where "equiv A R" and "equipotent B (A // R)"
+proof -
+  from assms have "f ` A \<subseteq> B" by simp
+  then obtain g where "bij_betw g (A // (equiv_kernel_on f A)) (f ` A)" by (auto elim: prop_1_6_4)
+  with assms have "bij_betw g (A // (equiv_kernel_on f A)) B" by blast
+  hence "equipotent (A // equiv_kernel_on f A) B" by (fact equipotentI)
+  hence "equipotent B (A // equiv_kernel_on f A)" by (fact prop_2_1_2)
+  moreover have "equiv A (equiv_kernel_on f A)" by (fact equiv_equiv_kernel_on)
+  ultimately show "thesis" by (intro that)
+qed
+
+(* TODO: problem_2_1_8 *)
+
+end

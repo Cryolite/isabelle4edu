@@ -78,6 +78,13 @@ proof (rule equivI)
   qed
 qed
 
+lemma equiv_kernel_on_Image_eqI:
+  assumes "f a = f a'" and
+    "a \<in> A" and
+    "a' \<in> A"
+  shows "equiv_kernel_on f A `` {a} = equiv_kernel_on f A `` {a'}"
+  using assms unfolding equiv_kernel_on_def by auto
+
 proposition prop_1_6_1:
   assumes "equiv A R" and
     "a \<in> A"
@@ -269,7 +276,7 @@ proposition prop_1_6_4:
   assumes "f ` A \<subseteq> B"
   obtains \<phi> and g and j where
     "\<phi> ` A = A // (equiv_kernel_on f A)" and
-    "g ` (A // (equiv_kernel_on f A)) = f ` A" and
+    "bij_betw g (A // (equiv_kernel_on f A)) (f ` A)" and
     "id_on j (f ` A)" and
     "ext_eq_on A (j \<circ> g \<circ> \<phi>) f"
 proof -
@@ -298,22 +305,41 @@ proof -
     then obtain a where "a \<in> A" and "C = equiv_kernel_on f A `` {a}" by (elim quotientE)
     thus "\<exists>a \<in> A. ?\<phi> a = C" by auto
   qed
-  moreover have "?g ` (A // (equiv_kernel_on f A)) = f ` A"
-  proof (rule surj_onI)
-    fix C
-    assume "C \<in> A // (equiv_kernel_on f A)"
-    then obtain a where "a \<in> A" and "C = ?\<phi> a" by (elim quotientE)
-    from this(1) have "?g (?\<phi> a) = f a" by (fact **)
-    with \<open>C = ?\<phi> a\<close> have "?g C = f a" by simp
-    with \<open>a \<in> A\<close> show "?g C \<in> f ` A" by simp
-  next
-    fix b
-    assume "b \<in> f ` A"
-    then obtain a where "a \<in> A" and "b = f a" by auto
-    from this(1) have "?g (?\<phi> a) = f a" by (fact **)
-    with \<open>b = f a\<close> have "?g (?\<phi> a) = b" by simp
-    moreover from \<open>a \<in> A\<close> have "?\<phi> a \<in> A // equiv_kernel_on f A" by (rule quotientI)
-    ultimately show "\<exists>C \<in> A // (equiv_kernel_on f A). ?g C = b" by auto
+  moreover have "bij_betw ?g (A // (equiv_kernel_on f A)) (f ` A)"
+  proof (rule bij_betw_imageI)
+    show "?g ` (A // (equiv_kernel_on f A)) = f ` A"
+    proof (rule surj_onI)
+      fix C
+      assume "C \<in> A // (equiv_kernel_on f A)"
+      then obtain a where "a \<in> A" and "C = ?\<phi> a" by (elim quotientE)
+      from this(1) have "?g (?\<phi> a) = f a" by (fact **)
+      with \<open>C = ?\<phi> a\<close> have "?g C = f a" by simp
+      with \<open>a \<in> A\<close> show "?g C \<in> f ` A" by simp
+    next
+      fix b
+      assume "b \<in> f ` A"
+      then obtain a where "a \<in> A" and "b = f a" by auto
+      from this(1) have "?g (?\<phi> a) = f a" by (fact **)
+      with \<open>b = f a\<close> have "?g (?\<phi> a) = b" by simp
+      moreover from \<open>a \<in> A\<close> have "?\<phi> a \<in> A // equiv_kernel_on f A" by (rule quotientI)
+      ultimately show "\<exists>C \<in> A // (equiv_kernel_on f A). ?g C = b" by auto
+    qed
+    show "inj_on ?g (A // (equiv_kernel_on f A))"
+    proof (rule inj_onI)
+      fix C and C'
+      assume "C \<in> A // (equiv_kernel_on f A)" and
+        "C' \<in> A // (equiv_kernel_on f A)" and
+        "?g C = ?g C'"
+      from this(1,2) obtain a and a' where
+        "a \<in> A" and
+        "C = ?\<phi> a"
+        "a' \<in> A" and
+        "C' = ?\<phi> a'" by (elim quotientE)
+      from this have "?g (?\<phi> a) = f a" and "?g (?\<phi> a') = f a'" by (auto intro: **)
+      with \<open>?g C = ?g C'\<close> and \<open>C = ?\<phi> a\<close> and \<open>C' = ?\<phi> a'\<close> have "f a = f a'" by force
+      with \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> have "?\<phi> a = ?\<phi> a'" by (intro equiv_kernel_on_Image_eqI)
+      with \<open>C = ?\<phi> a\<close> and \<open>C' = ?\<phi> a'\<close> show "C = C'" by simp
+    qed
   qed
   moreover have "id_on ?j (f ` A)"
   proof (rule id_onI)

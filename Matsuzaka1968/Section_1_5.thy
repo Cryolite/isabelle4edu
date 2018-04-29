@@ -494,50 +494,62 @@ next
 qed
 
 theorem theorem_1_7_b':
-  -- {* @{prop "A \<noteq> {}"} is a necessary assumption, otherwise there exists a counterexample. *}
-  assumes "A \<noteq> {}" and
+  assumes "A = {} \<Longrightarrow> B = {}" and -- {* This assumption is not specified in the book. However,
+                                        there exists a counterexample without it. *}
     -- {* @{prop "f ` A \<subseteq> B"}: an unnecessary assumption. *}
     "inj_on f A"
   obtains r where "r ` B \<subseteq> A" and
     "id_on (r \<circ> f) A"
 proof -
-  from assms(1) obtain a where "a \<in> A" by auto
-  let ?r = "\<lambda>b. if b \<in> f ` A then the_inv_into A f b else a"
-  have "?r ` B \<subseteq> A"
-  proof (rule subsetI)
-    fix a'
-    assume "a' \<in> ?r ` B"
-    then obtain b where "b \<in> B" and "a' = ?r b" by auto
-    {
-      assume "b \<in> f ` A"
-      then obtain a'' where "a'' \<in> A" and "b = f a''" by auto
-      from \<open>b \<in> f ` A\<close> have "?r b = the_inv_into A f b" by simp
-      with \<open>a' = ?r b\<close> have "the_inv_into A f b = a'" by simp
-      with \<open>b = f a''\<close> have "the_inv_into A f (f a'') = a'" by simp
-      moreover from this and assms(2) and \<open>a'' \<in> A\<close> have "the_inv_into A f (f a'') = a''"
-        by (intro the_inv_into_f_f)
-      ultimately have "a' = a''" by simp
-      with \<open>a'' \<in> A\<close> have "a' \<in> A" by simp
-    }
-    moreover {
-      assume "b \<notin> f ` A"
-      hence "?r b = a" by simp
-      with \<open>a' = ?r b\<close> have "a' = a" by simp
-      with \<open>a \<in> A\<close> have "a' \<in> A" by simp
-    }
-    ultimately show "a' \<in> A" by auto
-  qed
-  moreover have "id_on (?r \<circ> f) A"
-  proof (rule id_onI)
-    fix a'
-    assume "a' \<in> A"
-    hence "f a' \<in> f ` A" by simp
-    hence "?r (f a') = the_inv_into A f (f a')" by simp
-    also from assms(2) and \<open>a' \<in> A\<close> have "\<dots> = a'" by (intro the_inv_into_f_f)
-    finally have "?r (f a') = a'" .
-    thus "(?r \<circ> f) a' = a'" by simp
-  qed
-  ultimately show "thesis" by (fact that)
+  {
+    assume "A = {}"
+    with assms(1) have "B = {}" by simp
+    let ?r = "\<lambda>b. undefined"
+    from \<open>A = {}\<close> and \<open>B = {}\<close> have "?r ` B \<subseteq> A" by simp
+    moreover from \<open>A = {}\<close> have "id_on (?r \<circ> f) A" by (simp only: id_on_empty)
+    ultimately have "thesis" by (fact that)
+  }
+  moreover {
+    assume "A \<noteq> {}"
+    then obtain a where "a \<in> A" by auto
+    let ?r = "\<lambda>b. if b \<in> f ` A then the_inv_into A f b else a"
+    have "?r ` B \<subseteq> A"
+    proof (rule subsetI)
+      fix a'
+      assume "a' \<in> ?r ` B"
+      then obtain b where "b \<in> B" and "a' = ?r b" by auto
+      {
+        assume "b \<in> f ` A"
+        then obtain a'' where "a'' \<in> A" and "b = f a''" by auto
+        from \<open>b \<in> f ` A\<close> have "?r b = the_inv_into A f b" by simp
+        with \<open>a' = ?r b\<close> have "the_inv_into A f b = a'" by simp
+        with \<open>b = f a''\<close> have "the_inv_into A f (f a'') = a'" by simp
+        moreover from this and assms(2) and \<open>a'' \<in> A\<close> have "the_inv_into A f (f a'') = a''"
+          by (intro the_inv_into_f_f)
+        ultimately have "a' = a''" by simp
+        with \<open>a'' \<in> A\<close> have "a' \<in> A" by simp
+      }
+      moreover {
+        assume "b \<notin> f ` A"
+        hence "?r b = a" by simp
+        with \<open>a' = ?r b\<close> have "a' = a" by simp
+        with \<open>a \<in> A\<close> have "a' \<in> A" by simp
+      }
+      ultimately show "a' \<in> A" by auto
+    qed
+    moreover have "id_on (?r \<circ> f) A"
+    proof (rule id_onI)
+      fix a'
+      assume "a' \<in> A"
+      hence "f a' \<in> f ` A" by simp
+      hence "?r (f a') = the_inv_into A f (f a')" by simp
+      also from assms(2) and \<open>a' \<in> A\<close> have "\<dots> = a'" by (intro the_inv_into_f_f)
+      finally have "?r (f a') = a'" .
+      thus "(?r \<circ> f) a' = a'" by simp
+    qed
+    ultimately have "thesis" by (fact that)
+  }
+  ultimately show "thesis" by auto
 qed
 
 theorem theorem_1_7_b'':
@@ -652,21 +664,40 @@ proof -
   thus "?thesis" by (fold left_inv_into_def)
 qed
 
-corollary
-  assumes "A \<noteq> {}"
-  shows "(\<exists>f. f ` A \<subseteq> B \<and> inj_on f A) \<longleftrightarrow> (\<exists>f. f ` B = A)"
+lemma corollary_1_1':
+  assumes "A = {} \<Longrightarrow> B = {}" and
+    "f ` A \<subseteq> B" and
+    "inj_on f A"
+  obtains g where "g ` B = A"
+proof -
+  from assms(1,3) obtain g where "g ` B \<subseteq> A" and "id_on (g \<circ> f) A" by (elim theorem_1_7_b')
+  with \<open>f ` A \<subseteq> B\<close> have "g ` B = A" by (intro theorem_1_7_a'')
+  thus "thesis" by (fact that)
+qed
+
+lemma corollary_1_1'':
+  assumes "f ` A = B"
+  obtains g where "g ` B \<subseteq> A" and "inj_on g B"
+proof -
+  from assms obtain g where "g ` B \<subseteq> A" and "id_on (f \<circ> g) B" by (elim theorem_1_7_a')
+  from this(2) have "inj_on g B" by (intro theorem_1_7_b'')
+  with \<open>g ` B \<subseteq> A\<close> show "thesis" by (fact that)
+qed
+
+corollary corollary_1_1:
+  assumes "A = {} \<Longrightarrow> B = {}" -- {* This assumption is not specified in the book. However, there
+                                    exists a counterexample without it. *}
+  shows "(\<exists>f. f ` A \<subseteq> B \<and> inj_on f A) \<longleftrightarrow> (\<exists>g. g ` B = A)"
 proof (rule iffI)
   assume "\<exists>f. f ` A \<subseteq> B \<and> inj_on f A"
   then obtain f where "f ` A \<subseteq> B" and "inj_on f A" by auto
-  from this(2) and assms obtain r where "r ` B \<subseteq> A" and "id_on (r \<circ> f) A" by (elim theorem_1_7_b')
-  with \<open>f ` A \<subseteq> B\<close> have "r ` B = A" by (intro theorem_1_7_a'')
+  with assms obtain g where "g ` B = A" by (elim corollary_1_1')
   thus "\<exists>f. f ` B = A" by auto
 next
-  assume "\<exists>f. f ` B = A"
-  then obtain f where "f ` B = A" ..
-  then obtain s where "s ` A \<subseteq> B" and "id_on (f \<circ> s) A" by (elim theorem_1_7_a')
-  from this(2) have "inj_on s A" by (intro theorem_1_7_b'')
-  with \<open>s ` A \<subseteq> B\<close> show "\<exists>f. f ` A \<subseteq> B \<and> inj_on f A" by auto
+  assume "\<exists>g. g ` B = A"
+  then obtain g where "g ` B = A" ..
+  then obtain f where "f ` A \<subseteq> B" and "inj_on f A" by (elim corollary_1_1'')
+  thus "\<exists>f. f ` A \<subseteq> B \<and> inj_on f A" by auto
 qed
 
 (* TODO: problem_1_5_1 *)

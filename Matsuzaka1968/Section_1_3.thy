@@ -289,6 +289,10 @@ lemma id_onD:
   shows "f a = a"
   using assms by (simp only: id_on_def)
 
+lemma id_on_empty:
+  shows "id_on f {}"
+  by (simp add: id_on_def)
+
 lemma set_eqI2:
   assumes "\<And>x. x \<in> A \<Longrightarrow> x \<in> B" and
     "\<And>x. x \<in> B \<Longrightarrow> x \<in> A"
