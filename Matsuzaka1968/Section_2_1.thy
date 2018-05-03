@@ -1,51 +1,50 @@
 theory Section_2_1
-  imports Main
-    Section_1_6
+  imports Complex_Main
+    "HOL-Computational_Algebra.Primes"
+    "Split_Pair"
+    "Section_1_6"
 begin
 
 definition equipotent :: "'a set \<Rightarrow> 'b set \<Rightarrow> bool"
   where "equipotent A B \<longleftrightarrow> (\<exists>f. bij_betw f A B)"
 
-lemma equipotentI:
+lemma equipotentI [intro]:
   assumes "bij_betw f A B"
   shows "equipotent A B"
   unfolding equipotent_def using assms by auto
 
-lemma equipotentE:
+lemma equipotentE [elim]:
   assumes "equipotent A B"
   obtains f where "bij_betw f A B"
   using assms unfolding equipotent_def by auto
 
-lemma equipotent_emptyD1:
+lemma equipotent_empty1 [simp]:
   assumes "equipotent {} B"
   shows "B = {}"
 proof -
-  from assms obtain f :: "'a \<Rightarrow> 'b" where "bij_betw f {} B" by (elim equipotentE)
+  from assms obtain f :: "'a \<Rightarrow> 'b" where "bij_betw f {} B" by auto
   thus "B = {}" by (fact bij_betw_empty1)
 qed
 
-lemma equipotent_emptyD2:
+lemma equipotent_empty2 [simp]:
   assumes "equipotent A {}"
   shows "A = {}"
 proof -
-  from assms obtain f :: "'a \<Rightarrow> 'b" where "bij_betw f A {}" by (elim equipotentE)
+  from assms obtain f :: "'a \<Rightarrow> 'b" where "bij_betw f A {}" by auto
   thus "A = {}" by (fact bij_betw_empty2)
 qed
 
 proposition prop_2_1_1:
   shows "equipotent A A"
-proof -
-  have "bij_betw id A A" by simp
-  thus "?thesis" unfolding equipotent_def by auto
-qed
+  by auto
 
 proposition prop_2_1_2:
   assumes "equipotent A B"
   shows "equipotent B A"
 proof -
-  from assms obtain f where "bij_betw f A B" unfolding equipotent_def by auto
+  from assms obtain f where "bij_betw f A B" by auto
   hence "bij_betw (the_inv_into A f) B A" by (fact bij_betw_the_inv_into)
-  thus "?thesis" unfolding equipotent_def by auto
+  thus "?thesis" by auto
 qed
 
 proposition prop_2_1_3:
@@ -53,10 +52,65 @@ proposition prop_2_1_3:
     "equipotent B C"
   shows "equipotent A C"
 proof -
-  from assms obtain f and g where "bij_betw f A B" and "bij_betw g B C"
-    unfolding equipotent_def by auto
+  from assms obtain f and g where "bij_betw f A B" and "bij_betw g B C" by blast
   hence "bij_betw (g \<circ> f) A C" by (rule theorem_1_5_c)
-  thus "?thesis" unfolding equipotent_def by auto
+  thus "?thesis" by auto
+qed
+
+lemma example_2_3_factorization_existence:
+  assumes "0 < n"
+  obtains i :: nat and j :: nat where "n = 2^i * (2 * j + 1)"
+proof -
+  have "prime (2 :: nat)" by (fact two_is_prime_nat)
+  with assms obtain i and m where
+    "\<not>2 dvd m"
+    and "n = m * 2^i" by (blast dest: prime_power_canonical)
+  from this(1) obtain j where "m = 2 * j + 1" by (elim oddE)
+  with \<open>n = m * 2^i\<close> have "n = 2^i * (2 * j + 1)" by simp
+  thus "thesis" by (fact that)
+qed
+
+lemma example_2_3_factorization_uniqueness:
+  fixes i j i' j' :: nat
+  assumes "2^i * (2 * j + 1) = 2^i' * (2 * j' + 1)"
+  obtains "i = i'" and "j = j'"
+proof -
+  from assms have "(2 * j' + 1) * 2^i' = (2 * j + 1) * 2^i" by (simp only: mult.commute)
+  moreover have "prime (2 :: nat)" by simp
+  moreover have "\<not>2 dvd (2 * j' + 1)" by simp
+  moreover have "\<not>2 dvd (2 * j + 1)" by simp
+  ultimately have "2 * j' + 1 = 2 * j + 1" and "i' = i" using prime_power_cancel2 by blast+
+  hence "j = j'" and "i = i'" by simp+
+  thus "thesis" by (intro that)
+qed
+
+proposition example_2_3:
+  shows "equipotent ((UNIV :: nat set) \<times> (UNIV :: nat set)) (UNIV :: nat set)"
+proof -
+  let ?f = "\<lambda>(i :: nat, j :: nat). 2^i * (2 * j + 1) - 1"
+  have "?f ` (UNIV \<times> UNIV) = UNIV"
+  proof (rule surj_onI; split_pair)
+    fix i j :: nat
+    show "2^i * (2 * j + 1) - 1 \<in> UNIV" by simp
+  next
+    fix n :: nat
+    obtain i and j where "n + 1 = 2^i * (2 * j + 1)"
+      using example_2_3_factorization_existence by auto
+    hence "2^i * (2 * j + 1) - 1 = n" by presburger
+    thus "\<exists>i \<in> UNIV. \<exists>j \<in> UNIV. 2^i * (2 * j + 1) - 1 = n" by blast
+  qed
+  moreover have "inj_on ?f (UNIV \<times> UNIV)"
+  proof (rule inj_onI, split_pair)
+    thm inj_onI
+    fix i j i' j' :: nat
+    assume "2^i * (2 * j + 1) - 1 = 2^i' * (2 * j' + 1) - 1"
+    moreover have "0 < 2^i * (2 * j + 1)" and "0 < 2^i' * (2 * j' + 1)" by simp+
+    ultimately have "2^i * (2 * j + 1) = 2^i' * (2 * j' + 1)" by linarith
+    hence "i = i'" and "j = j'" using example_2_3_factorization_uniqueness by blast+
+    thus "(i, j) = (i', j')" by simp
+  qed
+  ultimately have "bij_betw ?f (UNIV \<times> UNIV) UNIV" by (intro bij_betw_imageI)
+  thus "equipotent ((UNIV :: nat set) \<times> (UNIV :: nat set)) (UNIV :: nat set)" by auto
 qed
 
 fun bernstein_seq :: "'a set \<Rightarrow> 'b set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> nat \<Rightarrow> 'a set" and
@@ -260,7 +314,7 @@ proof -
     qed
   qed
   ultimately have "bij_betw ?F A B" by (intro bij_betw_imageI)
-  thus "?thesis" by (fact equipotentI)
+  thus "?thesis" by auto
 qed
 
 theorem theorem_2_2':
@@ -333,119 +387,201 @@ theorem theorem_2_2''':
     "equipotent B A\<^sub>1"
   shows "equipotent A B"
 proof -
-  from assms(2) obtain f where "bij_betw f A B\<^sub>1" by (elim equipotentE)
+  from assms(2) obtain f where "bij_betw f A B\<^sub>1" by auto
   then obtain g where "bij_betw g B\<^sub>1 A" by (auto dest: bij_betw_inv)
-  hence "g ` B\<^sub>1 = A" by (elim bij_betw_imp_surj_on)
+  hence "g ` B\<^sub>1 = A" by (auto dest: bij_betw_imp_surj_on)
   moreover have "B\<^sub>1 = {} \<Longrightarrow> B = {}"
   proof -
     assume "B\<^sub>1 = {}"
-    with assms(2) have "A = {}" by (simp only: equipotent_emptyD2)
+    with assms(2) have "A = {}" by simp
     with assms(3) have "A\<^sub>1 = {}" by simp
-    with assms(4) show "B = {}" by (simp only: equipotent_emptyD2)
+    with assms(4) show "B = {}" by simp
   qed
   moreover note assms(1)
   ultimately obtain g' where "g' ` B = A" using surj_on_from_subset_imp_surj_on by blast
-  from assms(4) obtain g'' where "bij_betw g'' B A\<^sub>1" by (elim equipotentE)
+  from assms(4) obtain g'' where "bij_betw g'' B A\<^sub>1" by auto
   then obtain f' where "bij_betw f' A\<^sub>1 B" by (auto dest: bij_betw_inv)
   hence "f' ` A\<^sub>1 = B" by (elim bij_betw_imp_surj_on)
   moreover have "A\<^sub>1 = {} \<Longrightarrow> A = {}"
   proof -
     assume "A\<^sub>1 = {}"
-    with assms(4) have "B = {}" by (simp only: equipotent_emptyD2)
+    with assms(4) have "B = {}" by simp
     with assms(1) have "B\<^sub>1 = {}" by simp
-    with assms(2) show "A = {}" by (simp only: equipotent_emptyD2)
+    with assms(2) show "A = {}" by simp
   qed
   moreover note assms(3)
-  ultimately obtain f'' where "f'' ` A = B" using surj_on_from_subset_imp_surj_on by blast
+  ultimately obtain f'' where "f'' ` A = B" by (auto intro: surj_on_from_subset_imp_surj_on)
   with \<open>g' ` B = A\<close> show "equipotent A B" by (intro theorem_2_2'')
 qed
 
-syntax "_card_on" :: "'a set \<Rightarrow> 'a rel" ("|_|")
+abbreviation aleph_zero :: "nat rel" ("\<aleph>\<^sub>0")
+  where "aleph_zero \<equiv> card_of (UNIV :: nat set)"
 
-translations "|A|" \<rightleftharpoons> "CONST card_of A"
+abbreviation aleph :: "real rel" ("\<aleph>")
+  where "aleph \<equiv> card_of (UNIV :: real set)"
 
-syntax "_ordLeq3" :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "\<le>o" 50)
+definition ord_leq :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "\<le>o" 50)
+  where "ord_leq \<mm> \<nn> \<longleftrightarrow> (\<mm>, \<nn>) \<in> ordLeq"
 
-translations "\<mm> \<le>o \<nn>" \<rightleftharpoons> "CONST ordLeq3 \<mm> \<nn>"
+definition ord_less :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "<o" 50)
+  where "ord_less \<mm> \<nn> \<longleftrightarrow> (\<mm>, \<nn>) \<in> ordLess"
 
-syntax "_ordLess2" :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "<o" 50)
+definition ord_eq :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "=o" 50)
+  where "ord_eq \<mm> \<nn> \<longleftrightarrow> (\<mm>, \<nn>) \<in> ordIso"
 
-translations "\<mm> <o \<nn>" \<rightleftharpoons> "CONST ordLess2 \<mm> \<nn>"
+lemma card_eqI [intro]:
+  assumes "bij_betw f A B"
+  shows "card_of A =o card_of B"
+proof -
+  from assms have "(card_of A, card_of B) \<in> ordIso" by (auto intro: card_of_ordIsoI)
+  thus "?thesis" unfolding ord_eq_def by simp
+qed
 
-syntax "_ordIso2" :: "'a rel \<Rightarrow> 'b rel \<Rightarrow> bool" (infix "=o" 50)
+lemma card_eqI':
+  assumes "equipotent A B"
+  shows "card_of A =o card_of B"
+  using assms by auto
 
-translations "\<mm> =o \<nn>" \<rightleftharpoons> "CONST ordIso2 \<mm> \<nn>"
+lemma card_eqE [elim]:
+  assumes "card_of A =o card_of B"
+  obtains f where "bij_betw f A B"
+proof -
+  from assms have "(card_of A, card_of B) \<in> ordIso" by (auto dest: ord_eq_def[THEN iffD1])
+  then obtain f where "bij_betw f A B" by (auto dest: card_of_ordIso[THEN iffD2])
+  thus "thesis" by (fact that)
+qed
 
 proposition card_eq_definition:
-  shows "|A| =o |B| \<longleftrightarrow> equipotent A B"
-proof (rule iffI)
-  assume "|A| =o |B|"
-  then obtain f where "bij_betw f A B" by (auto dest: card_of_ordIso[THEN iffD2])
-  thus "equipotent A B" by (fact equipotentI)
-next
-  assume "equipotent A B"
-  then obtain f where "bij_betw f A B" by (elim equipotentE)
-  thus "|A| =o |B|" by (fact card_of_ordIsoI)
+  shows "card_of A =o card_of B \<longleftrightarrow> equipotent A B"
+  by auto
+
+lemma card_eq_refl [simp]:
+  shows "card_of A =o card_of A"
+  by auto
+
+lemma card_eq_sym [sym]:
+  assumes "card_of A =o card_of B"
+  shows "card_of B =o card_of A"
+proof -
+  from assms obtain f where "bij_betw f A B" by auto
+  then obtain g where "bij_betw g B A" by (blast dest: bij_betw_inv)
+  thus "?thesis" by auto
 qed
 
-lemma card_eqI:
-  assumes "equipotent A B"
-  shows "|A| =o |B|"
-  using assms by (simp only: card_eq_definition)
+lemma card_eq_trans [trans]:
+  assumes "card_of A =o card_of B"
+    and "card_of B =o card_of C"
+  shows "card_of A =o card_of C"
+proof -
+  from assms(1) obtain f where "bij_betw f A B" by auto
+  moreover from assms(2) obtain g where "bij_betw g B C" by auto
+  ultimately have "bij_betw (g \<circ> f) A C" by (auto intro: theorem_1_5_c)
+  thus "?thesis" by auto
+qed
+
+lemma card_leqI [intro]:
+  assumes "f ` A \<subseteq> B"
+    and "inj_on f A"
+  shows "card_of A \<le>o card_of B"
+proof -
+  from assms have "(card_of A, card_of B) \<in> ordLeq" by (auto intro: card_of_ordLeq[THEN iffD1])
+  thus "?thesis" unfolding ord_leq_def by simp
+qed
+
+lemma card_leqE [elim]:
+  assumes "card_of A \<le>o card_of B"
+  obtains f where "f ` A \<subseteq> B" and "inj_on f A"
+proof -
+  from assms have "(card_of A, card_of B) \<in> ordLeq" unfolding ord_leq_def by simp
+  then obtain f where "f ` A \<subseteq> B" and "inj_on f A" by (fast dest: card_of_ordLeq[THEN iffD2])
+  thus "thesis" by (fact that)
+qed
 
 proposition card_leq_definition:
-  shows "|A| \<le>o |B| \<longleftrightarrow> (\<exists>f. f ` A \<subseteq> B \<and> inj_on f A)"
-proof -
-  have "|A| \<le>o |B| \<longleftrightarrow> (\<exists>f. inj_on f A \<and> f ` A \<subseteq> B)" by (fact card_of_ordLeq[THEN sym])
-  also have "\<dots> \<longleftrightarrow> (\<exists>f. f ` A \<subseteq> B \<and> inj_on f A)" by auto
-  finally show "?thesis" .
+  shows "card_of A \<le>o card_of B \<longleftrightarrow> (\<exists>f. f ` A \<subseteq> B \<and> inj_on f A)" (is "?L \<longleftrightarrow> ?R")
+proof (rule iffI)
+  assume "?L"
+  thus "?R" by fast
+next
+  assume "?R"
+  thus "?L" by auto
 qed
 
-lemma card_leqI:
-  assumes "inj_on f A" and
-    "f ` A \<subseteq> B"
-  shows "|A| \<le>o |B|"
+lemma subset_imp_card_leq:
+  assumes "A \<subseteq> B"
+  shows "card_of A \<le>o card_of B"
 proof -
-  from assms have "\<exists>f. f ` A \<subseteq> B \<and> inj_on f A" by auto
-  thus "?thesis" by (fact card_leq_definition[THEN iffD2])
-qed
-
-lemma card_leqE:
-  assumes "|A| \<le>o |B|"
-  obtains f where "f ` A \<subseteq> B" and "inj_on f A"
-  using assms by (auto dest: card_leq_definition[THEN iffD1])
-
-theorem theorem_2_3_1:
-  shows "|A| \<le>o |A|"
-proof -
-  have "id ` A = A" by simp
-  hence "id ` A \<subseteq> A" by simp
+  from assms have "id ` A \<subseteq> B" by simp
   moreover have "inj_on id A" by simp
-  ultimately show "|A| \<le>o |A|" by (intro card_leqI)
+  ultimately show "?thesis" by auto
 qed
+
+lemma bij_betwE2 [elim]:
+  assumes "bij_betw f A B"
+  obtains "f ` A = B" and "inj_on f A"
+  using assms by (auto dest: bij_betw_imp_surj_on bij_betw_imp_inj_on)
+
+lemma card_eq_imp_card_leq:
+  assumes "card_of A =o card_of B"
+  shows "card_of A \<le>o card_of B"
+proof -
+  from assms obtain f where "bij_betw f A B" by auto
+  hence "f ` A \<subseteq> B" and "inj_on f A" by auto
+  thus "?thesis" by auto
+qed
+
+lemma card_eq_card_leq_trans [trans]:
+  assumes "card_of A =o card_of B"
+    and "card_of B \<le>o card_of C"
+  shows "card_of A \<le>o card_of C"
+proof -
+  from assms(1) obtain f where "bij_betw f A B" by auto
+  hence "f ` A = B" and "inj_on f A" by auto
+  moreover from assms(2) obtain g where "g ` B \<subseteq> C" and "inj_on g B" by auto
+  ultimately have "inj_on (g \<circ> f) A" by (auto dest: comp_inj_on)
+  moreover from \<open>f ` A = B\<close> and \<open>g ` B \<subseteq> C\<close> have "(g \<circ> f) ` A \<subseteq> C" by fastforce
+  ultimately show "?thesis" by auto
+qed
+
+lemma card_leq_card_eq_trans [trans]:
+  assumes "card_of A \<le>o card_of B"
+    and "card_of B =o card_of C"
+  shows "card_of A \<le>o card_of C"
+proof -
+  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by auto
+  from assms(2) obtain g where "g ` B = C" and "inj_on g B" by blast
+  from this(1) and \<open>f ` A \<subseteq> B\<close> have "(g \<circ> f) ` A \<subseteq> C" by fastforce
+  moreover from \<open>f ` A \<subseteq> B\<close> and \<open>inj_on f A\<close> and \<open>inj_on g B\<close> have "inj_on (g \<circ> f) A"
+    by (rule theorem_1_5_b)
+  ultimately show "card_of A \<le>o card_of C" by auto
+qed
+
+theorem theorem_2_3_1 [simp]:
+  shows "card_of A \<le>o card_of A"
+  by auto
 
 theorem theorem_2_3_2:
-  assumes "|A| \<le>o |B|" and
-    "|B| \<le>o |A|"
-  shows "|A| =o |B|"
+  assumes "card_of A \<le>o card_of B"
+    and "card_of B \<le>o card_of A"
+  shows "card_of A =o card_of B"
 proof -
-  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by (elim card_leqE)
-  moreover from assms(2) obtain g where "g ` B \<subseteq> A" and "inj_on g B" by (elim card_leqE)
+  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by auto
+  moreover from assms(2) obtain g where "g ` B \<subseteq> A" and "inj_on g B" by auto
   ultimately have "equipotent A B" by (rule theorem_2_2)
-  thus "|A| =o |B|" by (fact card_eqI)
+  thus "card_of A =o card_of B" by (fact card_eqI')
 qed
 
-theorem theorem_2_3_3:
-  assumes "|A| \<le>o |B|" and
-    "|B| \<le>o |C|"
-  shows "|A| \<le>o |C|"
+theorem theorem_2_3_3 [trans]:
+  assumes "card_of A \<le>o card_of B"
+    and "card_of B \<le>o card_of C"
+  shows "card_of A \<le>o card_of C"
 proof -
-  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by (elim card_leqE)
-  from assms(2) obtain g where "g ` B \<subseteq> C" and "inj_on g B" by (elim card_leqE)
+  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by auto
+  from assms(2) obtain g where "g ` B \<subseteq> C" and "inj_on g B" by auto
   from \<open>f ` A \<subseteq> B\<close> and \<open>g ` B \<subseteq> C\<close> have "(g \<circ> f) ` A \<subseteq> C" by fastforce
   moreover from \<open>f ` A \<subseteq> B\<close> and \<open>inj_on f A\<close> and \<open>inj_on g B\<close> have "inj_on (g \<circ> f) A"
     by (rule theorem_1_5_b)
-  ultimately show "?thesis" by (intro card_leqI)
+  ultimately show "?thesis" by auto
 qed
 
 proposition problem_2_1_2:
@@ -455,7 +591,7 @@ proposition problem_2_1_2:
     "equipotent X Z"
   obtains "equipotent X Y" and "equipotent Y Z"
 proof -
-  from assms(3) obtain h where "bij_betw h X Z" by (elim equipotentE)
+  from assms(3) obtain h where "bij_betw h X Z" by auto
   have "equipotent X Y"
   proof -
     from \<open>bij_betw h X Z\<close> obtain h' where "bij_betw h' Z X" by (auto dest: bij_betw_inv)
@@ -468,7 +604,7 @@ proof -
       moreover have "bij_betw id Y Y" by simp
       ultimately show "bij_betw (h' \<circ> id) Y (h' ` Y)" by simp
     qed
-    moreover from \<open>bij_betw h' Z X\<close> and assms(2) have "h' ` Y \<subseteq> X" by (auto dest: bij_betwE)
+    moreover from \<open>bij_betw h' Z X\<close> and assms(2) have "h' ` Y \<subseteq> X" by auto
     ultimately show "?thesis" by (auto dest: theorem_2_2''')
   qed
   moreover have "equipotent Y Z"
@@ -484,7 +620,7 @@ qed
 proposition problem_2_1_4:
   fixes A :: "'a set"
   assumes "B \<noteq> {}"
-  shows "|A| \<le>o |A \<times> B|"
+  shows "card_of A \<le>o card_of (A \<times> B)"
 proof -
   from assms obtain b where "b \<in> B" by auto
   let ?f = "\<lambda>a :: 'a. (a, b)"
@@ -500,13 +636,13 @@ proof -
     assume "?f a = ?f a'"
     thus "a = a'" by simp
   qed
-  ultimately show "?thesis" by (intro card_leqI)
+  ultimately show "?thesis" by auto
 qed
 
 proposition problem_2_1_5:
-  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<noteq> {}" and
-    "pairwise_disjnt_idx \<Lambda> A"
-  shows "|\<Lambda>| \<le>o |\<Union>l \<in> \<Lambda>. A l|"
+  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<noteq> {}"
+    and "pairwise_disjnt_idx \<Lambda> A"
+  shows "card_of \<Lambda> \<le>o card_of (\<Union>l \<in> \<Lambda>. A l)"
 proof -
   let ?f = "\<lambda>a. (THE l. l \<in> \<Lambda> \<and> a \<in> A l)"
   have *: "?f a = l" if "l \<in> \<Lambda>" and "a \<in> A l" for a and l
@@ -530,12 +666,12 @@ proof -
     thus "\<exists>a \<in> (\<Union>l \<in> \<Lambda>. A l). ?f a = l" by blast
   qed
   then obtain g where "g ` \<Lambda> \<subseteq> (\<Union>l \<in> \<Lambda>. A l)" and "inj_on g \<Lambda>" by (elim corollary_1_1'')
-  thus "?thesis" by (intro card_leqI)
+  thus "?thesis" by auto
 qed
 
 proposition problem_2_1_6:
   assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> \<exists>a \<in> A l. \<exists>b \<in> A l. a \<noteq> b"
-  shows "|\<Lambda>| \<le>o |\<Pi>\<^sub>E l \<in> \<Lambda>. A l|"
+  shows "card_of \<Lambda> \<le>o card_of (\<Pi>\<^sub>E l \<in> \<Lambda>. A l)"
 proof -
   {
     fix l
@@ -603,7 +739,7 @@ proof -
     }
     thus "l = l'" by auto
   qed
-  ultimately show "?thesis" by (intro card_leqI)
+  ultimately show "?thesis" by auto
 qed
 
 proposition problem_2_1_7:
@@ -611,9 +747,10 @@ proposition problem_2_1_7:
   obtains R where "equiv A R" and "equipotent B (A // R)"
 proof -
   from assms have "f ` A \<subseteq> B" by simp
-  then obtain g where "bij_betw g (A // (equiv_kernel_on f A)) (f ` A)" by (auto elim: prop_1_6_4)
+  then obtain g where "bij_betw g (A // (equiv_kernel_on f A)) (f ` A)"
+    by (fastforce elim: prop_1_6_4)
   with assms have "bij_betw g (A // (equiv_kernel_on f A)) B" by blast
-  hence "equipotent (A // equiv_kernel_on f A) B" by (fact equipotentI)
+  hence "equipotent (A // equiv_kernel_on f A) B" by auto
   hence "equipotent B (A // equiv_kernel_on f A)" by (fact prop_2_1_2)
   moreover have "equiv A (equiv_kernel_on f A)" by (fact equiv_equiv_kernel_on)
   ultimately show "thesis" by (intro that)

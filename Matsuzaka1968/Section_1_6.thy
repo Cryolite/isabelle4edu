@@ -1,6 +1,7 @@
 theory Section_1_6
   imports Main
-    Section_1_5
+    "Split_Pair"
+    "Section_1_5"
 begin
 
 definition pairwise_disjnt :: "'a set set \<Rightarrow> bool"
@@ -200,7 +201,7 @@ qed
 theorem theorem_1_8_b:
   assumes "equiv A R"
   shows "equiv_of_partition (A // R) = R"
-proof (rule set_eqI, unfold split_paired_all)
+proof (rule set_eqI, split_pair)
     fix a and a'
     have "(a, a') \<in> equiv_of_partition (A // R) \<longleftrightarrow> (\<exists>C \<in> A // R. a \<in> C \<and> a' \<in> C)"
       by (fact equiv_of_partition_iff)
@@ -478,7 +479,7 @@ proof (rule equivI)
     assume "(m, n) \<in> A"
     hence "((m, n), (m, n)) \<in> R" by (simp add: R)
   }
-  ultimately show "refl_on A R" by (intro refl_onI; (unfold split_paired_all)?)
+  ultimately show "refl_on A R" by (intro refl_onI; split_pair)
   {
     fix m and n and m' and n'
     assume "((m, n), (m', n')) \<in> R"
@@ -488,7 +489,7 @@ proof (rule equivI)
     from this(3) have "m' * n = m * n'" by simp
     with \<open>(m, n) \<in> A\<close> and \<open>(m', n') \<in> A\<close> have "((m', n'), (m, n)) \<in> R" by (simp add: R)
   }
-  thus "sym R" by (intro symI, unfold split_paired_all)
+  thus "sym R" by (intro symI, split_pair)
   {
     fix m and n and m' and n' and m'' and n''
     assume "((m, n), (m', n')) \<in> R" and
@@ -505,13 +506,13 @@ proof (rule equivI)
     ultimately have "m * n'' = m'' * n" by simp
     with \<open>(m, n) \<in> A\<close> and \<open>(m'', n'') \<in> A\<close> have "((m, n), (m'', n'')) \<in> R" by (simp add: R)
   }
-  thus "trans R" by (intro transI, unfold split_paired_all)
+  thus "trans R" by (intro transI, split_pair)
 qed
 
 proposition problem_1_6_5:
   shows "equiv_kernel_on fst (A \<times> B) = {((a, b), (a', b')) \<in> (A \<times> B) \<times> (A \<times> B). a = a'}"
     (is "?L = ?R")
-proof (rule set_eqI; unfold split_paired_all)
+proof (rule set_eqI; split_pair)
   fix a and b and a' and b'
   have "((a, b), (a', b')) \<in> ?L \<longleftrightarrow> (a, b) \<in> A \<times> B \<and> (a', b') \<in> A \<times> B \<and> fst (a, b) = fst (a', b')"
     by (fact equiv_kernel_on_iff)

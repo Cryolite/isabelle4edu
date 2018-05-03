@@ -1,5 +1,6 @@
 theory Section_1_3
   imports Main
+    "Split_Pair"
     "Section_1_2"
 begin
 
@@ -33,7 +34,7 @@ lemma corr_graph_iff:
 lemma corr_graph_eqI:
   assumes "\<And>a. \<Gamma> a = {b. (a, b) \<in> G}"
   shows "corr_graph \<Gamma> = G" (is "?LHS = _")
-proof (intro set_eqI, unfold split_paired_all)
+proof (intro set_eqI, split_pair)
   fix a and b
   have "(a, b) \<in> ?LHS \<longleftrightarrow> b \<in> \<Gamma> a" by (fact corr_graph_iff)
   also from this and assms have "\<dots> \<longleftrightarrow> (a, b) \<in> G" by simp
@@ -136,7 +137,7 @@ lemma corr_graph_subset_Times:
   assumes "corr_dom \<Gamma> \<subseteq> A" and
     "corr_range \<Gamma> \<subseteq> B"
   shows "corr_graph \<Gamma> \<subseteq> A \<times> B"
-proof (intro subsetI, unfold split_paired_all)
+proof (intro subsetI, split_pair)
   fix a and b
   assume "(a, b) \<in> corr_graph \<Gamma>"
   hence "(a, b) \<in> corr_graph \<Gamma>" by simp
@@ -245,7 +246,7 @@ lemma mem_as_corr_on_iff:
 
 lemma corr_graph_fun_eq:
   shows "corr_graph (as_corr_on f A) = {(a, b). a \<in> A \<and> b = f a}" (is "?L = ?R")
-proof (intro set_eqI, unfold split_paired_all)
+proof (intro set_eqI, split_pair)
   fix a and b
   {
     assume "a \<in> A"
@@ -390,7 +391,7 @@ proof -
   proof -
     have "corr_graph (as_corr_on ?f A) = {(a, b). a \<in> A \<and> b = ?f a}" by (fact corr_graph_fun_eq)
     also have "\<dots> = G"
-    proof (intro set_eqI, unfold split_paired_all)
+    proof (intro set_eqI, split_pair)
       fix a and b
       have "(a, b) \<in> {(a, b). a \<in> A \<and> b = ?f a} \<longleftrightarrow> a \<in> A \<and> b = ?f a" by simp
       also from * have "\<dots> \<longleftrightarrow> a \<in> A \<and> b = ?f a \<and> ?f a \<in> B \<and> (a, ?f a) \<in> G" by blast
