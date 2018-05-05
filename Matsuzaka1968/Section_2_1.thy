@@ -419,8 +419,8 @@ qed
 subsection \<open>C) Notion of Cardinality\<close>
 
 text {*
-  Although "HOL-Library.Cardinal_Notations" provides cardinal notations, because they do not fit
-  into calculational reasoning, own cardinal notations are defined here.
+  Although @{theory_text "HOL-Library.Cardinal_Notations"} provides cardinal notations, because
+  they do not fit into calculational reasoning, own cardinal notations are defined here.
 *}
 
 notation card_of ("|_|")

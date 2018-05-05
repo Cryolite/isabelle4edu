@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+
+THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+tmpfile="$(mktemp)"
+if ! uplatex "$@" > "$tmpfile"; then
+    exval=$?
+    cat "$tmpfile" >&2
+    rm "$tmpfile"
+    exit $exval
+fi
+dvifile="$(cat "$tmpfile" | grep -Eo 'Output written on .*\.dvi' | sed -e 's/Output written on \(.*\.dvi\)/\1/')"
+rm "$tmpfile"
+dvipdfmx "$dvifile"
