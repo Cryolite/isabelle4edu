@@ -511,7 +511,7 @@ proof -
 qed
 
 proposition card_leq_definition:
-  shows "|A| \<le>o |B| \<longleftrightarrow> (\<exists>f. f ` A \<subseteq> B \<and> inj_on f A)" (is "?L \<longleftrightarrow> ?R")
+  shows "|A| \<le>o |B| \<longleftrightarrow> (\<exists>f. f ` A \<subseteq> B \<and> inj_on f A)"
   by fast
 
 lemma subset_imp_card_leq:

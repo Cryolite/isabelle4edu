@@ -407,8 +407,8 @@ proof -
 qed
 
 corollary cor_inj_on_iff_surj_on:
-  assumes "A = {} \<Longrightarrow> B = {}" -- {* This assumption is not specified in the book. However, there
-                                    exists a counterexample without it. *}
+  assumes "A = {} \<Longrightarrow> B = {}" -- \<open>This assumption is not specified in the book. However, there
+                                  exists a counterexample without it.\<close>
   shows "(\<exists>f. f ` A \<subseteq> B \<and> inj_on f A) \<longleftrightarrow> (\<exists>g. g ` B = A)"
 proof (rule iffI)
   assume "\<exists>f. f ` A \<subseteq> B \<and> inj_on f A"
@@ -608,7 +608,7 @@ proposition prob_1_5_9:
 
 proposition prob_1_5_10:
   assumes "(\<Pi> l \<in> \<Lambda>. A l) \<noteq> {}" -- \<open>This assumption is not specified in the book. However, there
-                                      exists a counterexample without it.\<close>
+                                     exists a counterexample without it.\<close>
     and "\<And>l. l \<in> \<Lambda> \<Longrightarrow> (f l) ` (A l) \<subseteq> B l"
   defines F: "F a \<equiv> (l \<in> \<Lambda>. f l (a l))"
   obtains "(\<forall>b \<in> (\<Pi> l \<in> \<Lambda>. B l). \<exists>a \<in> (\<Pi> l \<in> \<Lambda>. A l). ext_eq_on \<Lambda> (F a) b)

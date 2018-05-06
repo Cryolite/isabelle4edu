@@ -1,5 +1,6 @@
 theory Section_2_2
   imports Complex_Main
+    "Split_Pair"
     "Section_2_1"
 begin
 
@@ -136,7 +137,7 @@ proof -
   ultimately show "thesis" by (intro that)
 qed
 
-corollary cor_infinite_imp_aleph_zero_card_leq:
+corollary cor_infinite_imp_card_leq_aleph_zero:
   assumes "infinite M"
   shows "\<aleph>\<^sub>0 \<le>o |M|"
 proof -
@@ -236,6 +237,15 @@ theorem thm_2_5_1_b:
     and "|A| =o \<aleph>\<^sub>0 \<or> |B| =o \<aleph>\<^sub>0"
   shows "|A \<times> B| =o \<aleph>\<^sub>0"
   using assms thm_2_5_1_b_a thm_2_5_1_b_b by metis
+
+lemma aleph_zero_Times_aleph_zero:
+  assumes "|A| =o \<aleph>\<^sub>0"
+    and "|B| =o \<aleph>\<^sub>0"
+  shows "|A \<times> B| =o \<aleph>\<^sub>0"
+proof -
+  from assms(2) have "|B| \<le>o \<aleph>\<^sub>0" and "B \<noteq> {}" by blast+
+  with assms show "?thesis" by (blast intro: thm_2_5_1_b_a)
+qed
 
 lemma card_leq_imp_surj_on:
   assumes "|A| \<le>o |B|"
@@ -631,7 +641,7 @@ proposition prob_2_2_1:
     and "infinite B"
   shows "|B| =o \<aleph>\<^sub>0"
 proof -
-  from assms(3) have "\<aleph>\<^sub>0 \<le>o |B|" by (fact cor_infinite_imp_aleph_zero_card_leq)
+  from assms(3) have "\<aleph>\<^sub>0 \<le>o |B|" by (fact cor_infinite_imp_card_leq_aleph_zero)
   moreover have "|B| \<le>o \<aleph>\<^sub>0"
   proof -
     from assms(2) obtain f where f0: "f ` B \<subseteq> A" and f1: "inj_on f B" by fastforce
@@ -733,5 +743,321 @@ proof -
   qed
   ultimately show "thesis" by (fact that)
 qed
+
+proposition prob_2_2_3:
+  defines QQ: "\<QQ> \<equiv> {{a :: rat <..< b} | a b. a < b}"
+  shows "|\<QQ>| =o \<aleph>\<^sub>0"
+proof -
+  have "|\<QQ>| \<le>o \<aleph>\<^sub>0"
+  proof -
+    let ?f = "\<lambda>(a :: rat, b). {a <..< b}"
+    have "?f ` (UNIV \<times> UNIV) = \<QQ> \<union> {{}}"
+    proof (rule surj_onI; split_pair)
+      fix a b :: "rat"
+      {
+        assume "a < b"
+        hence "{a <..< b} \<in> \<QQ> \<union> {{}}" unfolding QQ by auto
+      }
+      moreover {
+        assume "b \<le> a"
+        hence "{a <..< b} = {}" by simp
+        hence "{a <..< b} \<in> \<QQ> \<union> {{}}" by simp
+      }
+      ultimately show "{a <..< b} \<in> \<QQ> \<union> {{}}" by linarith
+    next
+      fix Q
+      assume "Q \<in> \<QQ> \<union> {{}}"
+      moreover {
+        assume "Q \<in> \<QQ>"
+        hence "\<exists>a b. {a <..< b} = Q" unfolding QQ by auto
+      }
+      moreover {
+        assume "Q \<in> {{}}"
+        moreover have "{0 :: rat <..< 0} = {}" by simp
+        ultimately have "\<exists>a b. {a <..< b} = Q" by auto
+      }
+      ultimately show "\<exists>a \<in> UNIV. \<exists>b \<in> UNIV. {a <..< b} = Q" by auto
+    qed
+    hence "|\<QQ> \<union> {{}}| \<le>o |(UNIV :: rat set) \<times> (UNIV :: rat set)|" by (fact surj_on_imp_card_leq)
+    also have "\<dots> =o \<aleph>\<^sub>0"
+    proof -
+      have "|UNIV :: rat set| =o \<aleph>\<^sub>0" by (fact cor_card_rat_eq_aleph_zero)
+      thus "?thesis" by (blast intro: aleph_zero_Times_aleph_zero)
+    qed
+    finally have "|\<QQ> \<union> {{}}| \<le>o \<aleph>\<^sub>0" .
+    thus "|\<QQ>| \<le>o \<aleph>\<^sub>0" by fastforce
+  qed
+  moreover have "\<aleph>\<^sub>0 \<le>o |\<QQ>|"
+  proof (rule card_leqI)
+    let ?f = "\<lambda>n :: nat. {(rat_of_nat n) - 1 <..< (of_nat n) + 1}"
+    {
+      fix n
+      have "{(rat_of_nat n) - 1 <..< (of_nat n) + 1} \<in> \<QQ>" unfolding QQ by fastforce
+    }
+    thus "range ?f \<subseteq> \<QQ>" by auto
+    {
+      fix n n' :: "nat"
+      assume "?f n = ?f n'"
+      {
+        assume "n < n'"
+        hence "of_nat n \<in> ?f n" and "of_nat n \<notin> ?f n'" by simp+
+        hence "?f n \<noteq> ?f n'" by blast
+        with \<open>?f n = ?f n'\<close> have "False" by simp
+      }
+      moreover {
+        assume "n' < n"
+        hence "of_nat n \<in> ?f n" and "of_nat n \<notin> ?f n'" by simp+
+        hence "?f n \<noteq> ?f n'" by blast
+        with \<open>?f n = ?f n'\<close> have "False" by simp
+      }
+      ultimately have "n = n'" by fastforce
+    }
+    thus "inj ?f" by (fact injI)
+  qed
+  ultimately show "?thesis" by (fact thm_2_3_2)
+qed
+
+lemmas [dest] = disjointD
+
+proposition prob_2_2_4:
+  assumes "\<And>I. I \<in> \<II> \<Longrightarrow> \<exists>a b :: real. a < b \<and> I = {a <..< b}"
+    and "disjoint \<II>"
+  shows "|\<II>| \<le>o \<aleph>\<^sub>0"
+proof -
+  let ?f = "\<lambda>I. {q :: rat. (of_rat q) \<in> I}"
+  {
+    fix I
+    assume "I \<in> \<II>"
+    with assms(1) obtain a and b where "a < b" and I: "I = {a <..< b}" by blast
+    from this(1) obtain q :: rat where "a < of_rat q" and "of_rat q < b"
+      by (blast dest: of_rat_dense)
+    with I have "of_rat q \<in> I" by simp
+    hence "?f I \<noteq> {}" by auto
+  }
+  moreover have "disjoint_family_on ?f \<II>"
+  proof (rule disjoint_family_onI)
+    fix I and J
+    assume "I \<in> \<II>" and "J \<in> \<II>" and "I \<noteq> J"
+    with assms(2) have "I \<inter> J = {}" by blast
+    from \<open>I \<in> \<II>\<close> and \<open>J \<in> \<II>\<close> obtain a b a' b'
+      where "a < b" and I: "I = {a <..< b}"
+        and "a' < b'" and J: "J = {a' <..< b'}" by (fast dest: assms(1))
+    {
+      assume "a' < b \<and> a < b'"
+      with \<open>a < b\<close> and \<open>a' < b'\<close> have "max a a' < min b b'" by simp
+      then obtain c where "max a a' < c" and "c < min b b'" by (blast dest: dense)
+      with I and J have "c \<in> I" and "c \<in> J" by simp+
+      with \<open>I \<inter> J = {}\<close> have "False" by auto
+    }
+    hence "b \<le> a' \<or> b' \<le> a" by argo
+    moreover {
+      assume "b \<le> a'"
+      with I and J have "?f I \<inter> ?f J = {}" by fastforce
+    }
+    moreover {
+      assume "b' \<le> a"
+      with I and J have "?f I \<inter> ?f J = {}" by fastforce
+    }
+    ultimately show "?f I \<inter> ?f J = {}" by linarith
+  qed
+  ultimately have "|\<II>| \<le>o |\<Union>I \<in> \<II>. {q :: rat. (of_rat q) \<in> I}|" by (fact prob_2_1_5)
+  also have "\<dots> \<le>o |UNIV :: rat set|" by auto
+  also have "\<dots> =o \<aleph>\<^sub>0" by (fact cor_card_rat_eq_aleph_zero)
+  finally show "?thesis" .
+qed
+
+lemma fixed_length_lists_of_aleph_zero:
+  fixes A :: "'a set"
+  assumes "|A| =o \<aleph>\<^sub>0"
+    and "1 \<le> n"
+  defines XS: "XS l \<equiv> {xs \<in> lists A. length xs = l}"
+  shows "|XS n| =o \<aleph>\<^sub>0"
+using assms(2) proof (induct n rule: dec_induct)
+  case base
+  let ?f = "\<lambda>a. [a]"
+  have "?f ` A = XS 1"
+  proof (rule surj_onI)
+    fix a
+    assume "a \<in> A"
+    thus "?f a \<in> XS 1" unfolding XS by simp
+  next
+    fix xs
+    assume "xs \<in> XS 1"
+    hence "xs \<in> lists A" and "length xs = 1" unfolding XS by simp+
+    from this(2) have "length xs = Suc 0" by simp
+    then obtain y and ys where "xs = y # ys" and "length ys = 0" by (auto simp: length_Suc_conv)
+    from this(2) have "ys = []" by simp
+    with \<open>xs = y # ys\<close> have "xs = [y]" by simp
+    moreover from \<open>xs = y # ys\<close> and \<open>xs \<in> lists A\<close> have "y \<in> A" by simp
+    ultimately show "\<exists>a \<in> A. ?f a = xs" by simp
+  qed
+  moreover have "inj_on ?f A"
+  proof (rule inj_onI)
+    fix a a' :: "'a"
+    assume "?f a = ?f a'"
+    thus "a = a'" by simp
+  qed
+  ultimately have "bij_betw ?f A (XS 1)" by (intro bij_betw_imageI)
+  hence "|A| =o |XS 1|" by auto
+  hence "|XS 1| =o |A|" by (fact card_eq_sym)
+  also note assms(1)
+  finally show "?case" .
+next
+  case (step n)
+  let ?f = "\<lambda>(xs, x). x # xs"
+  have "?f ` ((XS n) \<times> A) = XS (Suc n)"
+  proof (rule surj_onI; split_pair)
+    fix xs and a
+    assume "(xs, a) \<in> (XS n) \<times> A"
+    hence "xs \<in> XS n" and "a \<in> A" by simp+
+    from this(1) have "xs \<in> lists A" and "length xs = n" unfolding XS by simp+
+    from this(1) and \<open>a \<in> A\<close> have "a # xs \<in> lists A" by simp
+    moreover from \<open>length xs = n\<close> have "length (a # xs) = Suc n" by simp
+    ultimately show "a # xs \<in> XS (Suc n)" unfolding XS by simp
+  next
+    fix xs
+    assume "xs \<in> XS (Suc n)"
+    hence "xs \<in> lists A" and "length xs = Suc n" unfolding XS by simp+
+    from this(2) obtain a and ys where "xs = a # ys" and "length ys = n"
+      by (auto simp: length_Suc_conv)
+    from \<open>xs \<in> lists A\<close> and this(1) have "ys \<in> lists A" by simp
+    with \<open>length ys = n\<close> have "ys \<in> XS n" unfolding XS by simp
+    moreover from \<open>xs \<in> lists A\<close> and \<open>xs = a # ys\<close> have "a \<in> A" by simp
+    moreover note \<open>xs = a # ys\<close>
+    ultimately show "\<exists>ys \<in> XS n. \<exists>a \<in> A. a # ys = xs" by simp
+  qed
+  hence "|XS (Suc n)| \<le>o |(XS n) \<times> A|" by (fact surj_on_imp_card_leq)
+  also from assms(1) and step.hyps have "\<dots> =o \<aleph>\<^sub>0" by (intro aleph_zero_Times_aleph_zero)
+  finally have "|XS (Suc n)| \<le>o \<aleph>\<^sub>0" .
+  moreover have "\<aleph>\<^sub>0 \<le>o |XS (Suc n)|"
+  proof -
+    from step.hyps(3) have "\<aleph>\<^sub>0 =o |XS n|" by (fact card_eq_sym)
+    also have "|XS n| \<le>o |XS (Suc n)|"
+    proof -
+      from assms(1) obtain a where "a \<in> A" by blast
+      let ?f = "\<lambda>xs. a # xs"
+      have "?f ` (XS n) \<subseteq> XS (Suc n)"
+      proof (rule image_subsetI)
+        fix xs
+        assume "xs \<in> XS n"
+        hence "xs \<in> lists A" and "length xs = n" unfolding XS by simp+
+        from this(1) and \<open>a \<in> A\<close> have "?f xs \<in> lists A" by simp
+        moreover from \<open>length xs = n\<close> have "length (?f xs) = Suc n" by simp
+        ultimately show "?f xs \<in> XS (Suc n)" unfolding XS by simp
+      qed
+      moreover have "inj_on ?f (XS n)" by simp
+      ultimately show "?thesis" by blast
+    qed
+    finally show "?thesis" .
+  qed
+  ultimately show "?case" by (fact thm_2_3_2)
+qed
+
+lemma lists_aleph_zero_eq_aleph_zero:
+  assumes "|A| =o \<aleph>\<^sub>0"
+  shows "|lists A| =o \<aleph>\<^sub>0"
+proof -
+  let ?A' = "\<lambda>n. {xs \<in> lists A. length xs = n}"
+  let ?B = "\<Union>i. ?A' i"
+  have "lists A \<subseteq> ?B"
+  proof (rule subsetI)
+    fix xs
+    assume "xs \<in> lists A"
+    hence "xs \<in> ?A' (length xs)" by simp
+    thus "xs \<in> ?B" by blast
+  qed
+  hence "|lists A| \<le>o |?B|" by (fact subset_imp_card_leq)
+  also have "\<dots> =o \<aleph>\<^sub>0"
+  proof (rule thm_2_5_2_b; simp?)
+    fix n :: nat
+    {
+      assume "n = 0"
+      hence "?A' n = {[]}" by auto
+      hence "|?A' n| \<le>o \<aleph>\<^sub>0" by auto
+    }
+    moreover {
+      assume "1 \<le> n"
+      with assms have "|?A' n| =o \<aleph>\<^sub>0" by (fact fixed_length_lists_of_aleph_zero)
+      hence "|?A' n| \<le>o \<aleph>\<^sub>0" by fast
+    }
+    ultimately show "|?A' n| \<le>o \<aleph>\<^sub>0" by linarith
+  next
+    from assms show "|?A' 1| =o \<aleph>\<^sub>0" by (blast intro: fixed_length_lists_of_aleph_zero)
+  qed
+  finally have "|lists A| \<le>o \<aleph>\<^sub>0" by simp
+  moreover have "\<aleph>\<^sub>0 \<le>o |lists A|"
+  proof -
+    from assms have "|?A' 1| =o \<aleph>\<^sub>0" by (blast intro: fixed_length_lists_of_aleph_zero)
+    hence "\<aleph>\<^sub>0 =o |?A' 1|" by (fact card_eq_sym)
+    also have "\<dots> \<le>o |lists A|"
+    proof -
+      have "?A' 1 \<subseteq> lists A" by auto
+      thus "?thesis" by auto
+    qed
+    finally show "?thesis" .
+  qed
+  ultimately show "?thesis" by (fact thm_2_3_2)
+qed
+
+proposition prob_2_2_5:
+  assumes "|A| =o \<aleph>\<^sub>0"
+  defines AA: "\<AA> \<equiv> {X. X \<subseteq> A \<and> finite X}"
+  shows "|\<AA>| =o \<aleph>\<^sub>0"
+proof -
+  let ?A' = "\<lambda>n. {xs \<in> lists A. length xs = n}"
+  let ?B = "\<Union>n. ?A' n"
+  let ?f = "\<lambda>xs. set xs"
+  have "?f ` ?B = \<AA>"
+  proof (rule surj_onI)
+    fix xs
+    assume "xs \<in> ?B"
+    then obtain n where "xs \<in> ?A' n" by simp
+    hence "xs \<in> lists A" by simp
+    hence "?f xs \<subseteq> A" by auto
+    moreover have "finite (?f xs)" by simp
+    ultimately show "?f xs \<in> \<AA>" unfolding AA by simp
+  next
+    fix X
+    assume "X \<in> \<AA>"
+    hence "X \<subseteq> A" and "finite X" unfolding AA by simp+
+    then obtain xs where "xs \<in> lists A" and "set xs = X" by (fast dest: finite_list)
+    from this(1) have "xs \<in> ?A' (length xs)" by simp
+    hence "xs \<in> ?B" by simp
+    with \<open>set xs = X\<close> show "\<exists>xs \<in> ?B. ?f xs = X" by blast
+  qed
+  hence "|\<AA>| \<le>o |?B|" by (fact surj_on_imp_card_leq)
+  also have "\<dots> \<le>o \<aleph>\<^sub>0"
+  proof (rule thm_2_5_2_a; simp)
+    fix n
+    have "?A' n \<subseteq> lists A" by auto
+    hence "|?A' n| \<le>o |lists A|" by auto
+    also from assms(1) have "\<dots> =o \<aleph>\<^sub>0" by (fact lists_aleph_zero_eq_aleph_zero)
+    finally show "|?A' n| \<le>o \<aleph>\<^sub>0" .
+  qed
+  finally have "|\<AA>| \<le>o \<aleph>\<^sub>0" .
+  moreover have "\<aleph>\<^sub>0 \<le>o |\<AA>|"
+  proof -
+    from assms(1) have "\<aleph>\<^sub>0 =o |A|" by (fact card_eq_sym)
+    also have "\<dots> \<le>o |\<AA>|"
+    proof (rule card_leqI)
+      let ?f = "\<lambda>a :: 'a. {a}"
+      {
+        fix a
+        assume "a \<in> A"
+        hence "?f a \<in> \<AA>" unfolding AA by simp
+      }
+      thus "?f ` A \<subseteq> \<AA>" by auto
+      show "inj_on ?f A" by simp
+    qed
+    finally show "?thesis" .
+  qed
+  ultimately show "?thesis" by (fact thm_2_3_2)
+qed
+
+(* TODO: prob_2_2_6 *)
+
+(*proposition prob_2_2_7:
+  shows "|(UNIV :: real set) - \<rat>| =o \<aleph>"
+  sorry*)
 
 end
