@@ -1,5 +1,6 @@
 theory Section_2_2
   imports Complex_Main
+    "HOL-Library.Cardinal_Notations"
     "Split_Pair"
     "Section_2_1"
 begin
@@ -143,8 +144,8 @@ corollary cor_infinite_imp_card_leq_aleph_zero:
 proof -
   from assms obtain A where "A \<subseteq> M" and "|A| =o \<aleph>\<^sub>0" by (elim thm_2_4)
   from this(2) have "\<aleph>\<^sub>0 =o |A|" by (fact card_eq_sym)
-  also from \<open>A \<subseteq> M\<close> have "\<dots> \<le>o |M|" by (fact subset_imp_card_leq)
-  finally show "\<aleph>\<^sub>0 \<le>o |M|" .
+  moreover from \<open>A \<subseteq> M\<close> have "|A| \<le>o |M|" by auto
+  ultimately show "\<aleph>\<^sub>0 \<le>o |M|" by (fact card_eq_card_leq_trans)
 qed
 
 lemma nat_Times_nat_card_eq_aleph_zero:
@@ -162,8 +163,8 @@ proof -
   moreover from \<open>inj_on f A\<close> and \<open>inj_on g B\<close> have "inj_on (map_prod f g) (A \<times> B)"
     by (rule map_prod_inj_on)
   ultimately have "|A \<times> B| \<le>o |(UNIV :: nat set) \<times> (UNIV :: nat set)|" by auto
-  also note nat_Times_nat_card_eq_aleph_zero
-  finally show "|A \<times> B| \<le>o \<aleph>\<^sub>0" .
+  moreover note nat_Times_nat_card_eq_aleph_zero
+  ultimately show "?thesis" by (fact card_leq_card_eq_trans)
 qed
 
 lemma thm_2_5_1_b_a:
@@ -173,7 +174,7 @@ lemma thm_2_5_1_b_a:
   shows "|A \<times> B| =o \<aleph>\<^sub>0"
 proof -
   from assms(1) have "\<aleph>\<^sub>0 =o |A|" by (fact card_eq_sym)
-  then obtain f where "bij_betw f (UNIV :: nat set) A" by (elim card_eqE)
+  then obtain f where "bij_betw f (UNIV :: nat set) A" by auto
   from assms(3) obtain b where "b \<in> B" by auto
   let ?g = "\<lambda>n. (f n, b)"
   have "?g ` UNIV \<subseteq> A \<times> B"
@@ -191,9 +192,29 @@ proof -
     ultimately show "m = n" by (auto dest: injD)
   qed
   ultimately have "\<aleph>\<^sub>0 \<le>o |A \<times> B|" by auto
-  from assms(1) have "|A| \<le>o \<aleph>\<^sub>0" by (intro card_eq_imp_card_leq)
+  from assms(1) have "|A| \<le>o \<aleph>\<^sub>0" by blast
   with assms(2) have "|A \<times> B| \<le>o \<aleph>\<^sub>0" by (intro thm_2_5_1_a)
   with \<open>\<aleph>\<^sub>0 \<le>o |A \<times> B|\<close> show "?thesis" by (intro thm_2_3_2)
+qed
+
+lemma Times_card_commute:
+  fixes A :: "'a set"
+  shows "|A \<times> B| =o |B \<times> A|"
+proof -
+  have "prod.swap \<in> A \<times> B \<rightarrow> B \<times> A" by auto
+  moreover have "prod.swap \<in> B \<times> A \<rightarrow> A \<times> B" by auto
+  moreover {
+    fix x
+    assume "x \<in> A \<times> B"
+    have "prod.swap (prod.swap x) = x" by simp
+  }
+  moreover {
+    fix x
+    assume "x \<in> B \<times> A"
+    have "prod.swap (prod.swap x) = x" by simp
+  }
+  ultimately have "bij_betw prod.swap (A \<times> B) (B \<times> A)" by (fact bij_betwI)
+  thus "?thesis" by auto
 qed
 
 lemma thm_2_5_1_b_b:
@@ -202,31 +223,9 @@ lemma thm_2_5_1_b_b:
     and "|B| =o \<aleph>\<^sub>0"
   shows "|A \<times> B| =o \<aleph>\<^sub>0"
 proof -
-  from assms have "|B \<times> A| =o \<aleph>\<^sub>0" by (intro thm_2_5_1_b_a)
-  hence "\<aleph>\<^sub>0 =o |B \<times> A|" by (fact card_eq_sym)
-  also have "\<dots> =o |A \<times> B|"
-  proof (rule card_eqI)
-    have "prod.swap ` (B \<times> A) = (A \<times> B)"
-    proof (rule surj_onI; split_pair)
-      fix b a
-      assume "(b, a) \<in> B \<times> A"
-      thus "prod.swap (b, a) \<in> A \<times> B" by simp
-    next
-      fix a b
-      assume "(a, b) \<in> A \<times> B"
-      hence "prod.swap (b, a) = (a, b)" by simp
-      with \<open>(a, b) \<in> A \<times> B\<close> show "\<exists>b' \<in> B. \<exists>a' \<in> A. prod.swap (b', a') = (a, b)" by simp
-    qed
-    moreover have "inj_on prod.swap (B \<times> A)"
-    proof (rule inj_onI, split_pair)
-      fix a a' :: 'a and  b b' :: 'b
-      assume "prod.swap (b, a) = prod.swap(b', a')"
-      thus "(b, a) = (b', a')" by simp
-    qed
-    ultimately show "bij_betw prod.swap (B \<times> A) (A \<times> B)" by (intro bij_betw_imageI)
-  qed
-  finally have "\<aleph>\<^sub>0 =o |A \<times> B|" .
-  thus "?thesis" by (fact card_eq_sym)
+  have "|A \<times> B| =o |B \<times> A|" by (fact Times_card_commute)
+  moreover from assms have "|B \<times> A| =o \<aleph>\<^sub>0" by (intro thm_2_5_1_b_a)
+  ultimately show "?thesis" by (fact card_eq_trans)
 qed
 
 theorem thm_2_5_1_b:
@@ -320,7 +319,7 @@ proof -
       with \<open>l \<in> \<Lambda>\<close> show "\<exists>l \<in> \<Lambda>. \<exists>n \<in> UNIV. f l n = a" by auto
     qed
     hence "|?A| \<le>o |\<Lambda> \<times> (UNIV :: nat set)|" by (fact surj_on_imp_card_leq)
-    also from assms(3) have "\<dots> \<le>o \<aleph>\<^sub>0" by (auto elim: thm_2_5_1_a)
+    also from assms(3) have "|\<Lambda> \<times> (UNIV :: nat set)| \<le>o \<aleph>\<^sub>0" by (auto elim: thm_2_5_1_a)
     finally have "?thesis" .
   }
   ultimately show "?thesis" by blast
@@ -337,8 +336,8 @@ theorem thm_2_5_2_b:
   shows "|\<Union>l \<in> \<Lambda>. A l| =o \<aleph>\<^sub>0"
 proof -
   let ?A = "\<Union>l \<in> \<Lambda>. A l"
-  from assms(5) obtain f :: "nat \<Rightarrow> 'a" where *: "bij_betw f UNIV (A l)"
-    by (blast dest: card_eq_sym)
+  from assms(5) have "\<aleph>\<^sub>0 =o |A l|" by (fact ordIso_symmetric)
+  then obtain f :: "nat \<Rightarrow> 'a" where *: "bij_betw f UNIV (A l)" by blast
   with assms(4) have "f ` UNIV \<subseteq> ?A" by auto
   moreover from * have "inj_on f UNIV" by auto
   ultimately have "\<aleph>\<^sub>0 \<le>o |?A|" by auto
@@ -412,7 +411,7 @@ proof -
     moreover have "inj_on ?f UNIV" by (fact inj_of_nat)
     ultimately have "bij_betw ?f UNIV ?A" by (intro bij_betw_imageI)
     hence "\<aleph>\<^sub>0 =o |?A|" by auto
-    thus "?thesis" by (fact card_eq_sym)
+    thus "?thesis" by (fact ordIso_symmetric)
   qed
   moreover have "|?B| =o \<aleph>\<^sub>0"
   proof -
@@ -432,7 +431,7 @@ proof -
     moreover have "inj_on ?f UNIV" by (simp add: inj_on_def)
     ultimately have "bij_betw ?f UNIV ?B" by (intro bij_betw_imageI)
     hence "\<aleph>\<^sub>0 =o |?B|" by auto
-    thus "?thesis" by (fact card_eq_sym)
+    thus "?thesis" by (fact ordIso_symmetric)
   qed
   ultimately have "|?A \<union> ?B| =o \<aleph>\<^sub>0" by (rule aleph_zero_Un_aleph_zero)
   moreover have "?A \<union> ?B = UNIV" by auto
@@ -454,7 +453,7 @@ proof -
   qed
   hence "|UNIV :: rat set| \<le>o |(UNIV :: int set) \<times> (UNIV :: int set)|"
     by (fact surj_on_imp_card_leq)
-  also have "\<dots> =o \<aleph>\<^sub>0"
+  also have "|(UNIV :: int set) \<times> (UNIV :: int set)| =o \<aleph>\<^sub>0"
   proof -
     have "|UNIV :: int set| =o \<aleph>\<^sub>0" by (fact cor_card_int_eq_aleph_zero)
     moreover from this have "|UNIV :: int set| \<le>o \<aleph>\<^sub>0" by fast
@@ -481,7 +480,7 @@ proof -
   from assms(4) obtain C where "C \<subseteq> ?A\<^sub>1" and "|C| =o \<aleph>\<^sub>0" by (elim thm_2_4)
   let ?A\<^sub>2 = "?A\<^sub>1 - C"
   from assms(3) and \<open>|C| =o \<aleph>\<^sub>0\<close> have "|B \<union> C| =o \<aleph>\<^sub>0" by (rule countable_Un_aleph_zero)
-  also from \<open>|C| =o \<aleph>\<^sub>0\<close> have "\<dots> =o |C|" by (fact card_eq_sym)
+  also from \<open>|C| =o \<aleph>\<^sub>0\<close> have "\<aleph>\<^sub>0 =o |C|" by (fact ordIso_symmetric)
   finally have "|B \<union> C| =o |C|" .
   then obtain f\<^sub>1 where "bij_betw f\<^sub>1 (B \<union> C) C" by auto
   let ?f = "\<lambda>a. if a \<in> ?A\<^sub>2 then a else f\<^sub>1 a"
@@ -666,7 +665,7 @@ proposition prob_2_2_2:
     and "disjoint_family_on A' UNIV"
 proof -
   have "|(UNIV :: nat set) \<times> (UNIV :: nat set)| =o \<aleph>\<^sub>0" by (fact nat_Times_nat_card_eq_aleph_zero)
-  also from assms have "\<aleph>\<^sub>0 =o |A|" by (fact card_eq_sym)
+  also from assms have "\<aleph>\<^sub>0 =o |A|" by (fact ordIso_symmetric)
   finally have "|(UNIV :: nat set) \<times> (UNIV :: nat set)| =o |A|" .
   then obtain f :: "nat \<times> nat \<Rightarrow> 'a" where f: "bij_betw f (UNIV \<times> UNIV) A" by auto
   hence inj_f: "inj f" by auto
@@ -779,7 +778,7 @@ proof -
       ultimately show "\<exists>a \<in> UNIV. \<exists>b \<in> UNIV. {a <..< b} = Q" by auto
     qed
     hence "|\<QQ> \<union> {{}}| \<le>o |(UNIV :: rat set) \<times> (UNIV :: rat set)|" by (fact surj_on_imp_card_leq)
-    also have "\<dots> =o \<aleph>\<^sub>0"
+    also have "|(UNIV :: rat set) \<times> (UNIV :: rat set)| =o \<aleph>\<^sub>0"
     proof -
       have "|UNIV :: rat set| =o \<aleph>\<^sub>0" by (fact cor_card_rat_eq_aleph_zero)
       thus "?thesis" by (blast intro: aleph_zero_Times_aleph_zero)
@@ -861,8 +860,8 @@ proof -
     ultimately show "?f I \<inter> ?f J = {}" by linarith
   qed
   ultimately have "|\<II>| \<le>o |\<Union>I \<in> \<II>. {q :: rat. (of_rat q) \<in> I}|" by (fact prob_2_1_5)
-  also have "\<dots> \<le>o |UNIV :: rat set|" by auto
-  also have "\<dots> =o \<aleph>\<^sub>0" by (fact cor_card_rat_eq_aleph_zero)
+  also have "|\<Union>I \<in> \<II>. {q :: rat. (of_rat q) \<in> I}| \<le>o |UNIV :: rat set|" by auto
+  also have "|UNIV :: rat set| =o \<aleph>\<^sub>0" by (fact cor_card_rat_eq_aleph_zero)
   finally show "?thesis" .
 qed
 
@@ -899,7 +898,7 @@ using assms(2) proof (induct n rule: dec_induct)
   qed
   ultimately have "bij_betw ?f A (XS 1)" by (intro bij_betw_imageI)
   hence "|A| =o |XS 1|" by auto
-  hence "|XS 1| =o |A|" by (fact card_eq_sym)
+  hence "|XS 1| =o |A|" by (fact ordIso_symmetric)
   also note assms(1)
   finally show "?case" .
 next
@@ -927,11 +926,12 @@ next
     ultimately show "\<exists>ys \<in> XS n. \<exists>a \<in> A. a # ys = xs" by simp
   qed
   hence "|XS (Suc n)| \<le>o |(XS n) \<times> A|" by (fact surj_on_imp_card_leq)
-  also from assms(1) and step.hyps have "\<dots> =o \<aleph>\<^sub>0" by (intro aleph_zero_Times_aleph_zero)
+  also from assms(1) and step.hyps have "|(XS n) \<times> A| =o \<aleph>\<^sub>0"
+    by (intro aleph_zero_Times_aleph_zero)
   finally have "|XS (Suc n)| \<le>o \<aleph>\<^sub>0" .
   moreover have "\<aleph>\<^sub>0 \<le>o |XS (Suc n)|"
   proof -
-    from step.hyps(3) have "\<aleph>\<^sub>0 =o |XS n|" by (fact card_eq_sym)
+    from step.hyps(3) have "\<aleph>\<^sub>0 =o |XS n|" by (fact ordIso_symmetric)
     also have "|XS n| \<le>o |XS (Suc n)|"
     proof -
       from assms(1) obtain a where "a \<in> A" by blast
@@ -966,8 +966,8 @@ proof -
     hence "xs \<in> ?A' (length xs)" by simp
     thus "xs \<in> ?B" by blast
   qed
-  hence "|lists A| \<le>o |?B|" by (fact subset_imp_card_leq)
-  also have "\<dots> =o \<aleph>\<^sub>0"
+  hence "|lists A| \<le>o |?B|" by fastforce
+  also have "|?B| =o \<aleph>\<^sub>0"
   proof (rule thm_2_5_2_b; simp?)
     fix n :: nat
     {
@@ -988,8 +988,8 @@ proof -
   moreover have "\<aleph>\<^sub>0 \<le>o |lists A|"
   proof -
     from assms have "|?A' 1| =o \<aleph>\<^sub>0" by (blast intro: fixed_length_lists_of_aleph_zero)
-    hence "\<aleph>\<^sub>0 =o |?A' 1|" by (fact card_eq_sym)
-    also have "\<dots> \<le>o |lists A|"
+    hence "\<aleph>\<^sub>0 =o |?A' 1|" by (fact ordIso_symmetric)
+    also have "|?A' 1| \<le>o |lists A|"
     proof -
       have "?A' 1 \<subseteq> lists A" by auto
       thus "?thesis" by auto
@@ -1026,19 +1026,19 @@ proof -
     with \<open>set xs = X\<close> show "\<exists>xs \<in> ?B. ?f xs = X" by blast
   qed
   hence "|\<AA>| \<le>o |?B|" by (fact surj_on_imp_card_leq)
-  also have "\<dots> \<le>o \<aleph>\<^sub>0"
+  also have "|?B| \<le>o \<aleph>\<^sub>0"
   proof (rule thm_2_5_2_a; simp)
     fix n
     have "?A' n \<subseteq> lists A" by auto
     hence "|?A' n| \<le>o |lists A|" by auto
-    also from assms(1) have "\<dots> =o \<aleph>\<^sub>0" by (fact lists_aleph_zero_eq_aleph_zero)
+    also from assms(1) have "|lists A| =o \<aleph>\<^sub>0" by (fact lists_aleph_zero_eq_aleph_zero)
     finally show "|?A' n| \<le>o \<aleph>\<^sub>0" .
   qed
   finally have "|\<AA>| \<le>o \<aleph>\<^sub>0" .
   moreover have "\<aleph>\<^sub>0 \<le>o |\<AA>|"
   proof -
-    from assms(1) have "\<aleph>\<^sub>0 =o |A|" by (fact card_eq_sym)
-    also have "\<dots> \<le>o |\<AA>|"
+    from assms(1) have "\<aleph>\<^sub>0 =o |A|" by (fact ordIso_symmetric)
+    also have "|A| \<le>o |\<AA>|"
     proof (rule card_leqI)
       let ?f = "\<lambda>a :: 'a. {a}"
       {
@@ -1056,7 +1056,7 @@ qed
 
 (* TODO: prob_2_2_6 *)
 
-(*proposition prob_2_2_7:
+(* TODO: proposition prob_2_2_7:
   shows "|(UNIV :: real set) - \<rat>| =o \<aleph>"
   sorry*)
 

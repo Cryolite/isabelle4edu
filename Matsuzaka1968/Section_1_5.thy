@@ -114,6 +114,19 @@ proof -
   ultimately show "thesis" by (fact that)
 qed
 
+lemma AC_E_ex:
+  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> \<exists>x. P l x"
+  obtains a where "a \<in> (\<Pi> l \<in> \<Lambda>. {x. P l x})"
+proof -
+  {
+    fix l
+    assume "l \<in> \<Lambda>"
+    with assms have "{x. P l x} \<noteq> {}" by simp
+  }
+  then obtain a where a: "a \<in> (\<Pi> l \<in> \<Lambda>. {x. P l x})" by (elim AC_E)
+  thus "thesis" by (fact that)
+qed
+
 lemma Pi_one_point:
   assumes "(\<Pi> l \<in> \<Lambda>. A l) \<noteq> {}"
     and "l \<in> \<Lambda>"
@@ -1012,16 +1025,16 @@ proposition prob_1_5_15:
     and "v ` B \<subseteq> B'"
   defines Phi: "\<Phi> f \<equiv> v \<circ> f \<circ> u"
   obtains "u ` A' = A \<longrightarrow> inj_on v B
-             \<longrightarrow> (\<forall>f \<in> A \<rightarrow> B. \<forall>f' \<in> A \<rightarrow> B. \<Phi> f = \<Phi> f' \<longrightarrow> ext_eq_on A f f')"
+             \<longrightarrow> (\<forall>f \<in> A \<rightarrow> B. \<forall>f' \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) (\<Phi> f') \<longrightarrow> ext_eq_on A f f')"
     and "inj_on u A' \<longrightarrow> v ` B = B' \<longrightarrow> (\<forall>f' \<in> A' \<rightarrow> B'. \<exists>f \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) f')"
 proof -
   have "u ` A' = A \<longrightarrow> inj_on v B
-          \<longrightarrow> (\<forall>f \<in> A \<rightarrow> B. \<forall>f' \<in> A \<rightarrow> B. \<Phi> f = \<Phi> f' \<longrightarrow> ext_eq_on A f f')"
+          \<longrightarrow> (\<forall>f \<in> A \<rightarrow> B. \<forall>f' \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) (\<Phi> f') \<longrightarrow> ext_eq_on A f f')"
   proof (intro impI)
     assume "u ` A' = A" and "inj_on v B"
     {
       fix f and f'
-      assume "f \<in> A \<rightarrow> B" and "f' \<in> A \<rightarrow> B" and "\<Phi> f = \<Phi> f'"
+      assume "f \<in> A \<rightarrow> B" and "f' \<in> A \<rightarrow> B" and "ext_eq_on A' (\<Phi> f) (\<Phi> f')"
       obtain u' where "right_inv_into A' u u'" by (fact right_inv_into)
       hence "id_on (u \<circ> u') (u ` A')" by (fact right_inv_intoD2_pf)
       with \<open>u ` A' = A\<close> have "id_on (u \<circ> u') A" by simp
@@ -1037,7 +1050,25 @@ proof -
       moreover note *
       ultimately have "ext_eq_on A ((v' \<circ> v) \<circ> f \<circ> u \<circ> u') f" by fastforce
       hence "ext_eq_on A (v' \<circ> (\<Phi> f) \<circ> u') f" unfolding Phi by (simp only: comp_assoc)
-      with \<open>\<Phi> f = \<Phi> f'\<close> have "ext_eq_on A (v' \<circ> (\<Phi> f') \<circ> u') f" by simp
+      {
+        fix a
+        assume "a \<in> A"
+        moreover from \<open>u ` A' = A\<close> and \<open>right_inv_into A' u u'\<close> have "u' ` A \<subseteq> A'"
+          by (auto dest: right_inv_intoD1)
+        ultimately have "u' a \<in> A'" by auto
+        with \<open>ext_eq_on A' (\<Phi> f) (\<Phi> f')\<close> have "(\<Phi> f') (u' a) = (\<Phi> f) (u' a)" by auto
+        hence "v' ((\<Phi> f') (u' a)) = v' ((\<Phi> f) (u' a))" by simp
+        also have "\<dots> = v' (v (f (u (u' a))))" by (simp add: Phi)
+        also from \<open>u ` A' = A\<close> and \<open>right_inv_into A' u u'\<close> and \<open>a \<in> A\<close> have "\<dots> = v' (v (f a))"
+          by (simp only: right_inv_intoD2)
+        also have "\<dots> = f a"
+        proof -
+          from \<open>f \<in> A \<rightarrow> B\<close> and \<open>a \<in> A\<close> have "f a \<in> B" by auto
+          with \<open>left_inv_into B v v'\<close> show "?thesis" by (fact left_inv_intoD2)
+        qed
+        finally have "v' ((\<Phi> f') (u' a)) = f a" .
+      }
+      hence "ext_eq_on A (v' \<circ> (\<Phi> f') \<circ> u') f" by auto
       hence "ext_eq_on A ((v' \<circ> v) \<circ> f' \<circ> u \<circ> u') f" unfolding Phi by (simp only: comp_assoc)
       moreover have "(f' \<circ> u \<circ> u') ` A \<subseteq> B"
       proof -
@@ -1049,7 +1080,7 @@ proof -
       with \<open>id_on (u \<circ> u') A\<close> have "ext_eq_on A f' f" by fastforce
       hence "ext_eq_on A f f'" by (fact ext_eq_on_sym)
     }
-    thus "\<forall>f \<in> A \<rightarrow> B. \<forall>f' \<in> A \<rightarrow> B. \<Phi> f = \<Phi> f' \<longrightarrow> ext_eq_on A f f'" by simp
+    thus "\<forall>f \<in> A \<rightarrow> B. \<forall>f' \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) (\<Phi> f') \<longrightarrow> ext_eq_on A f f'" by simp
   qed
   moreover have "inj_on u A' \<longrightarrow> v ` B = B'
                    \<longrightarrow> (\<forall>f' \<in> A' \<rightarrow> B'. \<exists>f \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) f')"
