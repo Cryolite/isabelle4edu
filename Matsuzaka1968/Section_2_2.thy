@@ -1,9 +1,10 @@
 theory Section_2_2
   imports Complex_Main
-    "HOL-Library.Cardinal_Notations"
     "Split_Pair"
     "Section_2_1"
 begin
+
+context includes cardinal_syntax begin
 
 fun dc_seq :: "'a set \<Rightarrow> ('a set \<Rightarrow> 'a) \<Rightarrow> nat \<Rightarrow> 'a set" where
 "dc_seq M a 0 = {}" |
@@ -164,7 +165,7 @@ proof -
     by (rule map_prod_inj_on)
   ultimately have "|A \<times> B| \<le>o |(UNIV :: nat set) \<times> (UNIV :: nat set)|" by auto
   moreover note nat_Times_nat_card_eq_aleph_zero
-  ultimately show "?thesis" by (fact card_leq_card_eq_trans)
+  ultimately show ?thesis by (fact card_leq_card_eq_trans)
 qed
 
 lemma thm_2_5_1_b_a:
@@ -194,7 +195,7 @@ proof -
   ultimately have "\<aleph>\<^sub>0 \<le>o |A \<times> B|" by auto
   from assms(1) have "|A| \<le>o \<aleph>\<^sub>0" by blast
   with assms(2) have "|A \<times> B| \<le>o \<aleph>\<^sub>0" by (intro thm_2_5_1_a)
-  with \<open>\<aleph>\<^sub>0 \<le>o |A \<times> B|\<close> show "?thesis" by (intro thm_2_3_2)
+  with \<open>\<aleph>\<^sub>0 \<le>o |A \<times> B|\<close> show ?thesis by (intro thm_2_3_2)
 qed
 
 lemma Times_card_commute:
@@ -214,7 +215,7 @@ proof -
     have "prod.swap (prod.swap x) = x" by simp
   }
   ultimately have "bij_betw prod.swap (A \<times> B) (B \<times> A)" by (fact bij_betwI)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 lemma thm_2_5_1_b_b:
@@ -225,7 +226,7 @@ lemma thm_2_5_1_b_b:
 proof -
   have "|A \<times> B| =o |B \<times> A|" by (fact Times_card_commute)
   moreover from assms have "|B \<times> A| =o \<aleph>\<^sub>0" by (intro thm_2_5_1_b_a)
-  ultimately show "?thesis" by (fact card_eq_trans)
+  ultimately show ?thesis by (fact card_eq_trans)
 qed
 
 theorem thm_2_5_1_b:
@@ -243,7 +244,7 @@ lemma aleph_zero_Times_aleph_zero:
   shows "|A \<times> B| =o \<aleph>\<^sub>0"
 proof -
   from assms(2) have "|B| \<le>o \<aleph>\<^sub>0" and "B \<noteq> {}" by blast+
-  with assms show "?thesis" by (blast intro: thm_2_5_1_b_a)
+  with assms show ?thesis by (blast intro: thm_2_5_1_b_a)
 qed
 
 lemma card_leq_imp_surj_on:
@@ -261,7 +262,7 @@ lemma surj_on_imp_card_leq:
   shows "|B| \<le>o |A|"
 proof -
   from assms obtain g where "g ` B \<subseteq> A" and "inj_on g B" by (elim cor_inj_on_iff_surj_on_b)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 theorem thm_2_5_2_a:
@@ -275,7 +276,7 @@ proof -
   let ?A = "\<Union>l \<in> \<Lambda>. A l"
   {
     assume "?A = {}"
-    hence "?thesis" by auto
+    hence ?thesis by auto
   }
   moreover {
     assume "?A \<noteq> {}"
@@ -320,9 +321,9 @@ proof -
     qed
     hence "|?A| \<le>o |\<Lambda> \<times> (UNIV :: nat set)|" by (fact surj_on_imp_card_leq)
     also from assms(3) have "|\<Lambda> \<times> (UNIV :: nat set)| \<le>o \<aleph>\<^sub>0" by (auto elim: thm_2_5_1_a)
-    finally have "?thesis" .
+    finally have ?thesis .
   }
-  ultimately show "?thesis" by blast
+  ultimately show ?thesis by blast
 qed
 
 theorem thm_2_5_2_b:
@@ -342,7 +343,7 @@ proof -
   moreover from * have "inj_on f UNIV" by auto
   ultimately have "\<aleph>\<^sub>0 \<le>o |?A|" by auto
   moreover from assms(1-3) have "|?A| \<le>o \<aleph>\<^sub>0" by (rule thm_2_5_2_a)
-  ultimately show "?thesis" by (intro thm_2_3_2)
+  ultimately show ?thesis by (intro thm_2_3_2)
 qed
 
 lemma countable_Un_aleph_zero:
@@ -371,13 +372,13 @@ proof -
   moreover have "|?\<Lambda>| \<le>o \<aleph>\<^sub>0"
   proof -
     have "inj_on id ?\<Lambda>" by simp
-    thus "?thesis" by blast
+    thus ?thesis by blast
   qed
   moreover have "1 \<in> ?\<Lambda>" by simp
   moreover from assms(2) have "|?A 1| =o \<aleph>\<^sub>0" by simp
   ultimately have "|\<Union>l \<in> ?\<Lambda>. ?A l| =o \<aleph>\<^sub>0" by (rule thm_2_5_2_b)
   moreover have "(\<Union>l \<in> ?\<Lambda>. ?A l) = A \<union> B" by simp
-  ultimately show "?thesis" by argo
+  ultimately show ?thesis by argo
 qed
 
 lemma aleph_zero_Un_aleph_zero:
@@ -386,7 +387,7 @@ lemma aleph_zero_Un_aleph_zero:
   shows "|A \<union> B| =o \<aleph>\<^sub>0"
 proof -
   from assms(1) have "|A| \<le>o \<aleph>\<^sub>0" by fast
-  with assms(2) show "?thesis" by (intro countable_Un_aleph_zero)
+  with assms(2) show ?thesis by (intro countable_Un_aleph_zero)
 qed
 
 corollary cor_card_int_eq_aleph_zero:
@@ -410,8 +411,8 @@ proof -
     qed
     moreover have "inj_on ?f UNIV" by (fact inj_of_nat)
     ultimately have "bij_betw ?f UNIV ?A" by (intro bij_betw_imageI)
-    hence "\<aleph>\<^sub>0 =o |?A|" by auto
-    thus "?thesis" by (fact ordIso_symmetric)
+    hence "\<aleph>\<^sub>0 =o |?A|" by blast
+    thus ?thesis by (fact ordIso_symmetric)
   qed
   moreover have "|?B| =o \<aleph>\<^sub>0"
   proof -
@@ -431,11 +432,11 @@ proof -
     moreover have "inj_on ?f UNIV" by (simp add: inj_on_def)
     ultimately have "bij_betw ?f UNIV ?B" by (intro bij_betw_imageI)
     hence "\<aleph>\<^sub>0 =o |?B|" by auto
-    thus "?thesis" by (fact ordIso_symmetric)
+    thus ?thesis by (fact ordIso_symmetric)
   qed
   ultimately have "|?A \<union> ?B| =o \<aleph>\<^sub>0" by (rule aleph_zero_Un_aleph_zero)
   moreover have "?A \<union> ?B = UNIV" by auto
-  ultimately show "?thesis" by simp
+  ultimately show ?thesis by simp
 qed
 
 corollary cor_card_rat_eq_aleph_zero:
@@ -464,9 +465,9 @@ proof -
   proof -
     let ?g = "\<lambda>n :: nat. (of_nat n) :: rat"
     have "inj_on ?g UNIV" by (auto intro: inj_of_nat)
-    thus "?thesis" by auto
+    thus ?thesis by blast
   qed
-  ultimately show "?thesis" by (intro thm_2_3_2)
+  ultimately show ?thesis by (intro thm_2_3_2)
 qed
 
 theorem thm_2_6:
@@ -532,30 +533,30 @@ proof -
     thus "a = a'"
     proof cases
       case A
-      with \<open>?f a = ?f a'\<close> show "?thesis" by simp
+      with \<open>?f a = ?f a'\<close> show ?thesis by simp
     next
       case B
       from B(2) and \<open>a' \<in> A\<close> have "a' \<in> B \<union> C" by simp
       with \<open>?f a = ?f a'\<close> B have "a = f\<^sub>1 a'" by meson
       with \<open>bij_betw f\<^sub>1 (B \<union> C) C\<close> and \<open>a' \<in> B \<union> C\<close> and B(1) have "False" by fast
-      thus "?thesis" ..
+      thus ?thesis ..
     next
       case C
       from C(1) and \<open>a \<in> A\<close> have "a \<in> B \<union> C" by simp
       with \<open>?f a = ?f a'\<close> C have "f\<^sub>1 a = a'" by metis
       with \<open>bij_betw f\<^sub>1 (B \<union> C) C\<close> and \<open>a \<in> B \<union> C\<close> and C(2) have "False" by auto
-      thus "?thesis" ..
+      thus ?thesis ..
     next
       case D
       with \<open>?f a = ?f a'\<close> have "f\<^sub>1 a = f\<^sub>1 a'" by argo
       moreover from D and \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> have "a \<in> B \<union> C" and "a' \<in> B \<union> C" by blast+
       moreover from \<open>bij_betw f\<^sub>1 (B \<union> C) C\<close> have "inj_on f\<^sub>1 (B \<union> C)" by auto
-      ultimately show "?thesis" by (elim inj_onD)
+      ultimately show ?thesis by (elim inj_onD)
     qed
   qed
   ultimately have "bij_betw ?f A ?A\<^sub>1" by (intro bij_betw_imageI)
   hence "equipotent A ?A\<^sub>1" by auto
-  thus "?thesis" by (fact prop_2_1_2)
+  thus ?thesis by (fact prop_2_1_2)
 qed
 
 corollary cor_2_1:
@@ -570,12 +571,12 @@ proof -
   proof -
     from assms(2) obtain f where "f ` B \<subseteq> (UNIV :: nat set)" and "inj_on f B" by auto
     hence "f ` (B - A) \<subseteq> UNIV" and "inj_on f (B - A)" by (auto dest: inj_on_diff)
-    thus "?thesis" by blast
+    thus ?thesis by blast
   qed
   moreover from assms(1) and A have "infinite ((A \<union> B) - (B - A))" by simp
   ultimately have "equipotent ((A \<union> B) - (B - A)) (A \<union> B)" by (rule thm_2_6)
   with A have "equipotent A (A \<union> B)" by simp
-  thus "?thesis" by (fact prop_2_1_2)
+  thus ?thesis by (fact prop_2_1_2)
 qed
 
 corollary cor_dedekind_infinity:
@@ -647,9 +648,9 @@ proof -
     from assms(1) obtain g where g0: "g ` A \<subseteq> (UNIV :: nat set)" and g1: "inj_on g A" by fast
     from f0 and g0 have "(g \<circ> f) ` B \<subseteq> UNIV" by simp
     moreover from f0 and f1 and g1 have "inj_on (g \<circ> f) B" by (blast dest: thm_1_5_b)
-    ultimately show "?thesis" by auto
+    ultimately show ?thesis by auto
   qed
-  ultimately show "?thesis" by (intro thm_2_3_2)
+  ultimately show ?thesis by (intro thm_2_3_2)
 qed
 
 lemma disjoint_family_onI:
@@ -682,7 +683,7 @@ proof -
         with that have "f (m, n') = f (m, n)" by simp
         with inj_f have "n' = n" by (auto dest: injD)
       }
-      with that show "?thesis" by blast
+      with that show ?thesis by blast
     qed
     have "?g ` (?A' m) = UNIV"
     proof (rule surj_onI)
@@ -781,7 +782,7 @@ proof -
     also have "|(UNIV :: rat set) \<times> (UNIV :: rat set)| =o \<aleph>\<^sub>0"
     proof -
       have "|UNIV :: rat set| =o \<aleph>\<^sub>0" by (fact cor_card_rat_eq_aleph_zero)
-      thus "?thesis" by (blast intro: aleph_zero_Times_aleph_zero)
+      thus ?thesis by (blast intro: aleph_zero_Times_aleph_zero)
     qed
     finally have "|\<QQ> \<union> {{}}| \<le>o \<aleph>\<^sub>0" .
     thus "|\<QQ>| \<le>o \<aleph>\<^sub>0" by fastforce
@@ -813,7 +814,7 @@ proof -
     }
     thus "inj ?f" by (fact injI)
   qed
-  ultimately show "?thesis" by (fact thm_2_3_2)
+  ultimately show ?thesis by (fact thm_2_3_2)
 qed
 
 lemmas [dest] = disjointD
@@ -862,7 +863,7 @@ proof -
   ultimately have "|\<II>| \<le>o |\<Union>I \<in> \<II>. {q :: rat. (of_rat q) \<in> I}|" by (fact prob_2_1_5)
   also have "|\<Union>I \<in> \<II>. {q :: rat. (of_rat q) \<in> I}| \<le>o |UNIV :: rat set|" by auto
   also have "|UNIV :: rat set| =o \<aleph>\<^sub>0" by (fact cor_card_rat_eq_aleph_zero)
-  finally show "?thesis" .
+  finally show ?thesis .
 qed
 
 lemma fixed_length_lists_of_aleph_zero:
@@ -946,9 +947,9 @@ next
         ultimately show "?f xs \<in> XS (Suc n)" unfolding XS by simp
       qed
       moreover have "inj_on ?f (XS n)" by simp
-      ultimately show "?thesis" by blast
+      ultimately show ?thesis by blast
     qed
-    finally show "?thesis" .
+    finally show ?thesis .
   qed
   ultimately show "?case" by (fact thm_2_3_2)
 qed
@@ -992,11 +993,11 @@ proof -
     also have "|?A' 1| \<le>o |lists A|"
     proof -
       have "?A' 1 \<subseteq> lists A" by auto
-      thus "?thesis" by auto
+      thus ?thesis by auto
     qed
-    finally show "?thesis" .
+    finally show ?thesis .
   qed
-  ultimately show "?thesis" by (fact thm_2_3_2)
+  ultimately show ?thesis by (fact thm_2_3_2)
 qed
 
 proposition prob_2_2_5:
@@ -1049,9 +1050,9 @@ proof -
       thus "?f ` A \<subseteq> \<AA>" by auto
       show "inj_on ?f A" by simp
     qed
-    finally show "?thesis" .
+    finally show ?thesis .
   qed
-  ultimately show "?thesis" by (fact thm_2_3_2)
+  ultimately show ?thesis by (fact thm_2_3_2)
 qed
 
 (* TODO: prob_2_2_6 *)
@@ -1059,5 +1060,7 @@ qed
 (* TODO: proposition prob_2_2_7:
   shows "|(UNIV :: real set) - \<rat>| =o \<aleph>"
   sorry*)
+
+end (* context cardinal_syntax begin *)
 
 end

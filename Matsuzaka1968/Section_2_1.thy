@@ -1,11 +1,12 @@
 theory Section_2_1
   imports Complex_Main
     "HOL-Library.Disjoint_Sets"
-    "HOL-Library.Cardinal_Notations"
     "HOL-Computational_Algebra.Primes"
     "Split_Pair"
     "Section_1_6"
 begin
+
+context includes cardinal_syntax begin
 
 chapter \<open>Cardinality of Sets\<close>
 
@@ -46,7 +47,7 @@ proposition prop_2_1_2 [sym]:
 proof -
   from assms obtain f where "bij_betw f A B" by auto
   hence "bij_betw (the_inv_into A f) B A" by (fact bij_betw_the_inv_into)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 proposition prop_2_1_3 [trans]:
@@ -56,7 +57,7 @@ proposition prop_2_1_3 [trans]:
 proof -
   from assms obtain f and g where "bij_betw f A B" and "bij_betw g B C" by blast
   hence "bij_betw (g \<circ> f) A C" by (rule thm_1_5_c)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 proposition ex_2_3_factorization_existence:
@@ -171,9 +172,9 @@ proof -
       qed
     }
     hence "{0} \<union> {Suc n | n. True} = UNIV" by blast
-    thus "?thesis" by simp
+    thus ?thesis by simp
   qed
-  finally show "?thesis" .
+  finally show ?thesis .
 qed
 
 theorem thm_2_2:
@@ -209,7 +210,7 @@ proof -
     also have "\<dots> = B - (bernstein_seq' A B f g 0 \<union> (\<Union>n. bernstein_seq' A B f g (Suc n)))" by auto
     also have "\<dots> = ?B'"
       by (simp only: zero_Un_UNION_Suc_eq[where A = "\<lambda>n. bernstein_seq' A B f g n"])
-    finally show "?thesis" .
+    finally show ?thesis .
   qed
   moreover from assms(2) have "inj_on f ?A'" by (fact inj_on_diff)
   ultimately have "bij_betw f ?A' ?B'" by (intro bij_betw_imageI)
@@ -291,7 +292,7 @@ proof -
     proof cases
       case A
       with \<open>?F a = ?F a'\<close> have "f a = f a'" by argo
-      with A and \<open>inj_on f ?A'\<close> show "?thesis" by (elim inj_onD)
+      with A and \<open>inj_on f ?A'\<close> show ?thesis by (elim inj_onD)
     next
       case B
       from B(2) and \<open>a' \<in> A\<close> have "a' \<in> ?A" by blast
@@ -299,7 +300,7 @@ proof -
       moreover from \<open>a \<in> ?A'\<close> and \<open>f ` ?A' = ?B'\<close> have "f a \<in> ?B'" by blast
       moreover from \<open>a' \<in> ?A\<close> and \<open>f' ` ?A = ?B\<close> have "f' a' \<in> ?B" by blast
       ultimately have "False" by simp
-      thus "?thesis" ..
+      thus ?thesis ..
     next
       case C
       from C(1) and \<open>a \<in> A\<close> have "a \<in> ?A" by simp
@@ -307,17 +308,17 @@ proof -
       moreover from \<open>a \<in> ?A\<close> and \<open>f' ` ?A = ?B\<close> have "f' a \<in> ?B" by blast
       moreover from \<open>a' \<in> ?A'\<close> and \<open>f ` ?A' = ?B'\<close> have "f a' \<in> ?B'" by blast
       ultimately have "False" by simp
-      thus "?thesis" ..
+      thus ?thesis ..
     next
       case D
       from D and \<open>?F a = ?F a'\<close> have "f' a = f' a'" by argo
       moreover from D and \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> have "a \<in> ?A" and "a' \<in> ?A" by simp+
       moreover from \<open>bij_betw f' ?A ?B\<close> have "inj_on f' ?A" by auto
-      ultimately show "?thesis" by (elim inj_onD)
+      ultimately show ?thesis by (elim inj_onD)
     qed
   qed
   ultimately have "bij_betw ?F A B" by (intro bij_betw_imageI)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 theorem thm_2_2':
@@ -338,7 +339,7 @@ theorem thm_2_2'':
   shows "equipotent A B"
 proof -
   from assms(2) obtain f' where "f' ` A \<subseteq> B" and "inj_on f' A" by (elim cor_inj_on_iff_surj_on_b)
-  with assms(1) show "?thesis" by (intro thm_2_2')
+  with assms(1) show ?thesis by (intro thm_2_2')
 qed
 
 lemma surj_on_from_subset_imp_surj_on:
@@ -432,7 +433,7 @@ lemma card_eqI' [intro]:
   shows "|A| =o |B|"
 proof -
   from assms obtain f where "bij_betw f A B" by auto
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 lemma card_eqE [elim]:
@@ -460,7 +461,7 @@ lemma card_eq_refl [simp]:
   shows "|A| =o |A|"
 proof -
   have "equipotent A A" by simp
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 lemma card_eq_sym:
@@ -471,10 +472,10 @@ lemma card_eq_sym:
 proof -
   from assms have "equipotent A B" by auto
   hence "equipotent B A" by (fact prop_2_1_2)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
-lemma card_eq_trans:
+lemma card_eq_trans [trans]:
   fixes A :: "'a set"
     and B :: "'b set"
     and C :: "'c set"
@@ -485,7 +486,7 @@ proof -
   from assms(1) have "equipotent A B" by auto
   moreover from assms(2) have "equipotent B C" by auto
   ultimately have "equipotent A C" by (fact prop_2_1_3)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 proposition czero_definition:
@@ -533,22 +534,22 @@ lemma eq_empty_imp_card_eq_czero:
   assumes "A = {}"
   shows "|A| =o (czero :: 'b rel)"
 proof -
-  from assms have "|A| =o |{} :: 'a set|" by auto
-  moreover have "|{} :: 'a set| =o (czero :: 'b rel)" by (fact empty_card_eq_czero)
-  ultimately show "?thesis" by auto
+  from assms have "|A| = |{} :: 'a set|" by auto
+  also have "\<dots> =o (czero :: 'b rel)" by (fact empty_card_eq_czero)
+  finally show ?thesis by auto
 qed
 
 proposition cone_definition [simp]:
   shows "cone =o |{a}|"
 proof -
-  have "cone =o |{()}|" by (simp only: card_of_refl cone_def)
-  also have "|{()}| =o |{a}|"
+  have "cone = |{()}|" by (simp only: card_of_refl cone_def)
+  also have "\<dots> =o |{a}|"
   proof -
     let ?f = "\<lambda>x. a"
     have "?f ` {()} = {a}" by simp
     moreover have "inj_on ?f {()}" by simp
     ultimately have "bij_betw ?f {()} {a}" by (intro bij_betw_imageI)
-    thus "?thesis" by (fact card_of_ordIsoI)
+    thus ?thesis by (fact card_of_ordIsoI)
   qed
   finally show "cone =o |{a}|" .
 qed
@@ -617,14 +618,14 @@ lemma card_eq_imp_card_leq:
 proof -
   from assms obtain f where "bij_betw f A B" by auto
   hence "f ` A \<subseteq> B" and "inj_on f A" by auto
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 theorem thm_2_3_1 [simp]:
   shows "|A| \<le>o |A|"
 proof -
   have "|A| =o |A|" by simp
-  thus "?thesis" by (fact card_eq_imp_card_leq)
+  thus ?thesis by (fact card_eq_imp_card_leq)
 qed
 
 theorem thm_2_3_2:
@@ -635,10 +636,10 @@ proof -
   from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by auto
   moreover from assms(2) obtain g where "g ` B \<subseteq> A" and "inj_on g B" by auto
   ultimately have "equipotent A B" by (rule thm_2_2)
-  thus "?thesis" by (fact card_eqI')
+  thus ?thesis by (fact card_eqI')
 qed
 
-theorem thm_2_3_3:
+theorem thm_2_3_3 [trans]:
   assumes "|A| \<le>o |B|"
     and "|B| \<le>o |C|"
   shows "|A| \<le>o |C|"
@@ -648,10 +649,10 @@ proof -
   from \<open>f ` A \<subseteq> B\<close> and \<open>g ` B \<subseteq> C\<close> have "(g \<circ> f) ` A \<subseteq> C" by fastforce
   moreover from \<open>f ` A \<subseteq> B\<close> and \<open>inj_on f A\<close> and \<open>inj_on g B\<close> have "inj_on (g \<circ> f) A"
     by (fact thm_1_5_b)
-  ultimately show "?thesis" by auto
+  ultimately show ?thesis by blast
 qed
 
-lemma card_eq_card_leq_trans:
+lemma card_eq_card_leq_trans [trans]:
   fixes A :: "'a set"
     and B :: "'b set"
     and C :: "'c set"
@@ -660,11 +661,11 @@ lemma card_eq_card_leq_trans:
   shows "|A| \<le>o |C|"
 proof -
   from assms(1) have "|A| \<le>o |B|" by auto
-  moreover note assms(2)
-  ultimately show "?thesis" by (fact thm_2_3_3)
+  also note assms(2)
+  finally show ?thesis .
 qed
 
-lemma card_leq_card_eq_trans:
+lemma card_leq_card_eq_trans [trans]:
   fixes A :: "'a set"
     and B :: "'b set"
     and C :: "'c set"
@@ -673,8 +674,8 @@ lemma card_leq_card_eq_trans:
   shows "|A| \<le>o |C|"
 proof -
   note assms(1)
-  moreover from assms(2) have "|B| \<le>o |C|" by (fact card_eq_imp_card_leq)
-  ultimately show "?thesis" by (fact thm_2_3_3)
+  also from assms(2) have "|B| \<le>o |C|" by (fact card_eq_imp_card_leq)
+  finally show ?thesis .
 qed
 
 subsection \<open>Problems\<close>
@@ -700,13 +701,13 @@ proof -
       ultimately show "bij_betw (h \<circ> id) Y (h ` Y)" by simp
     qed
     moreover from \<open>bij_betw h Z X\<close> and assms(2) have "h ` Y \<subseteq> X" by auto
-    ultimately show "?thesis" by (blast intro: thm_2_2''')
+    ultimately show ?thesis by (blast intro: thm_2_2''')
   qed
   moreover have "equipotent Y Z"
   proof -
     from \<open>equipotent X Y\<close> have "equipotent Y X" by (fact prop_2_1_2)
     also note assms(3)
-    finally show "?thesis" .
+    finally show ?thesis .
   qed
   ultimately show "thesis" by (fact that)
 qed
@@ -732,7 +733,7 @@ proof -
     assume "?f a = ?f a'"
     thus "a = a'" by simp
   qed
-  ultimately show "?thesis" by auto
+  ultimately show ?thesis by auto
 qed
 
 proposition prob_2_1_5:
@@ -745,7 +746,7 @@ proof -
   proof -
     from that have "a \<in> (\<Union>l \<in> \<Lambda>. A l)" by auto
     with assms have "\<exists>!l \<in> \<Lambda>. a \<in> A l" by (intro disjoint_family_on_imp_uniq_idx)
-    with that show "?thesis" by auto
+    with that show ?thesis by auto
   qed
   have "?f ` (\<Union>l \<in> \<Lambda>. A l) = \<Lambda>"
   proof (rule surj_onI)
@@ -763,7 +764,7 @@ proof -
   qed
   then obtain g where "g ` \<Lambda> \<subseteq> (\<Union>l \<in> \<Lambda>. A l)" and "inj_on g \<Lambda>"
     by (elim cor_inj_on_iff_surj_on_b)
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 lemma AC_E_ext:
@@ -856,7 +857,7 @@ proof -
     }
     thus "l = l'" by auto
   qed
-  ultimately show "?thesis" by auto
+  ultimately show ?thesis by auto
 qed
 
 proposition prob_2_1_7:
@@ -874,5 +875,7 @@ proof -
 qed
 
 (* TODO: prob_2_1_8 *)
+
+end (* context includes cardinal_syntax *)
 
 end

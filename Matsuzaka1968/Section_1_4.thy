@@ -6,7 +6,7 @@ begin
 
 section "Various Concepts on Functions"
 
-text {*
+text \<open>
   In this and the following sections, functions in usual mathematics are formalized in terms of
   functions in Isabelle/HOL. Because careful handling is required in such formalization, let me
   explain the detail.
@@ -46,9 +46,9 @@ text {*
      @{prop "ext_eq_on A f g"}. Note that @{term "f"} and @{term "g"} behaves differently out of
      @{term "A"} and thus @{prop "f = g"} does not hold even if @{prop "ext_eq_on A f g"} holds.
     \<^item>(TODO: inverse)
-*}
+\<close>
 
-text {* Extensional equality of two functions on a set. *}
+text \<open>Extensional equality of two functions on a set.\<close>
 
 definition ext_eq_on :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> bool"
   where "ext_eq_on A f f' \<longleftrightarrow> (\<forall>a \<in> A. f a = f' a)"
@@ -86,71 +86,71 @@ lemma ext_eq_on_empty [simp]:
 subsection \<open>A) Image and Inverse Image of Map\<close>
 
 proposition prop_1_4_1:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "P\<^sub>1 \<subseteq> A"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "P\<^sub>2 \<subseteq> A"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "P\<^sub>1 \<subseteq> A"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "P\<^sub>2 \<subseteq> A"} is not necessary.\<close>
     "P\<^sub>1 \<subseteq> P\<^sub>2"
   shows "f ` P\<^sub>1 \<subseteq> f ` P\<^sub>2"
   using assms by (fact image_mono)
 
 proposition prop_1_4_2:
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "P\<^sub>1 \<subseteq> A"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "P\<^sub>2 \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "P\<^sub>1 \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "P\<^sub>2 \<subseteq> A"} is not necessary.\<close>
   shows "f ` (P\<^sub>1 \<union> P\<^sub>2) = f ` P\<^sub>1 \<union> f ` P\<^sub>2"
   by (fact image_Un)
 
 proposition prop_1_4_3:
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "P\<^sub>1 \<subseteq> A"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "P\<^sub>2 \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "P\<^sub>1 \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "P\<^sub>2 \<subseteq> A"} is not necessary.\<close>
   shows "f ` (P\<^sub>1 \<inter> P\<^sub>2) \<subseteq> f ` P\<^sub>1 \<inter> f ` P\<^sub>2"
   by (fact image_Int_subset)
 
 proposition prop_1_4_4:
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "P \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "P \<subseteq> A"} is not necessary.\<close>
   shows "f ` (A - P) \<supseteq> f ` A - f ` P"
   by (fact image_diff_subset)
 
 proposition prop_1_4_1':
-  assumes -- \<open>@The assumption {prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "Q\<^sub>1 \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "Q\<^sub>2 \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>@The assumption {prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "Q\<^sub>1 \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "Q\<^sub>2 \<subseteq> B"} is not necessary.\<close>
     "Q\<^sub>1 \<subseteq> Q\<^sub>2"
   shows "(f -` Q\<^sub>1) \<inter> A \<subseteq> (f -` Q\<^sub>2) \<inter> A"
   using assms by auto
 
 proposition prop_1_4_2':
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "Q\<^sub>1 \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "Q\<^sub>2 \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "Q\<^sub>1 \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "Q\<^sub>2 \<subseteq> B"} is not necessary.\<close>
   shows "f -` (Q\<^sub>1 \<union> Q\<^sub>2) \<inter> A = (f -` Q\<^sub>1 \<inter> A) \<union> (f -` Q\<^sub>2 \<inter> A)"
   by auto
 
 proposition prop_1_4_3':
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "Q\<^sub>1 \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "Q\<^sub>2 \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "Q\<^sub>1 \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "Q\<^sub>2 \<subseteq> B"} is not necessary.\<close>
   shows "f -` (Q\<^sub>1 \<inter> Q\<^sub>2) \<inter> A = (f -` Q\<^sub>1 \<inter> A) \<inter> (f -` Q\<^sub>2 \<inter> A)"
   by auto
 
 proposition prop_1_4_4':
   assumes "f ` A \<subseteq> B"
-    -- \<open>The assumption @{prop "Q \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "Q \<subseteq> B"} is not necessary.\<close>
   shows "f -` (B - Q) \<inter> A = A - (f -` Q \<inter> A)"
   using assms by auto
 
 proposition prop_1_4_5:
   assumes
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     "P \<subseteq> A"
   shows "P \<subseteq> f -` (f ` P) \<inter> A"
   using assms by auto
 
 proposition prop_1_4_5':
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "Q \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "Q \<subseteq> B"} is not necessary.\<close>
   shows "f ` (f -` Q \<inter> A) \<subseteq> Q"
   by auto
 
@@ -318,7 +318,7 @@ proof -
   from assms have "corr_inv (as_corr_on g (f ` A)) = as_corr_on f A" by (unfold is_inv_into_def)
   hence "as_corr_on g (f ` A) = corr_inv (as_corr_on f A)" using prop_1_3_4 by metis
   moreover have "f ` A \<subseteq> f ` A" by simp
-  ultimately show "?thesis" by (intro thm_1_4_a)
+  ultimately show ?thesis by (intro thm_1_4_a)
 qed
 
 lemma is_inv_into_imp_bij_betw2:
@@ -361,7 +361,7 @@ theorem thm_1_5_a:
 
 theorem thm_1_5_b:
   assumes "f ` A \<subseteq> B"
-    -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
     and "inj_on f A"
     and "inj_on g B"
   shows "inj_on (g \<circ> f) A"
@@ -386,7 +386,7 @@ theorem thm_1_6_1:
   by (fact comp_assoc)
 
 theorem thm_1_6_2_a:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     "id_on g A"
   shows "ext_eq_on A (f \<circ> g) f"
   using assms by fastforce
@@ -418,7 +418,7 @@ subsection \<open>F) Sets of Maps\<close>
 subsection \<open>Problems\<close>
 
 proposition prob_1_4_2_b:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     "P \<subseteq> A"
     and "a \<in> P"
     and "a' \<in> A - P"
@@ -435,7 +435,7 @@ proof (rule psubsetI)
 qed
 
 proposition prob_1_4_3_a:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     "inj_on f A"
     and "P \<subseteq> A"
   shows "(f -` (f ` P)) \<inter> A = P"
@@ -463,7 +463,7 @@ proposition prob_1_4_3_b:
   using assms by auto
 
 proposition prob_1_4_4:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     "inj_on f A"
     and "P\<^sub>1 \<subseteq> A"
     and "P\<^sub>2 \<subseteq> A"
@@ -471,8 +471,8 @@ proposition prob_1_4_4:
   using assms by (auto dest: inj_on_image_Int)
 
 proposition prob_1_4_5_b:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "P \<subseteq> A"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "P \<subseteq> A"} is not necessary.\<close>
     "a \<in> P"
     and "a' \<in> A - P"
     and "f a = f a'"
@@ -489,7 +489,7 @@ proof (rule psubsetI)
 qed
 
 proposition prob_1_4_5_c:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     "P \<subseteq> A"
     and "inj_on f A"
   shows "f ` (A - P) = f ` A - f ` P"
@@ -513,10 +513,10 @@ next
 qed
 
 proposition prob_1_4_8:
-  assumes -- \<open>The assumption @{prop "bij_betw f A B"} can be weakened to @{prop "f ` A = B"}
+  assumes \<comment> \<open>The assumption @{prop "bij_betw f A B"} can be weakened to @{prop "f ` A = B"}
               because @{prop "is_inv_into A f f'"} implies @{prop "bij_betw f A (f ` A)"}.\<close>
     "f ` A = B"
-    -- \<open>The assumption @{prop "bij_betw g B C"} can be weakened to @{prop "g ` B = C"} because
+    \<comment> \<open>The assumption @{prop "bij_betw g B C"} can be weakened to @{prop "g ` B = C"} because
         @{prop "is_inv_into A f f'"} implies @{prop "bij_betw g B (g ` B)"}.\<close>
     and "g ` B = C"
     and "is_inv_into A f f'"
@@ -544,16 +544,16 @@ proof (rule ext_eq_onI)
 qed
 
 proposition prob_1_4_9_a:
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "P \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "P \<subseteq> A"} is not necessary.\<close>
   shows "(g \<circ> f) ` P = g ` (f ` P)" (is "?L = ?R")
   by auto
 
 proposition prob_1_4_9_b:
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "R \<subseteq> C"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "R \<subseteq> C"} is not necessary.\<close>
   shows "((g \<circ> f) -` R) \<inter> A = (f -` (g -` R)) \<inter> A" (is "?L = ?R")
   by fastforce
 
@@ -565,16 +565,16 @@ proposition prob_1_4_10_a:
   using assms by fastforce
 
 proposition prob_1_4_10_b:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
     "inj_on (g \<circ> f) A"
   shows "inj_on f A"
   using assms by (fact inj_on_imageI2)
 
 proposition prob_1_4_11:
   assumes "f ` A = B"
-    -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "g' ` B \<subseteq> C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "g' ` B \<subseteq> C"} is not necessary.\<close>
     and "ext_eq_on A (g \<circ> f) (g' \<circ> f)"
   shows "ext_eq_on B g g'"
   using assms by fastforce
@@ -582,7 +582,7 @@ proposition prob_1_4_11:
 proposition prob_1_4_12:
   assumes "f ` A \<subseteq> B"
     and "f' ` A \<subseteq> B"
-    -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
     and "inj_on g B"
     and "ext_eq_on A (g \<circ> f) (g \<circ> f')"
   shows "ext_eq_on A f f'"
@@ -617,7 +617,7 @@ next
 qed
 
 proposition prob_1_4_13_b:
-  assumes -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
     "inj_on (g \<circ> f) A"
     and "f ` A = B"
   shows "inj_on g B"
@@ -711,7 +711,7 @@ lemma one_leq_chiD:
   shows "a \<in> A"
 proof -
   from assms and chi_0_1 have "\<chi> A a = 1" by force
-  thus "?thesis" by (simp only: indicator_eq_1_iff)
+  thus ?thesis by (simp only: indicator_eq_1_iff)
 qed
 
 proposition prob_1_4_15_0_a:
@@ -726,7 +726,7 @@ proof (rule subsetI)
   also have "\<dots> \<le> \<chi> B a"
   proof -
     from \<open>a \<in> A\<close> and assms(1) have "a \<in> X" by auto
-    with assms(3) show "?thesis" by simp
+    with assms(3) show ?thesis by simp
   qed
   finally have "1 \<le> \<chi> B a" by simp
   thus "a \<in> B" by (auto dest: one_leq_chiD)
@@ -740,19 +740,19 @@ proposition prob_1_4_15_0_b:
   shows "\<chi> A x \<le> \<chi> B x"
 proof -
   from assms consider (A) "x \<in> A" | (B) "x \<in> B - A" | (X) "x \<in> X - B" by auto
-  thus "?thesis"
+  thus ?thesis
   proof cases
     case A
     with assms(3) have "x \<in> A" and "x \<in> B" by auto
-    thus "?thesis" by simp
+    thus ?thesis by simp
   next
     case B
     hence "x \<notin> A" and "x \<in> B" by auto
-    thus "?thesis" by simp
+    thus ?thesis by simp
   next
     case X
     with assms(3) have "x \<notin> A" and "x \<notin> B" by auto
-    thus "?thesis" by simp
+    thus ?thesis by simp
   qed
 qed
 
@@ -776,17 +776,17 @@ proposition prob_1_4_15_b:
   shows "\<chi> (A \<union> B) a = \<chi> A a + \<chi> B a - \<chi> (A \<inter> B) a"
 proof -
   have "\<chi> (A \<union> B) a = \<chi> A a + \<chi> B a - \<chi> A a * \<chi> B a" by (fact indicator_union_arith)
-  thus "?thesis" by (simp only: prob_1_4_15_a)
+  thus ?thesis by (simp only: prob_1_4_15_a)
 qed
 
 proposition prob_1_4_15_c:
-  assumes -- \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
     "x \<in> X"
   shows "\<chi> (X - A) x = 1 - \<chi> A x"
 proof -
   have "\<chi> (X - A) x = \<chi> X x * (1 - \<chi> A x)" by (fact indicator_diff)
   also from assms have "\<dots> = 1 - \<chi> A x" by simp
-  finally show "?thesis" .
+  finally show ?thesis .
 qed
 
 proposition prob_1_4_15_d:
@@ -801,31 +801,31 @@ proof -
     | (c) "x \<notin> A" and "x \<in> B"
     | (d) "x \<notin> A" and "x \<notin> B"
     by auto
-  thus "?thesis"
+  thus ?thesis
   proof cases
     case a
     hence "x \<notin> A \<triangle> B" by simp
     hence "\<chi> (A \<triangle> B) x = 0" by simp
     moreover from a have "\<bar>\<chi> A x - \<chi> B x\<bar> = 0" by simp
-    ultimately show "?thesis" by simp
+    ultimately show ?thesis by simp
   next
     case b
     hence "x \<in> A \<triangle> B" by simp
     hence "\<chi> (A \<triangle> B) x = 1" by simp
     moreover from b have "\<bar>\<chi> A x - \<chi> B x\<bar> = 1" by simp
-    ultimately show "?thesis" by simp
+    ultimately show ?thesis by simp
   next
     case c
     hence "x \<in> A \<triangle> B" by simp
     hence "\<chi> (A \<triangle> B) x = 1" by simp
     moreover from c have "\<bar>\<chi> A x - \<chi> B x\<bar> = 1" by simp
-    ultimately show "?thesis" by simp
+    ultimately show ?thesis by simp
   next
     case d
     hence "x \<notin> A \<triangle> B" by simp
     hence "\<chi> (A \<triangle> B) x = 0" by simp
     moreover from d have "\<bar>\<chi> A x - \<chi> B x\<bar> = 0" by simp
-    ultimately show "?thesis" by simp
+    ultimately show ?thesis by simp
   qed
 qed
 

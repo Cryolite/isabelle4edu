@@ -393,7 +393,7 @@ proof (rule equivI[OF _ assms(2) assms(3)])
 qed
 
 proposition prob_1_6_3:
-  assumes -- \<open>The assumption @{prop "R \<subseteq> A \<times> A"} is not necessary since it is implied by
+  assumes \<comment> \<open>The assumption @{prop "R \<subseteq> A \<times> A"} is not necessary since it is implied by
               @{prop "refl_on A R"}.\<close>
     "refl_on A R"
     and "\<forall>a b c. (a, b) \<in> R \<and> (b, c) \<in> R \<longrightarrow> (c, a) \<in> R"
@@ -470,8 +470,8 @@ qed
 proposition prob_1_6_6_a:
   assumes "equiv A R"
   defines phi: "\<phi> a \<equiv> R `` {a}"
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "g ` (A // R) \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "g ` (A // R) \<subseteq> B"} is not necessary.\<close>
     "ext_eq_on A f (g \<circ> \<phi>)"
   shows "\<forall>a \<in> A. \<forall>a' \<in> A. (a, a') \<in> R \<longrightarrow> f a = f a'"
 proof (intro ballI, rule impI)

@@ -22,40 +22,40 @@ proposition prop_1_5_1':
   by simp
 
 proposition prop_1_5_2:
-  assumes "\<Lambda> \<noteq> {}" -- \<open>This assumption is not specified in the book. However, there exits a
-                        counterexample without it.\<close>
-    -- \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<subseteq> X"} is not necessary.\<close>
+  assumes "\<Lambda> \<noteq> {}" \<comment> \<open>This assumption is not specified in the book. However, there exits a
+                       counterexample without it.\<close>
+    \<comment> \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<subseteq> X"} is not necessary.\<close>
   shows "X - (\<Union>l \<in> \<Lambda>. A l) = (\<Inter>l \<in> \<Lambda>. (X - A l))"
   using assms by simp
 
 proposition prop_1_5_2':
-  -- \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<subseteq> X"} is not necessary.\<close>
   shows "X - (\<Inter>l \<in> \<Lambda>. A l) = (\<Union>l \<in> \<Lambda>. X - A l)"
   by simp
 
 proposition prop_1_5_3:
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> P l \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> P l \<subseteq> A"} is not necessary.\<close>
   shows "f ` (\<Union>l \<in> \<Lambda>. P l) = (\<Union>l \<in> \<Lambda>. f ` (P l))"
   by (fact image_UN)
 
 proposition prop_1_5_4:
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> P l \<subseteq> A"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> P l \<subseteq> A"} is not necessary.\<close>
   shows "f ` (\<Inter>l \<in> \<Lambda>. P l) \<subseteq> (\<Inter>l \<in> \<Lambda>. f ` (P l))"
   by auto
 
 proposition prop_1_5_3':
-  -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "\<And>\<mu>. \<mu> \<in> M \<Longrightarrow> Q \<mu> \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "\<And>\<mu>. \<mu> \<in> M \<Longrightarrow> Q \<mu> \<subseteq> B"} is not necessary.\<close>
   shows "(f -` (\<Union>\<mu> \<in> M. Q \<mu>)) \<inter> A = (\<Union>\<mu> \<in> M. (f -` (Q \<mu>)) \<inter> A)"
   by auto
 
 proposition prop_1_5_4':
-  assumes "M \<noteq> {}" -- \<open>This assumption is not specified in the book. However, there exists a
+  assumes "M \<noteq> {}" \<comment> \<open>This assumption is not specified in the book. However, there exists a
                        counterexample without it.\<close>
-    -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "\<And>\<mu>. \<mu> \<in> M \<Longrightarrow> Q \<mu> \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "\<And>\<mu>. \<mu> \<in> M \<Longrightarrow> Q \<mu> \<subseteq> B"} is not necessary.\<close>
   shows "(f -` (\<Inter>\<mu> \<in> M. Q \<mu>)) \<inter> A = (\<Inter>\<mu> \<in> M. (f -` (Q \<mu>)) \<inter> A)"
   using assms by auto
 
@@ -73,7 +73,7 @@ proof -
     with \<open>l \<in> \<Lambda>\<close> have "?a l \<in> A l" by (auto intro: some_in_eq[THEN iffD2])
   }
   hence "?a \<in> (\<Pi> l \<in> \<Lambda>. A l)" by simp
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 lemma AC_E:
@@ -229,7 +229,7 @@ theorem thm_1_7_a_b:
   shows "f ` A = B"
 proof -
   from assms(3) have "(f \<circ> s) ` B = B" by (fact id_on_imp_surj_on)
-  with assms(1,2) show "?thesis" by (intro prob_1_4_10_a[where A = "B" and f = "s" and g = "f"])
+  with assms(1,2) show ?thesis by (intro prob_1_4_10_a[where A = "B" and f = "s" and g = "f"])
 qed
 
 theorem thm_1_7_a:
@@ -246,9 +246,9 @@ next
 qed
 
 theorem thm_1_7_b_a:
-  assumes "A = {} \<Longrightarrow> B = {}" -- \<open>This assumption is not specified in the book. However, there
+  assumes "A = {} \<Longrightarrow> B = {}" \<comment> \<open>This assumption is not specified in the book. However, there
                                   exists a counterexample without it.\<close>
-    -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     and "inj_on f A"
   obtains r where "r ` B \<subseteq> A"
     and "id_on (r \<circ> f) A"
@@ -305,17 +305,17 @@ proof -
 qed
 
 theorem thm_1_7_b_b:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "r ` B \<subseteq> A"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "r ` B \<subseteq> A"} is not necessary.\<close>
     "id_on (r \<circ> f) A"
   shows "inj_on f A"
 proof -
   from assms have "inj_on (r \<circ> f) A" by (fact id_on_imp_inj_on)
-  thus "?thesis" by (fact prob_1_4_10_b)
+  thus ?thesis by (fact prob_1_4_10_b)
 qed
 
 theorem thm_1_7_b:
-  assumes "A = {} \<Longrightarrow> B = {}"-- \<open>This assumption is not specified in the book. However, there
+  assumes "A = {} \<Longrightarrow> B = {}"\<comment> \<open>This assumption is not specified in the book. However, there
                                  exists a counterexample without it.\<close>
   shows "inj_on f A \<longleftrightarrow> (\<exists>r. r ` B \<subseteq> A \<and> id_on (r \<circ> f) A)"
   using assms thm_1_7_b_a thm_1_7_b_b by metis
@@ -353,7 +353,7 @@ lemma right_inv_intoD2:
 proof -
   from assms(1) have "id_on (f \<circ> s) (f ` A)" by (fact right_inv_intoD2_pf)
   with assms(2) have "(f \<circ> s) x = x" by blast
-  thus "?thesis" by simp
+  thus ?thesis by simp
 qed
 
 definition left_inv_into :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b) \<Rightarrow> ('b \<Rightarrow> 'a) \<Rightarrow> bool"
@@ -420,7 +420,7 @@ proof -
 qed
 
 corollary cor_inj_on_iff_surj_on:
-  assumes "A = {} \<Longrightarrow> B = {}" -- \<open>This assumption is not specified in the book. However, there
+  assumes "A = {} \<Longrightarrow> B = {}" \<comment> \<open>This assumption is not specified in the book. However, there
                                   exists a counterexample without it.\<close>
   shows "(\<exists>f. f ` A \<subseteq> B \<and> inj_on f A) \<longleftrightarrow> (\<exists>g. g ` B = A)"
 proof (rule iffI)
@@ -455,7 +455,7 @@ proposition prob_1_5_5_c:
 
 proposition prob_1_5_5_d:
   assumes "\<Lambda> \<noteq> {}"
-    and "M \<noteq> {}" -- \<open>These assumptions are not specified in the book. However, there exists a
+    and "M \<noteq> {}" \<comment> \<open>These assumptions are not specified in the book. However, there exists a
                      counterexample without them.\<close>
   shows "(\<Inter>l \<in> \<Lambda>. A l) \<times> (\<Inter>\<mu> \<in> M. B \<mu>) = (\<Inter>(l, \<mu>) \<in> \<Lambda> \<times> M. A l \<times> B \<mu>)"
   using assms by blast
@@ -474,7 +474,7 @@ proof -
     with assms(1-3) have "A l \<inter> A l' = {}" by (elim disjoint_family_onD)
     with \<open>a \<in> A l \<inter> A l'\<close> have "False" by simp
   }
-  thus "?thesis" by auto
+  thus ?thesis by auto
 qed
 
 lemma disjoint_family_on_imp_uniq_idx:
@@ -534,10 +534,10 @@ proof -
 qed
 
 proposition prob_1_5_6_uniqueness:
-  assumes -- \<open>The assumption @{prop "disjoint_family_on A \<Lambda>"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "F ` (\<Union>l \<in> \<Lambda>. A l) \<subseteq> B"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "disjoint_family_on A \<Lambda>"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "F ` (\<Union>l \<in> \<Lambda>. A l) \<subseteq> B"} is not necessary.\<close>
     "\<And>l. l \<in> \<Lambda> \<Longrightarrow> ext_eq_on (A l) F (f l)"
-    -- \<open>The assumption @{prop "F' ` (\<Union>l \<in> \<Lambda>. A l) \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "F' ` (\<Union>l \<in> \<Lambda>. A l) \<subseteq> B"} is not necessary.\<close>
     and "\<And>l. l \<in> \<Lambda> \<Longrightarrow> ext_eq_on (A l) F' (f l)"
   shows "ext_eq_on (\<Union>l \<in> \<Lambda>. A l) F F'"
 proof (rule ext_eq_onI)
@@ -548,7 +548,7 @@ proof (rule ext_eq_onI)
   also have "ext_eq_on (A l) \<dots> F'"
   proof -
     from \<open>l \<in> \<Lambda>\<close> and assms(2) have "ext_eq_on (A l) F' (f l)" by simp
-    thus "?thesis" by (fact ext_eq_on_sym)
+    thus ?thesis by (fact ext_eq_on_sym)
   qed
   finally have "ext_eq_on (A l) F F'" .
   with \<open>a \<in> A l\<close> show "F a = F' a" by auto
@@ -590,11 +590,11 @@ proof -
   from assms(1,3) have "A l = (proj l) ` (\<Pi> l \<in> \<Lambda>. A l)" by (fact prob_1_5_7[THEN sym])
   also from assms(2) have "\<dots> \<subseteq> (proj l) ` (\<Pi> l \<in> \<Lambda>. B l)" by auto
   also from * and assms(3) have "\<dots> = B l" by (simp add: prob_1_5_7)
-  finally show "?thesis" .
+  finally show ?thesis .
 qed
 
 proposition prob_1_5_8_b:
-  assumes -- \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<noteq> {}"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<noteq> {}"} is not necessary.\<close>
     "\<And>l. l \<in> \<Lambda> \<Longrightarrow> A l \<subseteq> B l"
   shows "(\<Pi> l \<in> \<Lambda>. A l) \<subseteq> (\<Pi> l \<in> \<Lambda>. B l)"
   using assms by (fact Pi_mono)
@@ -620,7 +620,7 @@ proposition prob_1_5_9:
   by (fact Pi_Int)
 
 proposition prob_1_5_10:
-  assumes "(\<Pi> l \<in> \<Lambda>. A l) \<noteq> {}" -- \<open>This assumption is not specified in the book. However, there
+  assumes "(\<Pi> l \<in> \<Lambda>. A l) \<noteq> {}" \<comment> \<open>This assumption is not specified in the book. However, there
                                      exists a counterexample without it.\<close>
     and "\<And>l. l \<in> \<Lambda> \<Longrightarrow> (f l) ` (A l) \<subseteq> B l"
   defines F: "F a \<equiv> (l \<in> \<Lambda>. f l (a l))"
@@ -795,20 +795,20 @@ proposition prob_1_5_11:
 proof -
   {
     assume "s ` B \<subseteq> s' ` B"
-    with assms(1-3) have "?thesis" by (elim prob_1_5_11_a)
+    with assms(1-3) have ?thesis by (elim prob_1_5_11_a)
   }
   moreover {
     assume "s' ` B \<subseteq> s ` B"
     with assms(1-3) have "ext_eq_on B s' s" by (elim prob_1_5_11_a)
-    hence "?thesis" by (fact ext_eq_on_sym)
+    hence ?thesis by (fact ext_eq_on_sym)
   }
   moreover note assms(4)
-  ultimately show "?thesis" by auto
+  ultimately show ?thesis by auto
 qed
 
 proposition prob_1_5_12_a:
   assumes "f ` A = B"
-    -- \<open>The assumption @{prop "f' ` B = C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "f' ` B = C"} is not necessary.\<close>
     and "right_inv_into A f s"
     and "right_inv_into B f' s'"
   shows "right_inv_into A (f' \<circ> f) (s \<circ> s')"
@@ -847,8 +847,8 @@ proof (rule left_inv_intoI)
 qed
 
 proposition prob_1_5_13_a:
-  assumes -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
     "f ` A \<subseteq> B"
     and "ext_eq_on A h (g \<circ> f)"
   shows "h ` A \<subseteq> g ` B"
@@ -862,8 +862,8 @@ proof (rule subsetI)
 qed
 
 proposition prob_1_5_13_b:
-  assumes -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
     "h ` A \<subseteq> g ` B"
   obtains f where "f ` A \<subseteq> B"
     and "ext_eq_on A h (g \<circ> f)"
@@ -891,15 +891,15 @@ proof -
 qed
 
 proposition prob_1_5_13:
-  -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
   shows "(\<exists>f. f ` A \<subseteq> B \<and> ext_eq_on A h (g \<circ> f)) \<longleftrightarrow> h ` A \<subseteq> g ` B"
   using prob_1_5_13_a prob_1_5_13_b by metis
 
 proposition prob_1_5_14_a:
-  assumes -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
-    -- \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "h ` A \<subseteq> C"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "g ` B \<subseteq> C"} is not necessary.\<close>
     "ext_eq_on A h (g \<circ> f)"
     and "a \<in> A"
     and "a' \<in> A"
@@ -920,9 +920,9 @@ proposition prob_1_5_14_b:
   fixes A :: "'a set"
     and B :: "'b set"
     and C :: "'c set"
-  assumes "A = {} \<Longrightarrow> B = {}" -- \<open>This assumption is not specified in the book. However, there
+  assumes "A = {} \<Longrightarrow> B = {}" \<comment> \<open>This assumption is not specified in the book. However, there
                                   exists a counterexample without it.\<close>
-    -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     and "h ` A \<subseteq> C"
     and "\<And>a a'. a \<in> A \<Longrightarrow> a' \<in> A \<Longrightarrow> f a = f a' \<Longrightarrow> h a = h a'"
   obtains g where "g ` B \<subseteq> C" and "ext_eq_on A h (g \<circ> f)"
@@ -950,7 +950,7 @@ proof -
         ultimately have "h a' = h a" by blast
         with \<open>x = h a'\<close> show "x = h a" by simp
       qed
-      finally show "?thesis" .
+      finally show ?thesis .
     qed
     have "?g ` B \<subseteq> C"
     proof (rule image_subsetI)
@@ -993,9 +993,9 @@ proof -
 qed
 
 proposition prob_1_5_14:
-  assumes "A = {} \<Longrightarrow> B = {}" -- \<open>This assumption is not specified in the book. However, there
+  assumes "A = {} \<Longrightarrow> B = {}" \<comment> \<open>This assumption is not specified in the book. However, there
                                   exists a counterexample without it.\<close>
-    -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     and "h ` A \<subseteq> C"
   shows "(\<exists>g. g ` B \<subseteq> C \<and> ext_eq_on A h (g \<circ> f)) \<longleftrightarrow> (\<forall>a \<in> A. \<forall>a' \<in> A. f a = f a' \<longrightarrow> h a = h a')"
 proof (rule iffI)
@@ -1019,7 +1019,7 @@ next
 qed
 
 proposition prob_1_5_15:
-  assumes "A' = {} \<Longrightarrow> A = {}" -- \<open>This assumption is not specified in the book. However, there
+  assumes "A' = {} \<Longrightarrow> A = {}" \<comment> \<open>This assumption is not specified in the book. However, there
                                    exists a counterexample without it.\<close>
     and "u ` A' \<subseteq> A"
     and "v ` B \<subseteq> B'"
@@ -1045,7 +1045,7 @@ proof -
       moreover have "(f \<circ> u \<circ> u') ` A \<subseteq> B"
       proof -
         from \<open>id_on (u \<circ> u') A\<close> have "(u \<circ> u') ` A = A" by (fact id_on_imp_surj_on)
-        with \<open>f \<in> A \<rightarrow> B\<close> show "?thesis" by fastforce
+        with \<open>f \<in> A \<rightarrow> B\<close> show ?thesis by fastforce
       qed
       moreover note *
       ultimately have "ext_eq_on A ((v' \<circ> v) \<circ> f \<circ> u \<circ> u') f" by fastforce
@@ -1064,7 +1064,7 @@ proof -
         also have "\<dots> = f a"
         proof -
           from \<open>f \<in> A \<rightarrow> B\<close> and \<open>a \<in> A\<close> have "f a \<in> B" by auto
-          with \<open>left_inv_into B v v'\<close> show "?thesis" by (fact left_inv_intoD2)
+          with \<open>left_inv_into B v v'\<close> show ?thesis by (fact left_inv_intoD2)
         qed
         finally have "v' ((\<Phi> f') (u' a)) = f a" .
       }
@@ -1073,7 +1073,7 @@ proof -
       moreover have "(f' \<circ> u \<circ> u') ` A \<subseteq> B"
       proof -
         from \<open>id_on (u \<circ> u') A\<close> have "(u \<circ> u') ` A = A" by (fact id_on_imp_surj_on)
-        with \<open>f' \<in> A \<rightarrow> B\<close> show "?thesis" by fastforce
+        with \<open>f' \<in> A \<rightarrow> B\<close> show ?thesis by fastforce
       qed
       moreover note *
       ultimately have "ext_eq_on A (f' \<circ> u \<circ> u') f" by fastforce
@@ -1103,12 +1103,12 @@ proof -
         also have "ext_eq_on A' \<dots> (f' \<circ> u' \<circ> u)"
         proof -
           from \<open>id_on (u' \<circ> u) A'\<close> and \<open>f' \<in> A' \<rightarrow> B'\<close> have "(f' \<circ> u' \<circ> u) ` A' \<subseteq> B'" by fastforce
-          with \<open>id_on (v \<circ> v') B'\<close> show "?thesis" by fastforce
+          with \<open>id_on (v \<circ> v') B'\<close> show ?thesis by fastforce
         qed
         also from \<open>id_on (u' \<circ> u) A'\<close> have "ext_eq_on A' \<dots> f'" by fastforce
         finally show "ext_eq_on A' (\<Phi> ?f) f'" .
       qed
-      ultimately have "\<exists>f \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) f'" by auto
+      ultimately have "\<exists>f \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) f'" by blast
     }
     thus "\<forall>f' \<in> A' \<rightarrow> B'. \<exists>f \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) f'" ..
   qed
