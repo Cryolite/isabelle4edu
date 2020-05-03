@@ -259,7 +259,7 @@ proof -
     fix C
     assume "C \<in> A // (equiv_kernel_on f A)"
     then obtain a where "a \<in> A" and "C = equiv_kernel_on f A `` {a}" by fast
-    thus "\<exists>a \<in> A. ?\<phi> a = C" by auto
+    thus "C \<in> ?\<phi> ` A" by simp
   qed
   moreover have "bij_betw ?g (A // (equiv_kernel_on f A)) (f ` A)"
   proof (rule bij_betw_imageI)
@@ -278,7 +278,7 @@ proof -
       from this(1) have "?g (?\<phi> a) = f a" by (fact **)
       with \<open>b = f a\<close> have "?g (?\<phi> a) = b" by simp
       moreover from \<open>a \<in> A\<close> have "?\<phi> a \<in> A // equiv_kernel_on f A" by auto
-      ultimately show "\<exists>C \<in> A // (equiv_kernel_on f A). ?g C = b" by auto
+      ultimately show "b \<in> ?g ` (A // (equiv_kernel_on f A))" by auto
     qed
     show "inj_on ?g (A // (equiv_kernel_on f A))"
     proof (rule inj_onI)

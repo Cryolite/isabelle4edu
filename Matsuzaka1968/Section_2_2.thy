@@ -129,7 +129,7 @@ proof -
         qed
         with \<open>x \<in> dc_seq M a n\<close> have "False" by simp
       }
-      thus "\<exists>n \<in> UNIV. ?f n = x" by auto
+      thus "x \<in> ?f ` UNIV" by auto
     qed
   qed
   hence "\<aleph>\<^sub>0 =o |?A|" by auto
@@ -316,7 +316,7 @@ proof -
       assume "a \<in> ?A"
       then obtain l where "l \<in> \<Lambda>" and "a \<in> A l" by auto
       with f obtain n where "f l n = a" by auto
-      with \<open>l \<in> \<Lambda>\<close> show "\<exists>l \<in> \<Lambda>. \<exists>n \<in> UNIV. f l n = a" by auto
+      with \<open>l \<in> \<Lambda>\<close> show "a \<in> ?\<phi> ` (\<Lambda> \<times> UNIV)" by auto
     qed
     hence "|?A| \<le>o |\<Lambda> \<times> (UNIV :: nat set)|" by (fact surj_on_imp_card_leq)
     also from assms(3) have "|\<Lambda> \<times> (UNIV :: nat set)| \<le>o \<aleph>\<^sub>0" by (auto elim: thm_2_5_1_a)
@@ -406,7 +406,7 @@ proof -
       assume "n \<in> ?A"
       hence "0 \<le> n" by simp
       then obtain m where "n = ?f m" by (elim nonneg_int_cases)
-      thus "\<exists>m \<in> UNIV. ?f m = n" by simp
+      thus "n \<in> ?f ` UNIV" by simp
     qed
     moreover have "inj_on ?f UNIV" by (fact inj_of_nat)
     ultimately have "bij_betw ?f UNIV ?A" by (intro bij_betw_imageI)
@@ -426,7 +426,7 @@ proof -
       hence "0 \<le> -n" by simp
       then obtain m :: nat where "-n = m" by (elim nonneg_int_cases)
       hence "-int m = n" by simp
-      thus "\<exists>m \<in> UNIV. -int m = n" by auto
+      thus "n \<in> ?f ` UNIV" by auto
     qed
     moreover have "inj_on ?f UNIV" by (simp add: inj_on_def)
     ultimately have "bij_betw ?f UNIV ?B" by (intro bij_betw_imageI)
@@ -449,7 +449,7 @@ proof -
   next
     fix q
     obtain a b where "q = Fract a b" by (auto intro: Rat_cases)
-    thus "\<exists>a \<in> UNIV. \<exists>b \<in> UNIV. Fract a b = q" by auto
+    thus "q \<in> ?f ` (UNIV \<times> UNIV)" by auto
   qed
   hence "|UNIV :: rat set| \<le>o |(UNIV :: int set) \<times> (UNIV :: int set)|"
     by (fact surj_on_imp_card_leq)
@@ -519,7 +519,7 @@ proof -
       moreover from \<open>b \<in> ?A\<^sub>1\<close> have "b \<in> A" by simp
       ultimately have "\<exists>a \<in> A. ?f a = b" by blast
     }
-    ultimately show "\<exists>a \<in> A. ?f a = b" by blast
+    ultimately show "b \<in> ?f ` A" by blast
   qed
   moreover have "inj_on ?f A"
   proof (rule inj_onI)
@@ -699,7 +699,7 @@ proof -
         with inj_f have "(m, n') = (m, n)" by (auto dest: injD)
         thus "n' = n" by simp
       qed
-      ultimately show "\<exists>a \<in> ?A' m. ?g a = n" by blast
+      ultimately show "n \<in> ?g ` ?A' m" by fastforce
     qed
     moreover have "inj_on ?g (?A' m)"
     proof (rule inj_onI)
@@ -775,7 +775,7 @@ proof -
         moreover have "{0 :: rat <..< 0} = {}" by simp
         ultimately have "\<exists>a b. {a <..< b} = Q" by auto
       }
-      ultimately show "\<exists>a \<in> UNIV. \<exists>b \<in> UNIV. {a <..< b} = Q" by auto
+      ultimately show "Q \<in> ?f ` (UNIV \<times> UNIV)" by fast
     qed
     hence "|\<QQ> \<union> {{}}| \<le>o |(UNIV :: rat set) \<times> (UNIV :: rat set)|" by (fact surj_on_imp_card_leq)
     also have "|(UNIV :: rat set) \<times> (UNIV :: rat set)| =o \<aleph>\<^sub>0"
@@ -888,7 +888,7 @@ using assms(2) proof (induct n rule: dec_induct)
     from this(2) have "ys = []" by simp
     with \<open>xs = y # ys\<close> have "xs = [y]" by simp
     moreover from \<open>xs = y # ys\<close> and \<open>xs \<in> lists A\<close> have "y \<in> A" by simp
-    ultimately show "\<exists>a \<in> A. ?f a = xs" by simp
+    ultimately show "xs \<in> ?f ` A" by simp
   qed
   moreover have "inj_on ?f A"
   proof (rule inj_onI)
@@ -923,7 +923,7 @@ next
     with \<open>length ys = n\<close> have "ys \<in> XS n" unfolding XS by simp
     moreover from \<open>xs \<in> lists A\<close> and \<open>xs = a # ys\<close> have "a \<in> A" by simp
     moreover note \<open>xs = a # ys\<close>
-    ultimately show "\<exists>ys \<in> XS n. \<exists>a \<in> A. a # ys = xs" by simp
+    ultimately show "xs \<in> ?f ` (XS n \<times> A)" by auto
   qed
   hence "|XS (Suc n)| \<le>o |(XS n) \<times> A|" by (fact surj_on_imp_card_leq)
   also from assms(1) and step.hyps have "|(XS n) \<times> A| =o \<aleph>\<^sub>0"
@@ -978,7 +978,7 @@ proof -
     moreover {
       assume "1 \<le> n"
       with assms have "|?A' n| =o \<aleph>\<^sub>0" by (fact fixed_length_lists_of_aleph_zero)
-      hence "|?A' n| \<le>o \<aleph>\<^sub>0" by fast
+      hence "|?A' n| \<le>o \<aleph>\<^sub>0" by (fact card_eq_imp_card_leq)
     }
     ultimately show "|?A' n| \<le>o \<aleph>\<^sub>0" by linarith
   next
@@ -1023,7 +1023,7 @@ proof -
     then obtain xs where "xs \<in> lists A" and "set xs = X" by (fast dest: finite_list)
     from this(1) have "xs \<in> ?A' (length xs)" by simp
     hence "xs \<in> ?B" by simp
-    with \<open>set xs = X\<close> show "\<exists>xs \<in> ?B. ?f xs = X" by blast
+    with \<open>set xs = X\<close> show "X \<in> ?f ` ?B" by auto
   qed
   hence "|\<AA>| \<le>o |?B|" by (fact surj_on_imp_card_leq)
   also have "|?B| \<le>o \<aleph>\<^sub>0"

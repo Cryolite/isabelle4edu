@@ -98,7 +98,7 @@ proof -
     fix n :: nat
     obtain i and j where "n + 1 = 2^i * (2 * j + 1)" using ex_2_3_factorization_existence by auto
     hence "2^i * (2 * j + 1) - 1 = n" by presburger
-    thus "\<exists>i \<in> UNIV. \<exists>j \<in> UNIV. 2^i * (2 * j + 1) - 1 = n" by blast
+    thus "n \<in> ?f ` (UNIV \<times> UNIV)" by auto
   qed
   moreover have "inj_on ?f (UNIV \<times> UNIV)"
   proof (rule inj_onI, split_pair)
@@ -227,7 +227,7 @@ proof -
     hence "a \<in> g ` bernstein_seq' A B f g n" by simp
     then obtain b where "b \<in> bernstein_seq' A B f g n" and "a = g b" by auto
     from this(1) have "b \<in> ?B" by auto
-    with \<open>a = g b\<close> show "\<exists>b \<in> ?B. g b = a" by fast
+    with \<open>a = g b\<close> show "a \<in> g ` ?B" by simp
   qed
   moreover from \<open>?B \<subseteq> B\<close> and assms(4) have "inj_on g ?B" by (elim inj_on_subset)
   ultimately have "bij_betw g ?B ?A" by (intro bij_betw_imageI)
@@ -264,7 +264,7 @@ proof -
       with \<open>f' ` ?A = ?B\<close> obtain a where "a \<in> ?A" and "b = f' a" by blast
       hence "?F a = b" by simp
       moreover from \<open>a \<in> ?A\<close> and \<open>?A \<subseteq> A\<close> have "a \<in> A" ..
-      ultimately have "\<exists>a \<in> A. ?F a = b" by blast
+      ultimately have "b \<in> ?F ` A" by blast
     }
     moreover {
       assume "b \<notin> ?B"
@@ -273,9 +273,9 @@ proof -
       then obtain a where "a \<in> ?A'" and "b = f a" by blast
       hence "?F a = b" by argo
       moreover from \<open>a \<in> ?A'\<close> and \<open>?A' \<subseteq> A\<close> have "a \<in> A" ..
-      ultimately have "\<exists>a \<in> A. ?F a = b" by blast
+      ultimately have "b \<in> ?F ` A" by blast
     }
-    ultimately show "\<exists>a \<in> A. ?F a = b" by blast
+    ultimately show "b \<in> ?F ` A" by blast
   qed
   moreover have "inj_on ?F A"
   proof (rule inj_onI)
@@ -376,7 +376,7 @@ proof -
       with assms(1) obtain a where "a \<in> A'" and "f a = b'" by blast
       hence "?f' a = b'" by simp
       moreover from \<open>a \<in> A'\<close> and assms(2) have "a \<in> A" ..
-      ultimately show "\<exists>a \<in> A. ?f' a = b'" by blast
+      ultimately show "b' \<in> ?f' ` A" by auto
     qed
     hence "\<exists>f'. f' ` A = B" by blast
   }
@@ -443,6 +443,15 @@ proof -
   thus "thesis" by (fact that)
 qed
 
+lemma card_eqE' [elim]:
+  assumes "|A| =o |B|"
+  obtains f where "bij_betw f B A"
+proof -
+  from assms obtain f where "bij_betw f A B" by auto
+  hence "bij_betw (inv_into A f) B A" by (fact bij_betw_inv_into)
+  with that show thesis by simp
+qed
+
 proposition card_eq_definition:
   shows "|A| =o |B| \<longleftrightarrow> equipotent A B"
   by auto
@@ -480,33 +489,56 @@ proof -
 qed
 
 proposition czero_definition:
-  shows "(czero :: 'a rel) =o |{} :: 'b set|"
-proof -
-  have "(czero :: 'a rel) =o (czero :: 'b rel)" by (fact czero_ordIso)
-  moreover have "(czero :: 'b rel) = |{} :: 'b set|"  by (fact czero_def)
-  ultimately show "?thesis" by simp
-qed
+  shows "(czero :: 'a rel) = |{} :: 'a set|"
+  by (fact czero_def)
 
-proposition czero_definition_sym:
+lemma empty_card_eq_czero:
   shows "|{} :: 'a set| =o (czero :: 'b rel)"
 proof -
-  have "(czero :: 'a rel) =o (czero :: 'b rel)" by (fact czero_ordIso)
-  moreover have "(czero :: 'a rel) = |{} :: 'a set|" by (fact czero_def)
-  ultimately show "?thesis" by simp
+  define f :: "'a \<Rightarrow> 'b" where "f a \<equiv> undefined" for a
+  from f_def have "inj_on f {}" and "f ` {} = {}" by simp_all
+  hence "bij_betw f ({} :: 'a set) ({} :: 'b set)" by (intro bij_betw_imageI)
+  hence "|{} :: 'a set| =o |{} :: 'b set|" by auto
+  thus ?thesis unfolding czero_definition by simp
+qed
+
+lemma empty_card_eq_empty:
+  shows "|{} :: 'a set| =o |{} :: 'b set|"
+proof -
+  define f :: "'a \<Rightarrow> 'b" where "f a \<equiv> undefined" for a
+  from f_def have "inj_on f {}" and "f ` {} = {}" by simp_all
+  hence "bij_betw f {} {}" by (intro bij_betw_imageI)
+  thus ?thesis by auto
+qed
+
+lemma czero_card_eq_empty:
+  shows "(czero :: 'a rel) =o |{} :: 'b set|"
+proof -
+  have "(czero :: 'a rel) = |{} :: 'a set|" unfolding czero_definition ..
+  moreover have "|{} :: 'a set| =o |{} :: 'b set|" by (fact empty_card_eq_empty)
+  ultimately show ?thesis by simp
+qed
+
+lemma czero_refl:
+  shows "(czero :: 'a rel) =o (czero :: 'b rel)"
+proof -
+  define f :: "'a \<Rightarrow> 'b" where "f a \<equiv> undefined" for a
+  have "bij_betw f ({} :: 'a set) ({} :: 'b set)" by (auto intro: bij_betwI')
+  hence "|{} :: 'a set| =o |{} :: 'b set|" by auto
+  thus ?thesis unfolding czero_definition by simp
 qed
 
 lemma eq_empty_imp_card_eq_czero:
   fixes A :: "'a set"
-  assumes "A = ({} :: 'a set)"
-  shows "|A| =o czero"
+  assumes "A = {}"
+  shows "|A| =o (czero :: 'b rel)"
 proof -
   from assms have "|A| =o |{} :: 'a set|" by auto
-  moreover have "|{} :: 'a set| =o czero" by (fact czero_definition_sym)
+  moreover have "|{} :: 'a set| =o (czero :: 'b rel)" by (fact empty_card_eq_czero)
   ultimately show "?thesis" by auto
 qed
 
 proposition cone_definition [simp]:
-  fixes a :: 'a
   shows "cone =o |{a}|"
 proof -
   have "cone =o |{()}|" by (simp only: card_of_refl cone_def)
@@ -519,6 +551,17 @@ proof -
     thus "?thesis" by (fact card_of_ordIsoI)
   qed
   finally show "cone =o |{a}|" .
+qed
+
+lemma singleton_card_eq_cone:
+  shows "|{a}| =o cone"
+proof -
+  define f where "f x \<equiv> if x = a then () else undefined" for x
+  from f_def have "inj_on f {a}" by simp
+  moreover from f_def have "f ` {a} = {()}" by simp
+  ultimately have "bij_betw f {a} {()}" by (intro bij_betw_imageI)
+  hence "|{a}| =o |{()}|" by auto
+  thus ?thesis unfolding cone_def by simp
 qed
 
 lemma card_leqI [intro]:
@@ -716,7 +759,7 @@ proof -
     assume "l \<in> \<Lambda>"
     moreover from this and assms(1) obtain a where "a \<in> A l" by auto
     ultimately have "a \<in> (\<Union>l \<in> \<Lambda>. A l)" and "?f a = l" by (auto dest: *)
-    thus "\<exists>a \<in> (\<Union>l \<in> \<Lambda>. A l). ?f a = l" by blast
+    thus "l \<in> ?f ` (\<Union>l \<in> \<Lambda>. A l)" by auto
   qed
   then obtain g where "g ` \<Lambda> \<subseteq> (\<Union>l \<in> \<Lambda>. A l)" and "inj_on g \<Lambda>"
     by (elim cor_inj_on_iff_surj_on_b)

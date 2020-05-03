@@ -145,16 +145,51 @@ proposition prop_1_4_5:
   assumes
   -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
     "P \<subseteq> A"
-  shows "P \<subseteq> (f -` (f ` P)) \<inter> A"
+  shows "P \<subseteq> f -` (f ` P) \<inter> A"
   using assms by auto
 
 proposition prop_1_4_5':
   -- \<open>The assumption @{prop "f ` A \<subseteq> B"} is not necessary.\<close>
   -- \<open>The assumption @{prop "Q \<subseteq> B"} is not necessary.\<close>
-  shows "f ` ((f -` Q) \<inter> A) \<subseteq> Q"
+  shows "f ` (f -` Q \<inter> A) \<subseteq> Q"
   by auto
 
+proposition prob_1_4_a:
+  assumes "P \<subseteq> A"
+    and "A - P = {a}"
+    and "P = {p}"
+    and "f(a) = f(p)"
+  shows "f ` A - f ` P \<subset> f ` (A - P)"
+  using assms by blast
+
+proposition prob_1_4_b:
+  assumes "P \<subseteq> A"
+    and "{a} = A - P"
+    and "{p} = P"
+    and "f(a) = f(p)"
+  shows "P \<subset> f -` (f ` (P))"
+  using assms by blast
+
 subsection \<open>B) Surjective, Injective, and Bijective Maps\<close>
+
+lemma surj_onI:
+  assumes "\<And>a. a \<in> A \<Longrightarrow> f a \<in> B"
+    and "\<And>b. b \<in> B \<Longrightarrow> b \<in> f ` A"
+  shows "f ` A = B"
+proof (intro equalityI)
+  from assms(1) show "f ` A \<subseteq> B" by auto
+  from assms(2) show "B \<subseteq> f ` A" by auto
+qed
+
+lemma bij_betw_imageI':
+  assumes "\<And>a a'. a \<in> A \<Longrightarrow> a' \<in> A \<Longrightarrow> f a = f a' \<Longrightarrow> a = a'"
+    and "\<And>a. a \<in> A \<Longrightarrow> f a \<in> B"
+    and "\<And>b. b \<in> B \<Longrightarrow> b \<in> f ` A"
+  shows "bij_betw f A B"
+proof (rule bij_betw_imageI)
+  from assms(1) show "inj_on f A" by (rule inj_onI)
+  from assms(2,3) show "f ` A = B" by auto
+qed
 
 lemma corr_inv_fun_fun:
   assumes "a \<in> A"
@@ -175,35 +210,29 @@ theorem thm_1_4_a:
   assumes "f ` A \<subseteq> B"
     and "as_corr_on g B = corr_inv (as_corr_on f A)"
   shows "bij_betw f A B"
-proof (rule bij_betw_imageI)
-  {
-    fix a and a'
-    assume "a \<in> A"
-      and "a' \<in> A"
-      and "f a = f a'"
-    from \<open>a \<in> A\<close> and assms(1) have "f a \<in> B" by auto
-    moreover from assms(2) have "corr_inv (as_corr_on f A) (f a) = as_corr_on g B (f a)" by simp
-    with \<open>a \<in> A\<close> and \<open>f a \<in> B\<close> have **: "{a'' \<in> A. f a'' = f a} = {g (f a)}"
-      by (auto simp only: corr_inv_fun_fun)
-    with \<open>a \<in> A\<close> have "a = g (f a)" by blast
-    moreover from ** and \<open>a' \<in> A\<close> and \<open>f a = f a'\<close> have "a' = g (f a)" by auto
-    ultimately have "a = a'" by simp
-  }
-  thus "inj_on f A" by (rule inj_onI)
-  {
-    fix a
-    assume "a \<in> A"
-    with assms(1) have "f a \<in> B" by auto
-  }
-  moreover {
-    fix b
-    assume "b \<in> B"
-    moreover from assms(2) have "corr_inv (as_corr_on f A) b = as_corr_on g B b" by simp
-    ultimately have "{a \<in> A. f a = b} = {g b}" by (force simp only: corr_inv_fun_eq)
-    hence "g b \<in> A" and "f (g b) = b" by auto
-    hence "\<exists>a \<in> A. f a = b" by blast
-  }
-  ultimately show "f ` A = B" by (intro surj_onI)
+proof (rule bij_betw_imageI')
+  fix a and a'
+  assume "a \<in> A"
+    and "a' \<in> A"
+    and "f a = f a'"
+  from \<open>a \<in> A\<close> and assms(1) have "f a \<in> B" by auto
+  moreover from assms(2) have "corr_inv (as_corr_on f A) (f a) = as_corr_on g B (f a)" by simp
+  with \<open>a \<in> A\<close> and \<open>f a \<in> B\<close> have **: "{a'' \<in> A. f a'' = f a} = {g (f a)}"
+    by (auto simp only: corr_inv_fun_fun)
+  with \<open>a \<in> A\<close> have "a = g (f a)" by blast
+  moreover from ** and \<open>a' \<in> A\<close> and \<open>f a = f a'\<close> have "a' = g (f a)" by auto
+  ultimately show "a = a'" by simp
+next
+  fix a
+  assume "a \<in> A"
+  with assms(1) show "f a \<in> B" by auto
+next
+  fix b
+  assume "b \<in> B"
+  moreover from assms(2) have "corr_inv (as_corr_on f A) b = as_corr_on g B b" by simp
+  ultimately have "{a \<in> A. f a = b} = {g b}" by (force simp only: corr_inv_fun_eq)
+  hence "g b \<in> A" and "f (g b) = b" by auto
+  thus "b \<in> f ` A" by force
 qed
 
 lemma bij_betwE2 [elim]:
@@ -584,7 +613,7 @@ next
   moreover from this(1) and assms(1) have "f a \<in> B" by auto
   moreover note \<open>b \<in> B\<close> and assms(4)
   ultimately have "f a = b" by (elim inj_onD)
-  with \<open>a \<in> A\<close> show "\<exists>a \<in> A. f a = b" by auto
+  with \<open>a \<in> A\<close> show "b \<in> f ` A" by auto
 qed
 
 proposition prob_1_4_13_b:

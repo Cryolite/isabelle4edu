@@ -7,6 +7,18 @@ section \<open>Operations among Sets\<close>
 
 subsection \<open>A) Union\<close>
 
+proposition prop_1_2_0_a:
+  defines "A \<equiv> {1, 2, 3, 4, 5}"
+    and "B \<equiv> {3, 5, 7, 9}"
+  shows "A \<union> B = {1, 2, 3, 4, 5, 7, 9}"
+  unfolding A_def and B_def by auto
+
+proposition prop_1_2_0_b:
+  defines "A \<equiv> {n :: nat. even n}"
+    and "B \<equiv> {n :: nat. odd n}"
+  shows "A \<union> B = UNIV"
+  unfolding A_def and B_def by auto
+
 proposition prop_1_2_1:
   shows "A \<union> B = {x. x \<in> A \<or> x \<in> B}"
   by (fact Un_def)
@@ -37,6 +49,13 @@ proposition prop_1_2_6:
   shows "(A \<union> B) \<union> C = A \<union> (B \<union> C)"
   by auto
 
+proposition prop_1_2_6_b:
+  shows "((A \<union> B) \<union> C) \<union> D = (A \<union> B) \<union> (C \<union> D)"
+    and "(A \<union> B) \<union> (C \<union> D) = A \<union> (B \<union> (C \<union> D))"
+    and "A \<union> (B \<union> (C \<union> D)) = A \<union> ((B \<union> C) \<union> D)"
+    and "A \<union> ((B \<union> C) \<union> D) = (A \<union> (B \<union> C)) \<union> D"
+  by auto
+
 proposition prop_1_2_7:
   assumes "A \<subseteq> B"
   shows "A \<union> B = B"
@@ -52,6 +71,18 @@ proposition prop_1_2_9:
   using prop_1_1_5 by (rule prop_1_2_7)
 
 subsection \<open>B) Intersection\<close>
+
+proposition prop_1_2_0_c:
+  defines "A :: nat set \<equiv> {1, 2, 3, 4, 5}"
+    and "B \<equiv> {3, 5, 7, 9}"
+  shows "A \<inter> B = {3, 5}"
+  unfolding A_def and B_def by simp
+
+proposition prop_1_2_0_d:
+  defines "A \<equiv> {n :: nat. even n}"
+    and "B \<equiv> {n :: nat. odd n}"
+  shows "A \<inter> B = {}"
+  unfolding A_def and B_def by auto
 
 proposition prop_1_2_2'_a:
   shows "A \<inter> B \<subseteq> A"
@@ -111,6 +142,12 @@ proposition prop_1_2_11':
 
 subsection \<open>C) Difference\<close>
 
+proposition prop_1_2_0_e:
+  defines "A :: nat set \<equiv> {1, 2, 3, 4, 5}"
+    and "B \<equiv> {3, 5, 7, 9}"
+  shows "A - B = {1, 2, 4}"
+  unfolding A_def and B_def by auto
+
 subsection \<open>D) Universal Set\<close>
 
 proposition prop_1_2_12_a:
@@ -155,6 +192,50 @@ proposition prop_1_2_16':
   by (fact Diff_Int)
 
 subsection \<open>E) Family of Sets, Power Set\<close>
+
+proposition prop_1_2_0_f:
+  fixes a and b and c
+  defines "X \<equiv> {a, b, c}"
+  shows "Pow X = {{}, {a}, {b}, {c}, {a, b}, {b, c}, {c, a}, {a, b, c}}"
+  unfolding X_def by blast
+
+proposition prop_1_2_0_g:
+  shows "Pow {} = {{}}"
+  by (fact Pow_empty)
+
+proposition prop_1_2_0_h:
+  assumes "finite X"
+    and "card X = n"
+  shows "card (Pow X) = 2 ^ n"
+using assms proof (induct n arbitrary: X)
+  case 0
+  from 0 and assms(1) have "X = {}" by simp
+  thus ?case by simp
+next
+  case (Suc n')
+  from Suc.prems obtain x and X' where "card X' = n'" and "insert x X' = X" and "x \<notin> X'"
+    by (blast dest: card_eq_SucD)
+  from Suc.prems(1) and this(2) have "finite X'" by auto
+  with \<open>card X' = n'\<close> have "card (Pow X') = 2 ^ n'" by (intro Suc.hyps)
+  note \<open>finite X'\<close>
+  moreover have "Pow (insert x X') = Pow X' \<union> insert x ` Pow X'" by (fact Pow_insert)
+  moreover from \<open>x \<notin> X'\<close> have "Pow X' \<inter> insert x ` Pow X' = {}" by auto
+  ultimately have "card (Pow (insert x X')) = card (Pow X') + card (insert x ` Pow X')"
+    by (simp add: card_Un_disjoint)
+  moreover have "card (insert x ` Pow X') = card (Pow X')"
+  proof (rule card_image, rule inj_onI)
+    fix A B
+    assume "A \<in> Pow X'"
+      and "B \<in> Pow X'"
+      and "insert x A = insert x B"
+    from this(1,2) and \<open>x \<notin> X'\<close> have "x \<notin> A" and "x \<notin> B" by auto
+    with \<open>insert x A = insert x B\<close> show "A = B" by auto
+  qed
+  moreover note \<open>insert x X' = X\<close>
+  ultimately have "card (Pow X) = card (Pow X') + card (Pow X')" by simp
+  also from \<open>card (Pow X') = 2 ^ n'\<close> have "\<dots> = 2 ^ (Suc n')" by simp
+  finally show ?case .
+qed
 
 subsection \<open>F) Union and Intersection of Family of Sets\<close>
 

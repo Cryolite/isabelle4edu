@@ -8,264 +8,175 @@ begin
 proposition csum_definition:
   fixes A :: "'a set"
     and B :: "'b set"
-  (*assumes "Inl ` A \<inter> Inr ` B = {}"*)
-  shows "|A| +c |B| =o |A <+> B|"
+  shows "|A| +c |B| = |A <+> B|"
+  by (simp add: csum_def)
+
+proposition csum_welldefinedness:
+  assumes "|A| =o |A'|"
+    and "|B| =o |B'|"
+  shows "|A| +c |B| =o |A'| +c |B'|"
 proof -
-  have "|A| +c |B| =o |A <+> B|"
-  proof -
-    have "|A <+> B| =o |A| +c |B|" by (fact Plus_csum)
-    thus "?thesis" by (fact ordIso_symmetric)
+  from assms(1) obtain f where f: "bij_betw f A A'" by auto
+  hence "inj_on f A" and "f ` A = A'" by auto
+  from assms(2) obtain g where g: "bij_betw g B B'" by auto
+  hence "inj_on g B" and "g ` B = B'" by auto
+  define h where "h \<equiv> map_sum f g"
+  have "bij_betw h (A <+> B) (A' <+> B')"
+  proof (rule bij_betw_imageI)
+    show "inj_on h (A <+> B)"
+    proof (rule inj_onI)
+      fix x and x'
+      assume x: "x \<in> A <+> B"
+        and x': "x' \<in> A <+> B"
+        and h: "h x = h x'"
+      from x and x' consider (A) "x \<in> Inl ` A" and "x' \<in> Inl ` A"
+        | (B) "x \<in> Inl ` A" and "x' \<in> Inr ` B"
+        | (C) "x \<in> Inr ` B" and "x' \<in> Inl ` A"
+        | (D) "x \<in> Inr ` B" and "x' \<in> Inr ` B"
+        by blast
+      thus "x = x'"
+      proof cases
+        case A
+        then obtain a and a' where
+          "a \<in> A"
+          and "Inl a = x"
+          and "a' \<in> A"
+          and "Inl a' = x'" by auto
+        with h_def have "h x = Inl (f a)" and "h x' = Inl (f a')" by auto
+        with h have "f a = f a'" by simp
+        with \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> and \<open>inj_on f A\<close> have "a = a'" by (elim inj_onD)
+        with \<open>Inl a = x\<close> and \<open>Inl a' = x'\<close> show ?thesis by simp
+      next
+        case B
+        with h_def and h have "False" by auto
+        thus "?thesis" ..
+      next
+        case C
+        with h_def and h have "False" by auto
+        thus "?thesis" ..
+      next
+        case D
+        then obtain b and b' where
+          "b \<in> B"
+          and "Inr b = x"
+          and "b' \<in> B"
+          and "Inr b' = x'" by auto
+        with h_def have "h x = Inr (g b)" and "h x' = Inr (g b')" by auto
+        with h have "g b = g b'" by simp
+        with \<open>b \<in> B\<close> and \<open>b' \<in> B\<close> and \<open>inj_on g B\<close> have "b = b'" by (elim inj_onD)
+        with \<open>Inr b = x\<close> and \<open>Inr b' = x'\<close> show ?thesis by simp
+      qed
+    qed
+  next
+    show "h ` (A <+> B) = A' <+> B'"
+    proof (rule surj_onI)
+      fix x
+      assume "x \<in> A <+> B"
+      with h_def and \<open>f ` A = A'\<close> and \<open>g ` B = B'\<close> show "h x \<in> A' <+> B'" by auto
+    next
+      fix x'
+      assume "x' \<in> A' <+> B'"
+      then consider (A) "x' \<in> Inl ` A'"
+        | (B) "x' \<in> Inr ` B'" by auto
+      thus "x' \<in> h ` (A <+> B)"
+      proof cases
+        case A
+        then obtain a' where "a' \<in> A'" and "Inl a' = x'" by blast
+        from \<open>a' \<in> A'\<close> and \<open>f ` A = A'\<close> obtain a where "a \<in> A" and "f a = a'" by auto
+        with \<open>Inl a' = x'\<close> and h_def have "x' = h (Inl a)" by simp
+        with \<open>a \<in> A\<close> show ?thesis by auto
+      next
+        case B
+        then obtain b' where "b' \<in> B'" and "Inr b' = x'" by blast
+        from \<open>b' \<in> B'\<close> and \<open>g ` B = B'\<close> obtain b where "b \<in> B" and "g b = b'" by auto
+        with \<open>Inr b' = x'\<close> and h_def have "x' = h (Inr b)" by simp
+        with \<open>b \<in> B\<close> show ?thesis by auto
+      qed
+    qed
   qed
-  also have "|A <+> B| =o |Inl ` A \<union> Inr ` B|" by (simp add: Plus_def)
-  also have "|Inl ` A \<union> Inr ` B| =o |A <+> B|"
-  proof -
-    have "Inl ` A \<union> Inr ` B = A <+> B" by auto
-    thus "?thesis" by simp
-  qed
-  finally show "?thesis" .
+  hence "|A <+> B| =o |A' <+> B'|" by auto
+  thus ?thesis unfolding csum_definition by simp
 qed
 
-proposition csum_definition_sym:
-  shows "|A <+> B| =o |A| +c |B|"
-  by (fact Plus_csum)
+lemmas csum_cong' = csum_welldefinedness
+
+lemma csum_cong1':
+  assumes "|A| =o |A'|"
+  shows "|A| +c |B| =o |A'| +c |B|"
+proof -
+  have "|B| =o |B|" by simp
+  with assms show "?thesis" by (intro csum_cong')
+qed
+
+lemma csum_cong2':
+  assumes "|B| =o |B'|"
+  shows "|A| +c |B| =o |A| +c |B'|"
+proof -
+  have "|A| =o |A|" by simp
+  with assms show "?thesis" by (intro csum_cong')
+qed
+
+primrec sum_swap where
+  "sum_swap (Inl a) = Inr a"
+| "sum_swap (Inr b) = Inl b"
+
+lemma inj_on_sum_swap:
+  shows "inj_on sum_swap (A <+> B)"
+  unfolding inj_on_def by auto
+
+lemma sum_swap_surj_on:
+  shows "sum_swap ` (A <+> B) = B <+> A"
+  unfolding sum_swap_def by force
+
+lemma bij_betw_sum_swap:
+  shows "bij_betw sum_swap (A <+> B) (B <+> A)"
+  using inj_on_sum_swap sum_swap_surj_on by (intro bij_betw_imageI)
 
 proposition prop_2_3_1:
   shows "|A| +c |B| =o |B| +c |A|"
 proof -
-  have "|A| +c |B| =o |A <+> B|" by (fact csum_definition)
-  also have "|A <+> B| =o |B <+> A|" by (fact card_of_Plus_commute)
-  also have "|B <+> A| =o |B| +c |A|" by (fact csum_definition_sym)
-  finally show "?thesis" by simp
+  from bij_betw_sum_swap have "|A <+> B| =o |B <+> A|" by auto
+  thus ?thesis unfolding csum_definition by simp
 qed
 
-fun sum_assoc_perm :: "('a + 'b) + 'c \<Rightarrow> 'a + ('b + 'c)" where
-  "sum_assoc_perm (Inl (Inl a)) = Inl a"
-| "sum_assoc_perm (Inl (Inr b)) = Inr (Inl b)"
-| "sum_assoc_perm (Inr c) = Inr (Inr c)"
+fun sum_rotate :: "('a + 'b) + 'c \<Rightarrow> 'a + ('b + 'c)" where
+  "sum_rotate (Inl (Inl a)) = Inl a"
+| "sum_rotate (Inl (Inr b)) = Inr (Inl b)"
+| "sum_rotate (Inr c) = Inr (Inr c)"
+
+lemma inj_on_sum_rotate:
+  shows "inj_on sum_rotate ((A <+> B) <+> C)"
+  unfolding inj_on_def by auto
+
+lemma sum_rotate_surj_on:
+  shows "sum_rotate ` ((A <+> B) <+> C) = A <+> (B <+> C)"
+  by force
+
+lemma bij_betw_sum_rotate:
+  shows "bij_betw sum_rotate ((A <+> B) <+> C) (A <+> (B <+> C))"
+  using inj_on_sum_rotate and sum_rotate_surj_on by (intro bij_betw_imageI)
 
 proposition prop_2_3_2:
   shows "( |A| +c |B| ) +c |C| =o |A| +c ( |B| +c |C| )"
 proof -
-  have "( |A| +c |B| ) +c |C| =o |A <+> B| +c |C|"
-  proof -
-    have "|A| +c |B| =o |A <+> B|" by (fact csum_definition)
-    thus "?thesis" by (fact csum_cong1)
-  qed
-  also have "|A <+> B| +c |C| =o |(A <+> B) <+> C|" by (fact csum_definition)
-  also have "|(A <+> B) <+> C| =o |A <+> (B <+> C)|"
-  proof -
-    have "inj_on sum_assoc_perm ((A <+> B) <+> C)"
-    proof (intro inj_onI)
-      fix x y
-      assume "x \<in> (A <+> B) <+> C"
-        and "y \<in> (A <+> B) <+> C"
-        and "sum_assoc_perm x = sum_assoc_perm y"
-      note this(3)
-      moreover {
-        fix a
-        assume "x = Inl (Inl a)"
-          and "sum_assoc_perm y = Inl a"
-        note this(2)
-        moreover {
-          fix a'
-          assume "y = Inl (Inl a')"
-            and "Inl a = Inl a'"
-          from this(2) have "a = a'" by simp
-          with \<open>x = Inl (Inl a)\<close> and \<open>y = Inl (Inl a')\<close> have "x = y" by simp
-        }
-        moreover {
-          fix b'
-          assume "y = Inl (Inr b')"
-            and "Inl a = Inr (Inl b')"
-          from this(2) have "False" ..
-        }
-        moreover {
-          fix c'
-          assume "y = Inr c'"
-            and "Inl a = Inr c'"
-          from this(2) have "False" ..
-        }
-        ultimately have "x = y" by (auto elim: sum_assoc_perm.elims)
-      }
-      moreover {
-        fix b
-        assume "x = Inl (Inr b)"
-          and "sum_assoc_perm y = Inr (Inl b)"
-        note this(2)
-        moreover {
-          fix a'
-          assume "y = Inl (Inl a')"
-            and "Inl (Inr b) = Inl (Inl a')"
-          from this(2) have "False" by simp
-        }
-        moreover {
-          fix b'
-          assume "y = Inl (Inr b')"
-            and "Inl (Inr b) = Inl (Inr b')"
-          from this(2) have "b = b'" by simp
-          with \<open>x = Inl (Inr b)\<close> and \<open>y = Inl (Inr b')\<close> have "x = y" by simp
-        }
-        moreover {
-          fix c'
-          assume "y = Inr c'"
-            and "Inl (Inr b) = Inr c'"
-          from this(2) have "False" ..
-        }
-        ultimately have "x = y" by (auto elim: sum_assoc_perm.elims)
-      }
-      moreover {
-        fix c
-        assume "x = Inr c"
-          and "sum_assoc_perm y = Inr (Inr c)"
-        note this(2)
-        moreover {
-          fix a'
-          assume "y = Inl (Inl a')"
-            and "Inr (Inr c) = Inl (Inl a')"
-          from this(2) have "False" ..
-        }
-        moreover {
-          fix b'
-          assume "y = Inl (Inr b')"
-            and "Inr (Inr c) = Inl (Inr b')"
-          from this(2) have "False" ..
-        }
-        moreover {
-          fix c'
-          assume "y = Inr c'"
-            and "Inr c = Inr c'"
-          from this(2) have "c = c'" ..
-          with \<open>x = Inr c\<close> and \<open>y = Inr c'\<close> have "x = y" by simp
-        }
-        ultimately have "x = y" by (auto elim: sum_assoc_perm.elims)
-      }
-      ultimately show "x = y" by (fact sum_assoc_perm.elims)
-    qed
-    moreover have "sum_assoc_perm ` ((A <+> B) <+> C) = (A <+> (B <+> C))"
-    proof (intro surj_onI)
-      fix x
-      assume "x \<in> (A <+> B) <+> C"
-      moreover {
-        fix ab
-        assume "ab \<in> A <+> B"
-          and "x = Inl ab"
-        note this(1)
-        moreover {
-          fix a
-          assume "a \<in> A"
-            and "ab = Inl a"
-          from this(2) and \<open>x = Inl ab\<close> have "x = Inl (Inl a)" by simp
-          hence "sum_assoc_perm x = Inl a" by simp
-          with \<open>a \<in> A\<close> have "sum_assoc_perm x \<in> A <+> (B <+> C)" by auto
-        }
-        moreover {
-          fix b
-          assume "b \<in> B"
-            and "ab = Inr b"
-          from this(2) and \<open>x = Inl ab\<close> have "x = Inl (Inr b)" by simp
-          hence "sum_assoc_perm x = Inr (Inl b)" by simp
-          with \<open>b \<in> B\<close> have "sum_assoc_perm x \<in> A <+> (B <+> C)" by auto
-        }
-        ultimately have "sum_assoc_perm x \<in> A <+> (B <+> C)" ..
-      }
-      moreover {
-        fix c
-        assume "c \<in> C"
-          and "x = Inr c"
-        from this(2) have "sum_assoc_perm x = Inr (Inr c)" by simp
-        with \<open>c \<in> C\<close> have "sum_assoc_perm x \<in> A<+> (B <+> C)" by auto
-      }
-      ultimately show "sum_assoc_perm x \<in> A <+> (B <+> C)" ..
-    next
-      fix y
-      assume "y \<in> A <+> (B <+> C)"
-      moreover {
-        fix a
-        assume "a \<in> A"
-          and "y = Inl a"
-        from this(1) have "Inl (Inl a) \<in> (A <+> B) <+> C" by auto
-        moreover have "sum_assoc_perm (Inl (Inl a)) = y"
-        proof -
-          have "sum_assoc_perm (Inl (Inl a)) = Inl a" by simp
-          also from \<open>y = Inl a\<close> have "\<dots> = y" ..
-          finally show "?thesis" .
-        qed
-        ultimately have "\<exists>x \<in> (A <+> B) <+> C. sum_assoc_perm x = y" ..
-      }
-      moreover {
-        fix bc
-        assume "bc \<in> B <+> C"
-          and "y = Inr bc"
-        note this(1)
-        moreover {
-          fix b
-          assume "b \<in> B"
-            and "bc = Inl b"
-          from this(1) have "Inl (Inr b) \<in> (A <+> B) <+> C" by auto
-          moreover have "sum_assoc_perm (Inl (Inr b)) = y"
-          proof -
-            have "sum_assoc_perm (Inl (Inr b)) = Inr (Inl b)" by simp
-            also from \<open>bc = Inl b\<close> and \<open>y = Inr bc\<close> have "\<dots> = y" by simp
-            finally show "?thesis" .
-          qed
-          ultimately have "\<exists>x \<in> (A <+> B) <+> C. sum_assoc_perm x = y" ..
-        }
-        moreover {
-          fix c
-          assume "c \<in> C"
-            and "bc = Inr c"
-          from this(1) have "Inr c \<in> (A <+> B) <+> C" ..
-          moreover have "sum_assoc_perm (Inr c) = y"
-          proof -
-            have "sum_assoc_perm (Inr c) = Inr (Inr c)" by simp
-            also from \<open>bc = Inr c\<close> and \<open>y = Inr bc\<close> have "\<dots> = y" by simp
-            finally show "?thesis" .
-          qed
-          ultimately have "\<exists>x \<in> (A <+> B) <+> C. sum_assoc_perm x = y" ..
-        }
-        ultimately have "\<exists>x \<in> (A <+> B) <+> C. sum_assoc_perm x = y" ..
-      }
-      ultimately show "\<exists>x \<in> (A <+> B) <+> C. sum_assoc_perm x = y" ..
-    qed
-    ultimately have "bij_betw sum_assoc_perm ((A <+> B) <+> C) (A <+> (B <+> C))"
-      by (fact bij_betw_imageI)
-    thus "?thesis" by auto
-  qed
-  also have "|A <+> (B <+> C)| =o |A| +c |B <+> C|" by (fact csum_definition_sym)
-  also have "|A| +c |B <+> C| =o |A| +c ( |B| +c |C| )"
-  proof -
-    have "|B <+> C| =o |B| +c |C|" by (fact csum_definition_sym)
-    thus "?thesis" by (fact csum_cong2)
-  qed
-  finally show "?thesis" .
-qed
-
-lemma bijbetw_Inl:
-  shows "|Inl ` A| =o |A|"
-proof -
-  have "inj_on Inl A" by simp
-  hence "bij_betw Inl A (Inl ` A)" by (fact inj_on_imp_bij_betw)
-  hence "|A| =o |Inl ` A|" by auto
-  thus "?thesis" by (fact card_eq_sym)
+  from bij_betw_sum_rotate have "|(A <+> B) <+> C| =o |A <+> (B <+> C)|" by auto
+  thus ?thesis unfolding csum_definition by simp
 qed
 
 proposition prop_2_3_3:
   fixes A :: "'a set"
   shows "|A| +c czero =o |A|"
 proof -
-  have "|A| +c czero =o |A| +c |{} :: 'b set|"
-  proof -
-    have "czero =o |{} :: 'b set|" by (fact czero_definition)
-    thus "?thesis" by (fact csum_cong2)
+  have "|A| +c czero = |A| +c |{}|" unfolding czero_def ..
+  moreover have "|A| +c |{}| = |A <+> {}|" unfolding csum_definition ..
+  moreover have "|A <+> {}| =o |A|"
+  proof (rule card_eqI)
+    have "inj_on Inl A" by simp
+    moreover have "Inl ` A = A <+> {}" by auto
+    ultimately have "bij_betw Inl A (A <+> {})" by (intro bij_betw_imageI)
+    thus "bij_betw (the_inv_into A Inl) (A <+> {}) A" by (intro bij_betw_the_inv_into)
   qed
-  also have "|A| +c |{} :: 'b set| =o |A <+> ({} :: 'b set)|" by (fact csum_definition)
-  also have "|A <+> ({} :: 'b set)| =o |(Inl ` A) :: ('a + 'b) set|"
-  proof -
-    have "A <+> ({} :: 'b set) = Inl ` A" by auto
-    thus "?thesis" by simp
-  qed
-  also have "|Inl ` A| =o |A|" by (fact bijbetw_Inl)
-  finally show "?thesis" .
+  ultimately show ?thesis by metis
 qed
 
 proposition prop_2_3_4:
@@ -273,183 +184,305 @@ proposition prop_2_3_4:
     and "|B| \<le>o |B'|"
   shows "|A| +c |B| \<le>o |A'| +c |B'|"
 proof -
-  from assms(1) obtain f where "f ` A \<subseteq> A'" and "inj_on f A" ..
-  from assms(2) obtain g where "g ` B \<subseteq> B'" and "inj_on g B" ..
-  have "|A| +c |B| =o |A <+> B|" by (fact csum_definition)
+  from assms(1) obtain f where f0: "f ` A \<subseteq> A'" and f1: "inj_on f A" ..
+  from assms(2) obtain g where g0: "g ` B \<subseteq> B'" and g1: "inj_on g B" ..
+  define h where "h \<equiv> map_sum f g"
+  have "|A| +c |B| = |A <+> B|" by (fact csum_definition)
   also have "|A <+> B| \<le>o |A' <+> B'|"
-  proof -
-    let ?h = "map_sum f g"
-    have "?h ` (A <+> B) \<subseteq> A' <+> B'"
-    proof (intro image_subsetI)
+  proof (rule card_leqI)
+    show "h ` (A <+> B) \<subseteq> A' <+> B'"
+    proof (rule image_subsetI)
       fix x
       assume "x \<in> A <+> B"
-      moreover {
-        fix a
-        assume "a \<in> A"
-          and "x = Inl a"
-        from this(2) have "?h x = Inl (f a)" by simp
-        also from \<open>a \<in> A\<close> and \<open>f ` A \<subseteq> A'\<close> have "\<dots> \<in> A' <+> B'" by auto
-        finally have "?h x \<in> A' <+> B'" .
-      }
-      moreover {
-        fix b
-        assume "b \<in> B"
-          and "x = Inr b"
-        from this(2) have "?h x = Inr (g b)" by simp
-        also from \<open>b \<in> B\<close> and \<open>g ` B \<subseteq> B'\<close> have "\<dots> \<in> A' <+> B'" by auto
-        finally have "?h x \<in> A' <+> B'" .
-      }
-      ultimately show "?h x \<in> A' <+> B'" ..
+      then consider a where "a \<in> A" and "x = Inl a"
+        | b where "b \<in> B" and "x = Inr b" by auto
+      note this[where thesis = "h x \<in> A' <+> B'"]
+      thus "h x \<in> A' <+> B'" using f0 and g0 and h_def by auto
     qed
-    moreover have "inj_on ?h (A <+> B)"
+    moreover show "inj_on h (A <+> B)"
     proof (intro inj_onI)
       fix x y
       assume "x \<in> A <+> B"
         and "y \<in> A <+> B"
-        and "?h x = ?h y"
-      note this(1)
-      moreover {
-        fix a
-        assume "a \<in> A"
-          and "x = Inl a"
-        note \<open>y \<in> A <+> B\<close>
-        moreover {
-          fix a'
-          assume "a' \<in> A"
-            and "y = Inl a'"
-          from this(2) and \<open>x = Inl a\<close> and \<open>?h x = ?h y\<close> have "?h (Inl a) = ?h (Inl a')" by simp
-          hence "Inl (f a) = Inl (f a')" by simp
-          hence "f a = f a'" ..
-          with \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> and \<open>inj_on f A\<close> have "a = a'" by (elim inj_onD)
-          with \<open>x = Inl a\<close> and \<open>y = Inl a'\<close> have "x = y" by simp
-        }
-        moreover {
-          fix b'
-          assume "b' \<in> B"
-            and "y = Inr b'"
-          from this(2) and \<open>x = Inl a\<close> and \<open>?h x = ?h y\<close> have "?h (Inl a) = ?h (Inr b')" by simp
-          hence "Inl (f a) = Inr (g b')" by simp
-          hence "False" ..
-        }
-        ultimately have "x = y" by auto
-      }
-      moreover {
-        fix b
-        assume "b \<in> B"
-          and "x = Inr b"
-        note \<open>y \<in> A <+> B\<close>
-        moreover {
-          fix a'
-          assume "a' \<in> A"
-            and "y = Inl a'"
-          from this(2) and \<open>x = Inr b\<close> and \<open>?h x = ?h y\<close> have "Inr (g b) = Inl (f a')" by simp
-          hence "False" ..
-        }
-        moreover {
-          fix b'
-          assume "b' \<in> B"
-            and "y = Inr b'"
-          from this(2) and \<open>x = Inr b\<close> and \<open>?h x = ?h y\<close> have "Inr (g b) = Inr (g b')" by simp
-          hence "g b = g b'" ..
-          with \<open>b \<in> B\<close> and \<open>b' \<in> B\<close> and \<open>inj_on g B\<close> have "b = b'" by (elim inj_onD)
-          with \<open>x = Inr b\<close> and \<open>y = Inr b'\<close> have "x = y" by simp
-        }
-        ultimately have "x = y" by auto
-      }
-      ultimately show "x = y" ..
+        and "h x = h y"
+      from this(1,2) consider
+        (A)a and s where "a \<in> A" and "x = Inl a" and "s \<in> A" and "y = Inl s"
+        | (B) a and b where "a \<in> A" and "x = Inl a" and "b \<in> B" and "y = Inr b"
+        | (C) b and a where "b \<in> B" and "x = Inr b" and "a \<in> A" and "y = Inl a"
+        | (D) b and t where "b \<in> B" and "x = Inr b" and "t \<in> B" and "y = Inr t" by auto
+      thus "x = y"
+      proof cases
+        case A
+        from \<open>x = Inl a\<close> and \<open>y = Inl s\<close> have "h x = Inl (f a)" and "h y = Inl (f s)"
+          unfolding h_def by simp+
+        with \<open>h x = h y\<close> have "f a = f s" by simp
+        with \<open>a \<in> A\<close> and \<open>s \<in> A\<close> and f1 have "a = s" by (elim inj_onD)
+        with \<open>x = Inl a\<close> and \<open>y = Inl s\<close> show ?thesis by simp
+      next
+        case B
+        from \<open>x = Inl a\<close> and \<open>y = Inr b\<close> have "h x = Inl (f a)" and "h y = Inr (g b)"
+          unfolding h_def by simp+
+        with \<open>h x = h y\<close> have "False" by simp
+        thus ?thesis ..
+      next
+        case C
+        from \<open>x = Inr b\<close> and \<open>y = Inl a\<close> have "h x = Inr (g b)" and "h y = Inl (f a)"
+          unfolding h_def by simp+
+        with \<open>h x = h y\<close> have "False" unfolding h_def by simp
+        thus ?thesis ..
+      next
+        case D
+        from \<open>x = Inr b\<close> and \<open>y = Inr t\<close> have "h x = Inr (g b)" and "h y = Inr (g t)"
+          unfolding h_def by simp+
+        with \<open>h x = h y\<close> have "g b = g t" by simp
+        with \<open>b \<in> B\<close> and \<open>t \<in> B\<close> and g1 have "b = t" by (elim inj_onD)
+        with \<open>x = Inr b\<close> and \<open>y = Inr t\<close> show ?thesis by simp
+      qed
     qed
-    ultimately show "?thesis" ..
   qed
-  also have "|A' <+> B'| =o |A'| +c |B'|" by (fact csum_definition_sym)
-  finally show "?thesis" .
+  also have "|A' <+> B'| = |A'| +c |B'|" unfolding csum_definition by simp
+  finally show ?thesis .
 qed
 
 proposition cprod_definition:
-  shows "|A| *c |B| =o |A \<times> B|"
+  shows "|A| *c |B| = |A \<times> B|"
+  by (simp add: cprod_def)
+
+lemma cprod_welldefinedness:
+  assumes "|A| =o |A'|"
+    and "|B| =o |B'|"
+  shows "|A| *c |B| =o |A'| *c |B'|"
 proof -
-  have "|A \<times> B| =o |A| *c |B|" by (fact Times_cprod)
-  thus "?thesis" by (fact ordIso_symmetric)
+  from assms(1) obtain f where f: "bij_betw f A A'" by auto
+  from f have f_inj: "inj_on f A" and f_surj: "f ` A = A'" by auto
+  from assms(2) obtain g where g: "bij_betw g B B'" by auto
+  from g have g_inj: "inj_on g B" and g_surj: "g ` B = B'" by auto
+  define h where "h \<equiv> map_prod f g"
+  from f_inj and g_inj and h_def have "inj_on h (A \<times> B)" by (auto intro: map_prod_inj_on)
+  moreover from f_surj and g_surj and h_def have "h ` (A \<times> B) = A' \<times> B'" by auto
+  ultimately have "bij_betw h (A \<times> B) (A' \<times> B')" by (rule bij_betw_imageI)
+  hence "|A \<times> B| =o |A' \<times> B'|" by auto
+  thus ?thesis unfolding cprod_definition by simp
+qed
+
+lemmas cprod_cong' = cprod_welldefinedness
+
+lemma cprod_cong1':
+  assumes "|A| =o |A'|"
+  shows "|A| *c |B| =o |A'| *c |B|"
+proof -
+  have "|B| =o |B|" by simp
+  with assms show ?thesis by (intro cprod_cong)
+qed
+
+lemma cprod_cong2':
+  assumes "|B| =o |B'|"
+  shows "|A| *c |B| =o |A| *c |B'|"
+proof -
+  have "|A| =o |A|" by simp
+  with assms show ?thesis by (intro cprod_cong)
 qed
 
 proposition prop_2_3_5:
   shows "|A| *c |B| =o |B| *c |A|"
-  by (fact cprod_com)
+proof -
+  have "|A \<times> B| =o |B \<times> A|" by (fact Times_card_commute)
+  thus ?thesis unfolding cprod_definition by simp
+qed
+
+fun prod_rotate where
+  "prod_rotate ((a, b), c) = (a, (b, c))"
+
+lemma inj_on_prod_rotate:
+  shows "inj_on prod_rotate ((A \<times> B) \<times> C)"
+  unfolding inj_on_def by force
+
+lemma prod_rotate_surj_on:
+  shows "prod_rotate ` ((A \<times> B) \<times> C) = (A \<times> (B \<times> C))"
+  by force
+
+lemma bij_betw_prod_rotate:
+  shows "bij_betw prod_rotate ((A \<times> B) \<times> C) (A \<times> (B \<times> C))"
+  using inj_on_prod_rotate and prod_rotate_surj_on by (intro bij_betw_imageI)
 
 proposition prop_2_3_6:
   shows "( |A| *c |B| ) *c |C| =o |A| *c ( |B| *c |C| )"
-  by (fact cprod_assoc)
+proof -
+  from bij_betw_prod_rotate have "|(A \<times> B) \<times> C| =o |A \<times> (B \<times> C)|" by auto
+  thus ?thesis unfolding cprod_definition by simp
+qed
 
 proposition prop_2_3_7_a:
-  shows "|A| *c czero =o czero"
-  by (fact cprod_czero)
+  fixes A :: "'a set"
+  shows "|A| *c (czero :: 'b rel) =o (czero :: 'c rel)"
+proof -
+  have "czero = |{} :: 'b set|" by (fact czero_def)
+  hence "|A| *c (czero :: 'b rel) = |A| *c |{} :: 'b set|" by simp
+  moreover have "|A| *c |{} :: 'b set| = |A \<times> {}|" unfolding cprod_definition ..
+  moreover have "|A \<times> ({} :: 'b set)| = |{} :: ('a \<times> 'b) set|" by simp
+  moreover have "|{} :: ('a \<times> 'b) set| = (czero :: ('a \<times> 'b) rel)"
+    unfolding czero_definition by simp
+  moreover have "(czero :: ('a \<times> 'b) rel) =o (czero :: 'c rel)" by (fact czero_refl)
+  ultimately show ?thesis by simp
+qed
 
-lemma czero_cprod_absorb2_sym:
+lemma empty_cprod_card_eq_czero:
+  fixes A :: "'a set"
+  shows "(czero :: 'b rel) *c |A| =o (czero :: 'c rel)"
+proof -
+  have "(czero :: 'b rel) *c |A| = |{} :: 'b set| *c |A|" unfolding czero_definition ..
+  moreover have "|{} :: 'b set| *c |A| = |{} \<times> A|" by (fact cprod_definition)
+  moreover have "|{} \<times> A| = |{}|" by simp
+  moreover have "|{}| =o (czero :: 'c rel)" by (fact empty_card_eq_czero)
+  ultimately show ?thesis by simp
+qed
+
+lemma cprod_empty_card_eq_czero:
+  fixes A :: "'a set"
+  shows "|A| *c (czero :: 'b rel) =o (czero :: 'c rel)"
+proof -
+  have "|A| *c (czero :: 'b rel) = |A| *c |{} :: 'b set|" unfolding czero_definition ..
+  moreover have "|A| *c |{} :: 'b set| =o |{} :: 'b set| *c |A|" by (fact prop_2_3_5)
+  moreover have "|{} :: 'b set| *c |A| = (czero :: 'b rel) *c |A|" unfolding czero_definition ..
+  moreover have "(czero :: 'b rel) *c |A| =o (czero :: 'c rel)" by (fact empty_cprod_card_eq_czero)
+  ultimately show ?thesis by (intro prop_2_3_7_a)
+qed
+
+lemma empty_imp_cprod_card_eq_czero1:
+  fixes A :: "'a set"
+    and B:: "'b set"
+  assumes "A = {}"
+  shows "|A| *c |B| =o (czero :: 'c rel)"
+proof -
+  from assms have "|A| =o czero" by (fact eq_empty_imp_card_eq_czero)
+  have "|A| *c |B| = |A \<times> B|" unfolding cprod_definition ..
+  moreover from assms(1) have "|A \<times> B| = |{}|" by simp
+  moreover have "|{} :: ('a \<times> 'b) set| =o (czero :: 'c rel)" try sorry
+  ultimately show ?thesis by simp
+qed
+
+lemma empty_imp_cprod_card_eq_czero2:
+  fixes A :: "'a set"
+    and B :: "'b set"
+  assumes "B = {}"
+  shows "|A| *c |B| =o (czero :: 'c rel)"
+proof -
+  from assms have "|A| *c |B| = |A| *c |{}|" by simp
+  moreover have "|A| *c |{}| = |A| *c czero" unfolding czero_definition ..
+  moreover have "|A| *c czero =o (czero :: 'c rel)" by (fact prop_2_3_7_a)
+  ultimately show ?thesis by metis
+qed
+
+(*lemma czero_cprod_absorb2_sym:
   shows "czero =o |A| *c czero"
-  by (auto intro: prop_2_3_7_a ordIso_symmetric)
+  using prop_2_3_7_a by (auto intro: ordIso_symmetric)
 
 lemma czero_cprod_cong2:
+  fixes A :: "'a set"
+    and B :: "'b set"
   assumes "B = {}"
-  shows "|A| *c czero =o |A| *c |B|"
-  by (simp only: assms czero_definition cprod_cong2)
+  shows "|A| *c (czero :: 'd rel) =o |A| *c |B|"
+  sorry*)
+
+lemma inj_on_fst_Times_unit:
+  shows "inj_on fst (A \<times> {()})"
+  unfolding inj_on_def by simp
+
+lemma fst_surj_on_Times_unit:
+  shows "fst ` (A \<times> {()}) = A"
+  by simp
+
+lemma bij_betw_fst_Times_unit:
+  shows "bij_betw fst (A \<times> {()}) A"
+  using inj_on_fst_Times_unit and fst_surj_on_Times_unit by (intro bij_betw_imageI)
 
 proposition prop_2_3_7_b:
   shows "|A| *c cone =o |A|"
-  by (simp add: cprod_cone)
+proof -
+  have "|A| *c cone = |A| *c |{()}|" unfolding cone_def ..
+  moreover have "|A| *c |{()}| = |A \<times> {()}|" unfolding cprod_definition ..
+  moreover from bij_betw_fst_Times_unit have "|A \<times> {()}| =o |A|" by auto
+  ultimately show ?thesis by simp
+qed
 
 proposition prop_2_3_8:
   assumes "|A| \<le>o |B|"
     and "|A'| \<le>o |B'|"
   shows "|A| *c |A'| \<le>o |B| *c |B'|"
-  using assms by (fact cprod_mono)
+proof -
+  from assms(1) obtain f where "f ` A \<subseteq> B" and "inj_on f A" by auto
+  from assms(2) obtain g where "g ` A' \<subseteq> B'" and "inj_on g A'" by auto
+  define h where "h \<equiv> map_prod f g"
+  from \<open>inj_on f A\<close> and \<open>inj_on g A'\<close> and h_def have "inj_on h (A \<times> A')"
+    by (auto intro: map_prod_inj_on)
+  moreover from \<open>f ` A \<subseteq> B\<close> and \<open>g ` A' \<subseteq> B'\<close> and h_def have "h ` (A \<times> A') \<subseteq> B \<times> B'" by auto
+  ultimately have "|A \<times> A'| \<le>o |B \<times> B'|" by auto
+  thus ?thesis unfolding cprod_definition by simp
+qed
+
+fun prod_sum_distribute where
+  "prod_sum_distribute (a, Inl b) = Inl (a, b)"
+| "prod_sum_distribute (a, Inr c) = Inr (a, c)"
+
+lemma inj_on_prod_sum_distribute:
+  shows "inj_on prod_sum_distribute (A \<times> (B <+> C))"
+  unfolding inj_on_def by fastforce
+
+lemma prod_sum_distribute_surj_on:
+  shows "prod_sum_distribute ` (A \<times> (B <+> C)) = A \<times> B <+> A \<times> C"
+  by force
+
+lemma bij_betw_prod_sum_distribute:
+  shows "bij_betw prod_sum_distribute (A \<times> (B <+> C)) (A \<times> B <+> A \<times> C)"
+  using inj_on_prod_sum_distribute and prod_sum_distribute_surj_on by (intro bij_betw_imageI)
 
 proposition prop_2_3_9:
   shows "|A| *c ( |B| +c |C| ) =o |A| *c |B| +c |A| *c |C|"
 proof -
-  have "|A| *c ( |B| +c |C| ) =o |A| *c |B <+> C|"
-  proof -
-    have "|B <+> C| =o |B| +c |C|" by (fact Plus_csum)
-    hence "|B| +c |C| =o |B <+> C|" by (fact ordIso_symmetric)
-    thus "?thesis" by (fact cprod_cong2)
-  qed
-  also have "|A| *c |B <+> C| =o |A \<times> (B <+> C)|" by (fact cprod_definition)
-  also have "|A \<times> (B <+> C)| =o |A \<times> B <+> A \<times> C|" by (fact card_of_Times_Plus_distrib)
-  also have "|A \<times> B <+> A \<times> C| =o |A \<times> B| +c |A \<times> C|" by (fact Plus_csum)
-  also have "|A \<times> B| +c |A \<times> C| =o |A| *c |B| +c |A| *c |C|"
-  proof -
-    have "|A \<times> B| =o |A| *c |B|" by (fact Times_cprod)
-    moreover have "|A \<times> C| =o |A| *c |C|" by (fact Times_cprod)
-    ultimately show "?thesis" by (fact csum_cong)
-  qed
-  finally show "?thesis" .
+  from bij_betw_prod_sum_distribute have "|A \<times> (B <+> C)| =o |A \<times> B <+> A \<times> C|" by auto
+  thus ?thesis unfolding csum_definition and cprod_definition by simp
 qed
 
 theorem thm_2_9:
   fixes A :: "'b \<Rightarrow> 'a set"
-  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> |A l| =o \<mm>"
+  assumes "|\<Lambda>| = \<nn>"
+    and "\<And>l. l \<in> \<Lambda> \<Longrightarrow> |A l| =o \<mm>"
     and "\<Lambda> = {} \<Longrightarrow> \<exists>X. |X| = \<mm>" -- \<open>This assumption guarantees that @{term "\<mm>"} is a cardinal
                                       number even if @{prop "\<Lambda> = {}"}.\<close>
     and "disjoint_family_on A \<Lambda>"
-  shows "|\<Union>l \<in> \<Lambda>. A l| =o \<mm> *c |\<Lambda>|"
+  shows "|\<Union>l \<in> \<Lambda>. A l| =o \<mm> *c \<nn>"
 proof -
   let ?B = "\<Union>l \<in> \<Lambda>. A l"
   {
     assume "\<Lambda> = {}"
-    with assms(2) obtain X where "|X| = \<mm>" by auto
-    from \<open>\<Lambda> = {}\<close> have "?B = {}" by simp
-    hence "|?B| =o czero" by (fact eq_empty_imp_card_eq_czero)
-    also have "czero =o |X| *c czero" by (fact czero_cprod_absorb2_sym)
-    also from \<open>\<Lambda> = {}\<close> have "|X| *c czero =o |X| *c |\<Lambda>|" by (fact czero_cprod_cong2)
-    also from \<open>|X| = \<mm>\<close> have "|X| *c |\<Lambda>| = \<mm> *c |\<Lambda>|" by simp
-    finally have "|?B| =o \<mm> *c |\<Lambda>|" .
+    have "|?B| =o |{} :: 'c set|"
+    proof -
+      from \<open>\<Lambda> = {}\<close> have "?B = {}" by simp
+      hence "|?B| = |{}|" by simp
+      also have "|{} :: 'a set| =o |{} :: 'c set|" by (fact empty_card_eq_empty)
+      finally show ?thesis .
+    qed
+    also have "|{} :: 'c set| =o \<mm> *c \<nn>"
+    proof -
+      from \<open>\<Lambda> = {}\<close> obtain X where "|X| = \<mm>" by (auto dest: assms(3))
+      from \<open>\<Lambda> = {}\<close> have "|X \<times> \<Lambda>| = |{}|" by simp
+      also have "\<dots> =o |{} :: 'c set|" by (fact empty_card_eq_empty)
+      finally have "|X \<times> \<Lambda>| =o |{} :: 'c set|" .
+      hence "|{} :: 'c set| =o |X \<times> \<Lambda>|" by auto
+      also have "|X \<times> \<Lambda>| = |X| *c |\<Lambda>|" unfolding cprod_definition ..
+      also from \<open>|X| = \<mm>\<close> and \<open>|\<Lambda>| = \<nn>\<close> have "\<dots> = \<mm> *c \<nn>" by simp
+      finally show ?thesis .
+    qed
+    finally have "|?B| =o \<mm> *c \<nn>" .
   }
   moreover {
     assume "\<Lambda> \<noteq> {}"
     then obtain l\<^sub>0 where "l\<^sub>0 \<in> \<Lambda>" by auto
-    hence "|A l\<^sub>0| =o \<mm>" by (auto dest: assms(1))
+    hence "|A l\<^sub>0| =o \<mm>" by (auto dest: assms(2))
     {
       fix l
       assume "l \<in> \<Lambda>"
-      hence "|A l| =o \<mm>" by (auto dest: assms(1))
+      hence "|A l| =o \<mm>" by (auto dest: assms(2))
       also from \<open>|A l\<^sub>0| =o \<mm>\<close> have "\<mm> =o |A l\<^sub>0|" by (fact ordIso_symmetric)
       finally have "|A l| =o |A l\<^sub>0|" .
       hence "\<exists>f. bij_betw f (A l) (A l\<^sub>0)" by auto
@@ -471,7 +504,7 @@ proof -
       assume "b \<in> ?B"
       then obtain l where "l \<in> \<Lambda>" and "b \<in> A l" by auto
       with fl obtain a where "a \<in> A l\<^sub>0" and "b = f l a" by blast
-      with \<open>l \<in> \<Lambda>\<close> show "\<exists>a \<in> A l\<^sub>0. \<exists>l \<in> \<Lambda>. f l a = b" by auto
+      with \<open>l \<in> \<Lambda>\<close> show "b \<in> ?f' ` (A l\<^sub>0 \<times> \<Lambda>)" by auto
     qed
     moreover have "inj_on ?f' (A l\<^sub>0 \<times> \<Lambda>)"
     proof (rule inj_onI; split_pair)
@@ -484,7 +517,7 @@ proof -
       with \<open>f l a = f l' a'\<close> have "A l \<inter> A l' \<noteq> {}" by auto
       {
         assume "l \<noteq> l'"
-        with \<open>l \<in> \<Lambda>\<close> and \<open>l' \<in> \<Lambda>\<close> and assms(3) have "A l \<inter> A l' = {}"
+        with \<open>l \<in> \<Lambda>\<close> and \<open>l' \<in> \<Lambda>\<close> and assms(4) have "A l \<inter> A l' = {}"
           by (elim disjoint_family_onD)
         with \<open>A l \<inter> A l' \<noteq> {}\<close> have "False" ..
       }
@@ -501,29 +534,26 @@ proof -
     also have "|A l\<^sub>0 \<times> \<Lambda>| =o |A l\<^sub>0| *c |\<Lambda>|" by (fact Times_cprod)
     also have "|A l\<^sub>0| *c |\<Lambda>| =o \<mm> *c |\<Lambda>|"
     proof -
-      from \<open>l\<^sub>0 \<in> \<Lambda>\<close> have "|A l\<^sub>0| =o \<mm>" by (fact assms(1))
+      from \<open>l\<^sub>0 \<in> \<Lambda>\<close> have "|A l\<^sub>0| =o \<mm>" by (fact assms(2))
       thus "?thesis" by (fact cprod_cong1)
     qed
     finally have "|?B| =o \<mm> *c |\<Lambda>|" .
+    with assms(1) have "|?B| =o \<mm> *c \<nn>" by simp
   }
   ultimately show "?thesis" by blast
 qed
 
 proposition cexp_definition:
-  shows "|B| ^c |A| =o |A \<rightarrow>\<^sub>E B|"
+  shows "|A| ^c |B| = |B \<rightarrow>\<^sub>E A|"
 proof -
-  have "|B| ^c |A| =o |Func A B|" by (simp add: cexp_def)
-  also have "|Func A B| =o |A \<rightarrow>\<^sub>E B|"
+  have "|A| ^c |B| = |Func B A|" unfolding cexp_def by simp
+  also have "\<dots> = |B \<rightarrow>\<^sub>E A|"
   proof -
-    have "Func A B = A \<rightarrow>\<^sub>E B" by (auto simp: Func_def)
-    thus "?thesis" by simp
+    have "Func B A = B \<rightarrow>\<^sub>E A" unfolding Func_def by auto
+    thus ?thesis by simp
   qed
-  finally show "?thesis" .
+  finally show ?thesis .
 qed
-
-lemma cexp_definition_sym:
-  shows "|A \<rightarrow>\<^sub>E B| =o |B| ^c |A|"
-  by (auto intro: ordIso_symmetric cexp_definition)
 
 lemma bij_betw_imp_id_on_comp:
   assumes "bij_betw f A B"
@@ -549,279 +579,108 @@ proof -
   ultimately show thesis by simp
 qed
 
-lemma cexp_cong1:
-  fixes M :: "'m set"
-    and N :: "'n set"
-    and P :: "'p set"
-  assumes "\<mm> = |M|"
-    and "\<nn> = |N|"
-    and "\<pp> = |P|"
-    and "\<mm> =o \<nn>"
-  shows "\<mm> ^c \<pp> =o \<nn> ^c \<pp>"
+lemma cexp_cong':
+  assumes "|A| =o |A'|"
+    and "|B| =o |B'|"
+  shows "|B| ^c |A| =o |B'| ^c |A'|" (is "?LHS =o ?RHS")
 proof -
-  have "|M| ^c |P| =o |P \<rightarrow>\<^sub>E M|" by (fact cexp_definition)
-  moreover have "|P \<rightarrow>\<^sub>E M| =o |P \<rightarrow>\<^sub>E N|"
-  proof -
-    from assms(1,2,4) have "|M| =o |N|" by simp
-    then obtain h where "bij_betw h M N" by auto
-    then obtain h' where "id_on (h' \<circ> h) M" by (rule bij_betw_imp_id_on_comp)
-    from \<open>bij_betw h M N\<close> and \<open>id_on (h' \<circ> h) M\<close> have "id_on (h \<circ> h') N" by fastforce
-    have "bij_betw h' N M"
-      using \<open>bij_betw h M N\<close> \<open>id_on (h' \<circ> h) M\<close> bij_betw_comp_iff id_on_imp_bij_betw by blast
-    define \<phi> where "\<phi> f \<equiv> \<lambda>p. if p \<in> P then h (f p) else undefined" for f
-    have "inj_on \<phi> (P \<rightarrow>\<^sub>E M)"
-    proof (rule inj_onI)
-      fix f f'
-      assume "f \<in> P \<rightarrow>\<^sub>E M"
-        and "f' \<in> P \<rightarrow>\<^sub>E M"
-        and "\<phi> f = \<phi> f'"
-      {
-        fix p
-        assume "p \<in> P"
-        from \<open>\<phi> f = \<phi> f'\<close> have "(\<phi> f) p = (\<phi> f') p" by simp
-        with \<phi>_def and \<open>p \<in> P\<close> have "h (f p) = h (f' p)" by simp
-        hence "(h' \<circ> h) (f p) = (h' \<circ> h) (f' p)" by simp
-        moreover have "(h' \<circ> h) (f p) = f p"
-        proof -
-          from \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> and \<open>p \<in> P\<close> have "f p \<in> M" by auto
-          with \<open>id_on (h' \<circ> h) M\<close> show ?thesis ..
-        qed
-        moreover have "(h' \<circ> h) (f' p) = f' p"
-        proof -
-          from \<open>f' \<in> P \<rightarrow>\<^sub>E M\<close> and \<open>p \<in> P\<close> have "f' p \<in> M" by auto
-          with \<open>id_on (h' \<circ> h) M\<close> show ?thesis ..
-        qed
-        ultimately have "f p = f' p" by simp
-      }
-      with \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> and \<open>f' \<in> P \<rightarrow>\<^sub>E M\<close> show "f = f'" by fastforce
-    qed
-    moreover have "\<phi> ` (P \<rightarrow>\<^sub>E M) = P \<rightarrow>\<^sub>E N"
-    proof (rule surj_onI)
-      fix f
-      assume "f \<in> P \<rightarrow>\<^sub>E M"
-      {
-        fix p
-        assume "p \<in> P"
-        with \<phi>_def have "\<phi> f p = h (f p)" by simp
-        also from \<open>p \<in> P\<close> and \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> and \<open>bij_betw h M N\<close> have "\<dots> \<in> N" by auto
-        finally have "\<phi> f p \<in> N" by simp
-      }
-      moreover{
-        fix p
-        assume "p \<notin> P"
-        with \<phi>_def have "\<phi> f p = undefined" by simp
-      }
-      ultimately show "\<phi> f \<in> P \<rightarrow>\<^sub>E N" ..
-    next
-      fix g
-      assume "g \<in> P \<rightarrow>\<^sub>E N"
-      define f'' where "f'' p \<equiv> if p \<in> P then h' (g p) else undefined" for p
-      have "f'' \<in> P \<rightarrow>\<^sub>E M"
-      proof (rule PiE_I)
-        fix p
-        assume "p \<in> P"
-        with f''_def have "f'' p = h' (g p)" by simp
-        also from \<open>p \<in> P\<close> and \<open>g \<in> P \<rightarrow>\<^sub>E N\<close> and \<open>bij_betw h' N M\<close> have "\<dots> \<in> M" by auto
-        finally show "f'' p \<in> M" by simp
-      next
-        fix p
-        assume "p \<notin> P"
-        with f''_def show "f'' p = undefined" by simp
-      qed
-      moreover have "\<phi> f'' = g"
-      proof (rule ext)
-        fix p
-        consider "p \<in> P" | "p \<notin> P" by auto
-        moreover{
-          assume "p \<in> P"
-          with \<phi>_def have "(\<phi> f'') p = h (f'' p)" by simp
-          also from \<open>p \<in> P\<close> and f''_def have "\<dots> = h (h' (g p))" by simp
-          also from \<open>p \<in> P\<close> and \<open>g \<in> P \<rightarrow>\<^sub>E N\<close> and \<open>id_on (h \<circ> h') N\<close> have "\<dots> = g p" by auto
-          finally have "(\<phi> f'') p = g p" .
-        }
-        moreover {
-          assume "p \<notin> P"
-          with \<phi>_def have "(\<phi> f'') p = undefined" by simp
-          also from \<open>p \<notin> P\<close> and \<open>g \<in> P \<rightarrow>\<^sub>E N\<close> have "\<dots> = g p" by auto
-          finally have "(\<phi> f'') p = g p" .
-        }
-        ultimately show "\<phi> f'' p = g p" by auto
-      qed
-      ultimately show "\<exists>f'' \<in> P \<rightarrow>\<^sub>E M. \<phi> f'' = g" by auto
-    qed
-    ultimately have "bij_betw \<phi> (P \<rightarrow>\<^sub>E M) (P \<rightarrow>\<^sub>E N)" by (fact bij_betw_imageI)
-    thus ?thesis by auto
-  qed
-  ultimately have "|M| ^c |P| =o |P \<rightarrow>\<^sub>E N|" by (fact ordIso_transitive)
-  moreover have "|P \<rightarrow>\<^sub>E N| =o |N| ^c |P|" by (fact cexp_definition_sym)
-  ultimately have "|M| ^c |P| =o |N| ^c |P|" by (fact ordIso_transitive)
-  with assms(1-3) show ?thesis by simp
+  from assms(1) obtain u where "bij_betw u A' A" by auto
+  hence u1: "u ` A' = A" and u2: "inj_on u A'" by auto
+  from assms(2) obtain v where v: "bij_betw v B B'" by auto
+  hence v1: "v ` B = B'" and v2: "inj_on v B" by auto
+  define \<Phi> where "\<Phi> f a' \<equiv> if a' \<in> A' then v (f (u a')) else undefined" for f a'
+  from u1 and v2 have \<Phi>1: "inj_on \<Phi> (A \<rightarrow>\<^sub>E B)" unfolding \<Phi>_def by (rule prob_1_5_15_ext_a)
+  from assms(1) have "A' = {} \<Longrightarrow> A = {}" by auto
+  moreover from u1 have "u ` A' \<subseteq> A" by simp
+  moreover note u2 and v1
+  ultimately have "\<Phi> ` (A \<rightarrow>\<^sub>E B) = (A' \<rightarrow>\<^sub>E B')" unfolding \<Phi>_def by (rule prob_1_5_15_ext_b)
+  with \<Phi>1 have \<Phi>3: "bij_betw \<Phi> (A \<rightarrow>\<^sub>E B) (A' \<rightarrow>\<^sub>E B')" by (rule bij_betw_imageI)
+  have "?LHS =o |A \<rightarrow>\<^sub>E B|" unfolding cexp_definition by simp
+  also from \<Phi>3 have "|A \<rightarrow>\<^sub>E B| =o |A' \<rightarrow>\<^sub>E B'|" by auto
+  also have "|A' \<rightarrow>\<^sub>E B'| =o ?RHS" unfolding cexp_definition by simp
+  finally show "?LHS =o ?RHS" .
 qed
 
-lemma cexp_cong2:
-  fixes M :: "'m set"
-    and P :: "'p set"
-    and Q :: "'q set"
-  assumes "\<mm> = |M|"
-    and "\<pp> = |P|"
-    and "\<qq> = |Q|"
-    and "\<pp> =o \<qq>"
-  shows "\<mm> ^c \<pp> =o \<mm> ^c \<qq>"
-proof -
-  from assms(2-4) have "|P| =o |Q|" by simp
-  then obtain h where "bij_betw h P Q" by auto
-  moreover define h' where "h' \<equiv> inv_into P h"
-  ultimately have "bij_betw h' Q P" by (simp add: bij_betw_inv_into)
-  from \<open>bij_betw h P Q\<close> and h'_def have "id_on (h' \<circ> h) P" and "id_on (h \<circ> h') Q" by fastforce+
-  define \<phi> where "\<phi> g \<equiv> \<lambda>p. if p \<in> P then g (h p) else undefined" for g :: "'q \<Rightarrow> 'm"
-  have "bij_betw \<phi> (Q \<rightarrow>\<^sub>E M) (P \<rightarrow>\<^sub>E M)"
-  proof (rule bij_betw_imageI)
-    {
-      fix g g'
-      assume "g \<in> Q \<rightarrow>\<^sub>E M"
-        and "g' \<in> Q \<rightarrow>\<^sub>E M"
-        and "\<phi> g = \<phi> g'"
-      {
-        fix q
-        consider "q \<in> Q" | "q \<notin> Q" by auto
-        moreover {
-          assume "q \<in> Q"
-          with \<open>bij_betw h P Q\<close> obtain p where "p \<in> P" and "h p = q" by auto
-          with \<open>p \<in> P\<close> and \<open>\<phi> g = \<phi> g'\<close> and \<phi>_def have "g (h p) = g' (h p)" by metis
-          with \<open>h p = q\<close> have "g q = g' q" by simp
-        }
-        moreover {
-          assume "q \<notin> Q"
-          with \<open>g \<in> Q \<rightarrow>\<^sub>E M\<close> and \<open>g' \<in> Q \<rightarrow>\<^sub>E M\<close> have "g q = g' q" by fastforce
-        }
-        ultimately have "g q = g' q" by auto
-      }
-      hence "g = g'" ..
-    }
-    thus "inj_on \<phi> (Q \<rightarrow>\<^sub>E M)" by (fact inj_onI)
-  next
-    {
-      fix g
-      assume "g \<in> Q \<rightarrow>\<^sub>E M"
-      {
-        fix p
-        assume "p \<in> P"
-        with \<phi>_def have "\<phi> g p = g (h p)" by simp
-        also from \<open>p \<in> P\<close> and \<open>bij_betw h P Q\<close> and \<open>g \<in> Q \<rightarrow>\<^sub>E M\<close> have "\<dots> \<in> M" by auto
-        finally have "\<phi> g p \<in> M" .
-      }
-      moreover {
-        fix p
-        assume "p \<notin> P"
-        with \<phi>_def have "\<phi> g p = undefined" by simp
-      }
-      ultimately have "\<phi> g \<in> P \<rightarrow>\<^sub>E M" by auto
-    }
-    moreover {
-      fix f
-      assume "f \<in> P \<rightarrow>\<^sub>E M"
-      define g where "g q \<equiv> if q \<in> Q then f (h' q) else undefined" for q
-      have "g \<in> Q \<rightarrow>\<^sub>E M"
-      proof (rule PiE_I)
-        fix q
-        assume "q \<in> Q"
-        with g_def and \<open>bij_betw h' Q P\<close> and \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> show "g q \<in> M" by auto
-      next
-        fix q
-        assume "q \<notin> Q"
-        with g_def show "g q = undefined" by simp
-      qed
-      moreover have "\<phi> g = f"
-      proof (rule ext)
-        fix p
-        consider "p \<in> P" | "p \<notin> P" by auto
-        moreover {
-          assume "p \<in> P"
-          with \<phi>_def have "\<phi> g p = g (h p)" by simp
-          moreover from \<open>p \<in> P\<close> and \<open>bij_betw h P Q\<close> have "h p \<in> Q" by auto
-          moreover note g_def
-          ultimately have "\<phi> g p = f (h' (h p))" by simp
-          with \<open>p \<in> P\<close> and \<open>id_on (h' \<circ> h) P\<close> have "\<phi> g p = f p" by auto
-        }
-        moreover {
-          assume "p \<notin> P"
-          with \<phi>_def \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> have "\<phi> g p = f p" by auto
-        }
-        ultimately show "\<phi> g p = f p" by auto
-      qed
-      ultimately have "\<exists>g \<in> Q \<rightarrow>\<^sub>E M. \<phi> g = f" by auto
-    }
-    ultimately show "\<phi> ` (Q \<rightarrow>\<^sub>E M) = (P \<rightarrow>\<^sub>E M)" by (fact surj_onI)
-  qed
-  from assms(1,2) have "\<mm> ^c \<pp> = |M| ^c |P|" by simp
-  also have "\<dots> =o |P \<rightarrow>\<^sub>E M|" by (fact cexp_definition)
-  finally have "\<mm> ^c \<pp> =o |P \<rightarrow>\<^sub>E M|" .
-  moreover have "|P \<rightarrow>\<^sub>E M| =o |Q \<rightarrow>\<^sub>E M|"
-  proof (rule ordIso_symmetric)
-    from \<open>bij_betw \<phi> (Q \<rightarrow>\<^sub>E M) (P \<rightarrow>\<^sub>E M)\<close> show "|Q \<rightarrow>\<^sub>E M| =o |P \<rightarrow>\<^sub>E M|" by auto
-  qed
-  ultimately have "\<mm> ^c \<pp> =o |Q \<rightarrow>\<^sub>E M|" by (rule ordIso_transitive)
-  also have "|Q \<rightarrow>\<^sub>E M| =o |M| ^c |Q|" by (rule cexp_definition_sym)
-  also from assms(1,3) have "|M| ^c |Q| = \<mm> ^c \<qq>" by simp 
-  finally show "\<mm> ^c \<pp> =o \<mm> ^c \<qq>" .
-qed
+lemma cexp_cong1':
+  assumes "|M| =o |N|"
+  shows "|M| ^c |P| =o |N| ^c |P|"
+  by (rule cexp_cong', simp, fact assms)
+
+lemma cexp_cong2':
+  assumes "|P| =o |Q|"
+  shows "|M| ^c |P| =o |M| ^c |Q|"
+  by (rule cexp_cong', fact assms, simp)
 
 proposition prop_2_3_10_a:
+  fixes A :: "'a set"
+    and x :: 'x
   shows "|A| ^c |{x}| =o |A|"
 proof -
-  have "|A| ^c |{x}| =o |{x} \<rightarrow>\<^sub>E A|" by (fact cexp_definition)
-  also have "|{x} \<rightarrow>\<^sub>E A| =o |A|"
-  proof -
-    let ?f = "\<lambda>a. \<lambda>y. if y = x then a else undefined"
-    have "?f ` A = {x} \<rightarrow>\<^sub>E A"
-    proof (rule surj_onI)
-      fix a'
-      assume "a' \<in> A"
-      {
-        fix x'
-        assume "x' \<in> {x}"
-        with \<open>a' \<in> A\<close> have "?f a' x' \<in> A" by simp
-      }
-      moreover {
-        fix x'
-        assume "x' \<notin> {x}"
-        hence "?f a' x' = undefined" by simp
-      }
-      ultimately show "?f a' \<in> {x} \<rightarrow>\<^sub>E A" by (fact PiE_I)
+  define \<FF> :: "('x \<Rightarrow> 'a) \<Rightarrow> 'a" where "\<FF> f \<equiv> f x" for f
+  have "\<FF> ` ({x} \<rightarrow>\<^sub>E A) = A"
+  proof (rule surj_onI)
+    fix f
+    assume "f \<in> {x} \<rightarrow>\<^sub>E A"
+    with \<FF>_def show "\<FF> f \<in> A" by auto
+  next
+    fix a
+    assume a: "a \<in> A"
+    define f where "f t \<equiv> if t = x then a else undefined" for t
+    have "f \<in> {x} \<rightarrow>\<^sub>E A"
+    proof (rule PiE_I)
+      fix t
+      assume "t \<in> {x}"
+      with f_def and a show "f t \<in> A" by simp
     next
-      fix g
-      assume "g \<in> {x} \<rightarrow>\<^sub>E A"
-      hence "g x \<in> A" by auto
-      moreover {
-        fix x'
-        {
-          assume "x' \<in> {x}"
-          hence "?f (g x) x' = g x'" by simp
-        }
-        moreover {
-          assume "x' \<notin> {x}"
-          with \<open>g \<in> {x} \<rightarrow>\<^sub>E A\<close> have "?f (g x) x' = g x'" by fastforce
-        }
-        ultimately have "?f (g x) x' = g x'" by simp
-      }
-      ultimately show "\<exists>a' \<in> A. ?f a' = g" by auto
+      fix t
+      assume "t \<notin> {x}"
+      with f_def show "f t = undefined" by simp
     qed
-    moreover have "inj_on ?f A"
-    proof (rule inj_onI)
-      fix a and a'
-      assume "a \<in> A" and "a' \<in> A" and "?f a = ?f a'"
-      thus "a = a'" by metis
-    qed
-    ultimately have "bij_betw ?f A ({x} \<rightarrow>\<^sub>E A)" by (intro bij_betw_imageI)
-    hence "|A| =o |{x} \<rightarrow>\<^sub>E A|" by auto
-    thus "|{x} \<rightarrow>\<^sub>E A| =o |A|" by (fact ordIso_symmetric)
+    moreover from f_def and \<FF>_def have "\<FF> f = a" by simp
+    ultimately show "a \<in> \<FF> ` ({x} \<rightarrow>\<^sub>E A)" by auto
   qed
-  finally show "?thesis" .
+  moreover have "inj_on \<FF> ({x} \<rightarrow>\<^sub>E A)"
+  proof (rule inj_onI)
+    fix f g
+    assume f0: "f \<in> {x} \<rightarrow>\<^sub>E A"
+      and g0: "g \<in> {x} \<rightarrow>\<^sub>E A"
+      and "\<FF> f = \<FF> g"
+    from this(3) and \<FF>_def have "f x = g x" by simp
+    show "f = g"
+    proof (rule ext)
+      fix t
+      consider "t = x" | "t \<noteq> x" by auto
+      moreover  {
+        assume "t = x"
+        with \<open>f x = g x\<close> have "f t = g t" by simp
+      }
+      moreover {
+        assume "t \<noteq> x"
+        with f0 and g0 have "f t = g t" by fastforce
+      }
+      ultimately show "f t = g t" by auto
+    qed
+  qed
+  ultimately have \<FF>: "bij_betw \<FF> ({x} \<rightarrow>\<^sub>E A) A" by (intro bij_betw_imageI)
+  have "|A| ^c |{x}| = |{x} \<rightarrow>\<^sub>E A|" by (fact cexp_definition)
+  also from \<FF> have "\<dots> =o |A|" by auto
+  finally show ?thesis .
 qed
 
 proposition prop_2_3_10_b:
   shows "cone ^c |A| =o cone"
-  by (fact cone_cexp)
+proof -
+  define f where "f a \<equiv> if a \<in> A then () else undefined" for a
+  have "cone ^c |A| = |{()}| ^c |A|" unfolding cone_def ..
+  also have "\<dots> = |A \<rightarrow>\<^sub>E {()}|" by (fact cexp_definition)
+  also have "|A \<rightarrow>\<^sub>E {()}| = |{f}|"
+  proof -
+    have "A \<rightarrow>\<^sub>E {()} = {f}" by auto
+    thus ?thesis by simp
+  qed
+  also have "\<dots> =o cone" by (fact singleton_card_eq_cone)
+  finally show ?thesis .
+qed
 
 proposition prop_2_3_11:
   assumes "|A| \<le>o |A'|"
@@ -837,7 +696,7 @@ proof -
   from assms(3)[THEN iffD2] u v1 v2
   have Phi_inj: "\<forall>f \<in> B \<rightarrow> A. \<forall>f' \<in> B \<rightarrow> A. ext_eq_on B' (?\<Phi> f) (?\<Phi> f') \<longrightarrow> ext_eq_on B f f'"
     by (auto intro: prob_1_5_15[where A = "B" and A' = "B'" and B = "A"])
-  have "|A| ^c |B| =o |B \<rightarrow>\<^sub>E A|" by (fact cexp_definition)
+  have "|A| ^c |B| = |B \<rightarrow>\<^sub>E A|" by (fact cexp_definition)
   also have "|B \<rightarrow>\<^sub>E A| \<le>o |B' \<rightarrow>\<^sub>E A'|"
   proof -
     have "?\<Phi>' ` (B \<rightarrow>\<^sub>E A) \<subseteq> B' \<rightarrow>\<^sub>E A'"
@@ -877,7 +736,7 @@ proof -
     qed
     ultimately show "?thesis" by auto
   qed
-  also have "|B' \<rightarrow>\<^sub>E A'| =o |A'| ^c |B'|" by (fact cexp_definition_sym)
+  also have "|B' \<rightarrow>\<^sub>E A'| = |A'| ^c |B'|" unfolding cexp_definition by simp
   finally show "?thesis" .
 qed
 
@@ -904,22 +763,18 @@ theorem thm_2_10_a:
   fixes A :: "'a set"
     and B :: "'b set"
     and C :: "'c set"
-  (*assumes "Inl ` A \<inter> Inr ` B = {}"*)
   shows "|C| ^c |A| *c |C| ^c |B| =o |C| ^c ( |A| +c |B| )"
 proof -
+  define \<Phi> :: "('a + 'b \<Rightarrow> 'c) \<Rightarrow> ('a \<Rightarrow> 'c) \<times> ('b \<Rightarrow> 'c)"
+    where "\<Phi> h \<equiv> (\<lambda>a. h (Inl a), \<lambda>b. h (Inr b))" for h
   let ?f = "\<lambda>\<phi> :: 'a + 'b \<Rightarrow> 'c. (\<lambda>a. \<phi> (Inl a), \<lambda>b. \<phi> (Inr b))"
-  have "|C| ^c |A| *c |C| ^c |B| =o |A \<rightarrow>\<^sub>E C| *c |C| ^c |B|"
+  have "|C| ^c |A| *c |C| ^c |B| = |A \<rightarrow>\<^sub>E C| *c |B \<rightarrow>\<^sub>E C|"
   proof -
-    have "|C| ^c |A| =o |A \<rightarrow>\<^sub>E C|" by (fact cexp_definition)
-    thus "?thesis" by (fact cprod_cong1)
+    have "|C| ^c |A| = |A \<rightarrow>\<^sub>E C|" and "|C| ^c |B| = |B \<rightarrow>\<^sub>E C|" by (fact cexp_definition)+
+    thus ?thesis by simp
   qed
-  also have "|A \<rightarrow>\<^sub>E C| *c |C| ^c |B| =o |A \<rightarrow>\<^sub>E C| *c |B \<rightarrow>\<^sub>E C|"
-  proof -
-    have "|C| ^c |B| =o |B \<rightarrow>\<^sub>E C|" by (fact cexp_definition)
-    thus "?thesis" by (fact cprod_cong2)
-  qed
-  also have "|A \<rightarrow>\<^sub>E C| *c |B \<rightarrow>\<^sub>E C| =o |(A \<rightarrow>\<^sub>E C) \<times> (B \<rightarrow>\<^sub>E C)|" by (fact cprod_definition)
-  also have "|(A \<rightarrow>\<^sub>E C) \<times> (B \<rightarrow>\<^sub>E C)| =o |A <+> B \<rightarrow>\<^sub>E C|"
+  also have "\<dots> = |(A \<rightarrow>\<^sub>E C) \<times> (B \<rightarrow>\<^sub>E C)|" by (fact cprod_definition)
+  also have "\<dots> =o |A <+> B \<rightarrow>\<^sub>E C|"
   proof -
     let ?S = "(A \<rightarrow>\<^sub>E C) \<times> (B \<rightarrow>\<^sub>E C)"
     let ?T = "A <+> B \<rightarrow>\<^sub>E C"
@@ -1065,40 +920,251 @@ proof -
         qed
         ultimately show "?thesis" ..
       qed
-      ultimately show "\<exists>s \<in> ?S. ?f s = t" by auto
+      ultimately show "t \<in> ?f ` ?S" by force
     qed
     ultimately have "bij_betw ?f ((A \<rightarrow>\<^sub>E C) \<times> (B \<rightarrow>\<^sub>E C)) ( A<+> B \<rightarrow>\<^sub>E C)" by (fact bij_betw_imageI)
     thus "?thesis" by auto
   qed
-  also have "|A <+> B \<rightarrow>\<^sub>E C| =o |C| ^c |A <+> B|" by (fact cexp_definition_sym)
-  also have "|C| ^c |A <+> B| =o |C| ^c ( |A| +c |B| )"
-  proof -
-    have "|A <+> B| =o ( |A| +c |B| )" by (fact Plus_csum)
-    thus "?thesis" by (fact cexp_cong2)
-  qed
+  also have "|A <+> B \<rightarrow>\<^sub>E C| =o |C| ^c |A <+> B|" unfolding cexp_definition by simp
+  also have "|C| ^c |A <+> B| = |C| ^c ( |A| +c |B| )" unfolding csum_definition ..
   finally show "?thesis" by simp
+qed
+
+primrec map_prod' where "map_prod' (f, g) x = (f x, g x)"
+
+lemma map_prod'_eq1:
+  assumes "map_prod' (f, g) = map_prod' (f', g')"
+  shows "f = f'"
+proof (rule ext)
+  fix x
+  from assms have "map_prod' (f, g) x = map_prod' (f', g') x" by simp
+  thus "f x = f' x" by simp
+qed
+
+lemma map_prod'_eq2:
+  assumes "map_prod' (f, g) = map_prod' (f', g')"
+  shows "g = g'"
+proof (rule ext)
+  fix x
+  from assms have "map_prod' (f, g) x = map_prod' (f', g') x" by simp
+  thus "g x = g' x" by simp
 qed
 
 theorem thm_2_10_b:
   fixes P :: "'p set"
     and M :: "'m set"
     and N :: "'n set"
-  assumes "\<pp> = |P|"
-    and "\<mm> = |M|"
-    and "\<nn> = |N|"
-  shows "(\<mm> *c \<nn>) ^c \<pp> =o \<mm> ^c \<pp> *c \<nn> ^c \<pp>"
+  shows "( |M| *c |N| ) ^c |P| =o |M| ^c |P| *c |N| ^c |P|"
 proof -
-  define \<FF> where "\<FF> f \<equiv> (fst \<circ> f, snd \<circ> f)" for f :: "'p \<Rightarrow> 'm \<times> 'n"
-  have "bij_betw \<FF> (P \<rightarrow>\<^sub>E M \<times> N) ((P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N))" sorry
-  have "(\<mm> *c \<nn>) ^c \<pp> =o "
+  define \<FF> where "\<FF> h p \<equiv> if p \<in> P then map_prod' h p else undefined"
+    for h :: "('p \<Rightarrow> 'm) \<times> ('p \<Rightarrow> 'n)" and p
+  have "bij_betw \<FF> ((P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)) (P \<rightarrow>\<^sub>E M \<times> N)"
+  proof (rule bij_betw_imageI)
+    show "inj_on \<FF> ((P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N))"
+    proof (rule inj_onI, split_pair)
+      fix f and g and f' and g'
+      assume "(f, g) \<in> (P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)"
+        and "(f', g') \<in> (P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)"
+        and \<FF>: "\<FF> (f, g) = \<FF> (f', g')"
+      hence "f \<in> P \<rightarrow>\<^sub>E M"
+        and "g \<in> P \<rightarrow>\<^sub>E N"
+        and "f' \<in> P \<rightarrow>\<^sub>E M"
+        and "g' \<in> P \<rightarrow>\<^sub>E N" by simp_all
+      have "f = f'"
+      proof (rule ext)
+        fix p
+        {
+          assume "p \<in> P"
+          from \<FF> have "\<FF> (f, g) p = \<FF> (f', g') p" by simp
+          with \<FF>_def and \<open>p \<in> P\<close> have "f p = f' p" by simp
+        }
+        moreover {
+          assume "p \<notin> P"
+          with \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> and \<open>f' \<in> P \<rightarrow>\<^sub>E M\<close> have "f p = f' p" by fastforce
+        }
+        ultimately show "f p = f' p" by auto
+      qed
+      moreover have "g = g'"
+      proof (rule ext)
+        fix p
+        {
+          assume "p \<in> P"
+          from \<FF> have "\<FF> (f, g) p = \<FF> (f', g') p" by simp
+          with \<FF>_def and \<open>p \<in> P\<close> have "g p = g' p" by simp
+        }
+        moreover {
+          assume "p \<notin> P"
+          with \<open>g \<in> P \<rightarrow>\<^sub>E N\<close> and \<open>g' \<in> P \<rightarrow>\<^sub>E N\<close> have "g p = g' p" by fastforce
+        }
+        ultimately show "g p = g' p" by auto
+      qed
+      ultimately show "(f, g) = (f', g')" by simp
+    qed
+  next
+    show "\<FF> ` ((P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)) = P \<rightarrow>\<^sub>E M \<times> N"
+    proof (rule surj_onI, split_pair)
+      fix f and g
+      assume "(f, g) \<in> (P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)"
+      hence "f \<in> P \<rightarrow>\<^sub>E M" and "g \<in> P \<rightarrow>\<^sub>E N" by simp_all
+      show "\<FF> (f, g) \<in> P \<rightarrow>\<^sub>E M \<times> N"
+      proof (rule PiE_I)
+        fix p
+        assume "p \<in> P"
+        hence "\<FF> (f, g) p = (f p, g p)" unfolding \<FF>_def by simp
+        also from \<open>p \<in> P\<close> and \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> and \<open>g \<in> P \<rightarrow>\<^sub>E N\<close> have "\<dots> \<in> M \<times> N" by auto
+        finally show "\<FF> (f, g) p \<in> M \<times> N" .
+      next
+        fix p
+        assume "p \<notin> P"
+        with \<FF>_def show "\<FF> (f, g) p = undefined" by simp
+      qed
+    next
+      fix h
+      assume h: "h \<in> P \<rightarrow>\<^sub>E M \<times> N"
+      define f where "f p \<equiv> if p \<in> P then fst (h p) else undefined" for p
+      from f_def and h have "f \<in> P \<rightarrow>\<^sub>E M" by force
+      define g where "g p \<equiv> if p \<in> P then snd (h p) else undefined" for p
+      from g_def and h have "g \<in> P \<rightarrow>\<^sub>E N" by force
+      have "\<FF> (f, g) = h"
+      proof (rule ext)
+        fix p
+        {
+          assume "p \<in> P"
+          hence "\<FF> (f, g) p = (f p, g p)" unfolding \<FF>_def and map_prod'_def by simp
+          also from \<open>p \<in> P\<close> have "\<dots> = h p" unfolding f_def and g_def by simp
+          finally have "\<FF> (f, g) p = h p" .
+        }
+        moreover {
+          assume "p \<notin> P"
+          hence "\<FF> (f, g) p = undefined" unfolding \<FF>_def by simp
+          also from h and \<open>p \<notin> P\<close> have "\<dots> = h p" by fastforce
+          finally have "\<FF> (f, g) p = h p" .
+        }
+        ultimately show "\<FF> (f, g) p = h p" by auto
+      qed
+      with \<open>f \<in> P \<rightarrow>\<^sub>E M\<close> and \<open>g \<in> P \<rightarrow>\<^sub>E N\<close> show "h \<in> \<FF> ` ((P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N))" by auto
+    qed
+  qed
+  hence "bij_betw (the_inv_into ((P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)) \<FF>) (P \<rightarrow>\<^sub>E M \<times> N) ((P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N))"
+    by (fact bij_betw_the_inv_into)
   hence "|P \<rightarrow>\<^sub>E M \<times> N| =o |(P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)|" by auto
-  moreover have "|M \<times> N| ^c |P| =o |P \<rightarrow>\<^sub>E M \<times> N|" by (fact cexp_definition)
-  ultimately have "|M \<times> N| ^c |P| =o |(P \<rightarrow>\<^sub>E M) \<times> (P \<rightarrow>\<^sub>E N)|" 
-  hence "( |A| *c |B| ) ^c |C| =o |A \<times> B| ^c |C|" try
+  thus ?thesis unfolding cprod_definition and cexp_definition by simp
 qed
 
 theorem thm_2_10_c:
-  shows "|C| ^c |A| ^c |B| =o |C| ^c ( |A| *c |B| )"
-  sorry
+  fixes A :: "'a set"
+    and B :: "'b set"
+    and C :: "'c set"
+  shows "( |C| ^c |A| ) ^c |B| =o |C| ^c ( |A| *c |B| )"
+proof -
+  define \<FF> where "\<FF> f b \<equiv> if b \<in> B then \<lambda>a. f (b, a) else undefined"
+    for f :: "'b \<times> 'a \<Rightarrow> 'c" and b
+  have "bij_betw \<FF> (B \<times> A \<rightarrow>\<^sub>E C) (B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C))"
+  proof (rule bij_betw_imageI)
+    show "inj_on \<FF> (B \<times> A \<rightarrow>\<^sub>E C)"
+    proof (rule inj_onI)
+      fix f and g
+      assume f: "f \<in> B \<times> A \<rightarrow>\<^sub>E C"
+        and g: "g \<in> B \<times> A \<rightarrow>\<^sub>E C"
+        and \<FF>: "\<FF> f = \<FF> g"
+      show "f = g"
+      proof (rule ext)
+        fix x :: "'b \<times> 'a"
+        from \<FF> have *: "\<FF> f (fst x) (snd x) = \<FF> g (fst x) (snd x)" by simp
+        {
+          assume "fst x \<in> B"
+          with * have "f x = g x" unfolding \<FF>_def by simp
+        }
+        moreover {
+          assume "fst x \<notin> B"
+          hence "x \<notin> B \<times> A" by auto
+          with f and g have "f x = undefined" and "g x = undefined" by auto
+          hence "f x = g x" by simp
+        }
+        ultimately show "f x = g x" by auto
+      qed
+    qed
+  next
+    show "\<FF> ` (B \<times> A \<rightarrow>\<^sub>E C) = B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C)"
+    proof (rule surj_onI)
+      fix f
+      assume f: "f \<in> B \<times> A \<rightarrow>\<^sub>E C"
+      show "\<FF> f \<in> B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C)"
+      proof (rule PiE_I)
+        fix b
+        assume "b \<in> B"
+        show "\<FF> f b \<in> A \<rightarrow>\<^sub>E C"
+        proof (rule PiE_I)
+          fix a
+          assume "a \<in> A"
+          with \<open>b \<in> B\<close> and f show "\<FF> f b a \<in> C" unfolding \<FF>_def by auto
+        next
+          fix a
+          assume "a \<notin> A"
+          with \<open>b \<in> B\<close> and f show "\<FF> f b a = undefined" unfolding \<FF>_def by auto
+        qed
+      next
+        fix b
+        assume "b \<notin> B"
+        with \<FF>_def show "\<FF> f b = undefined" by simp
+      qed
+    next
+      fix f
+      assume f: "f \<in> B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C)"
+      define f' where f': "f' x \<equiv> if x \<in> B \<times> A then f (fst x) (snd x) else undefined" for x
+      have "f' \<in> B \<times> A \<rightarrow>\<^sub>E C"
+      proof (rule PiE_I)
+        fix x
+        assume "x \<in> B \<times> A"
+        with f' and f show "f' x \<in> C" by fastforce
+      next
+        fix x
+        assume "x \<notin> B \<times> A"
+        with f' show "f' x = undefined" by simp
+      qed
+      moreover have "\<FF> f' = f"
+      proof (rule ext)
+        fix b
+        consider (A) "b \<in> B"
+          | (B) "b \<notin> B" by auto
+        thus "\<FF> f' b = f b"
+        proof cases
+          case A
+          show ?thesis
+          proof (rule ext)
+            fix a
+            consider (C) "a \<in> A"
+              | (D) "a \<notin> A" by auto
+            thus "\<FF> f' b a = f b a"
+            proof cases
+              case C
+              with A and f' show ?thesis unfolding \<FF>_def by simp
+            next
+              case D
+              with A and f' and f show ?thesis unfolding \<FF>_def by force
+            qed
+          qed
+        next
+          case B
+          with f show ?thesis unfolding \<FF>_def by auto
+        qed
+      qed
+      ultimately show "f \<in> \<FF> ` (B \<times> A \<rightarrow>\<^sub>E C)" by auto
+    qed
+  qed
+  hence "|B \<times> A \<rightarrow>\<^sub>E C| =o |B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C)|" by auto
+  moreover have "|A \<times> B \<rightarrow>\<^sub>E C| =o |B \<times> A \<rightarrow>\<^sub>E C|"
+  proof -
+    have "|A \<times> B| =o |B \<times> A|" by (fact Times_card_commute)
+    hence "|C| ^c |A \<times> B| =o |C| ^c |B \<times> A|" by (fact cexp_cong2')
+    thus ?thesis unfolding cexp_definition by simp
+  qed
+  ultimately have "|A \<times> B \<rightarrow>\<^sub>E C| =o |B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C)|" by (auto intro: card_eq_trans)
+  hence "|B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C)| =o |A \<times> B \<rightarrow>\<^sub>E C|" by auto
+  moreover have "|B \<rightarrow>\<^sub>E (A \<rightarrow>\<^sub>E C)| = ( |C| ^c |A| ) ^c |B|" unfolding cexp_definition by simp
+  moreover have "|A \<times> B \<rightarrow>\<^sub>E C| = |C| ^c ( |A| *c |B| )"
+    unfolding cprod_definition and cexp_definition by simp
+  ultimately show ?thesis by simp
+qed
 
 end

@@ -8,6 +8,22 @@ section \<open>Correspondences, Functions\<close>
 
 subsection \<open>A) Direct Product of Two Sets\<close>
 
+proposition example_1_3_1:
+  fixes p and q and r
+  defines "A \<equiv> {1, 2}"
+    and "B \<equiv> {p, q, r}"
+  shows "A \<times> B = {(1, p), (1, q), (1, r), (2, p), (2, q), (2, r)}"
+    and "A \<times> A = {(1, 1), (1, 2), (2, 1), (2, 2)}"
+  unfolding A_def and B_def by auto
+
+proposition example_1_3_2:
+  assumes "finite A"
+    and "finite B"
+    and "card A = m"
+    and "card B = n"
+  shows "card (A \<times> B) = m * n"
+  using assms by simp
+
 subsection \<open>B) Notion of Correspondence\<close>
 
 text {*
@@ -39,12 +55,16 @@ proposition prop_1_3_1:
 
 theorem thm_1_1:
   shows "\<exists>!\<Gamma>. corr_graph \<Gamma> = G"
-proof (rule ex1I)
-  let ?\<Gamma> = "\<lambda>a. {b. (a, b) \<in> G}"
-  show "corr_graph ?\<Gamma> = G" by auto
-  fix \<Gamma>'
-  assume "corr_graph \<Gamma>' = G"
-  thus "\<Gamma>' = ?\<Gamma>" by auto
+proof -
+  define \<Gamma> where "\<Gamma> a \<equiv> {b. (a, b) \<in> G}" for a
+  show ?thesis
+  proof (rule ex1I)
+    from \<Gamma>_def show "corr_graph \<Gamma> = G" by auto
+  next
+    fix \<Gamma>'
+    assume "corr_graph \<Gamma>' = G"
+    with \<Gamma>_def show "\<Gamma>' = \<Gamma>" by auto
+  qed
 qed
 
 lemma corr_graph_inject:
@@ -97,6 +117,10 @@ proposition prop_1_3_2:
   shows "b \<in> \<Gamma> a \<longleftrightarrow> a \<in> corr_inv \<Gamma> b"
   by auto
 
+proposition prop_1_3_a:
+  shows "corr_graph (corr_inv \<Gamma>) = {(b, a). (a, b) \<in> corr_graph \<Gamma>}"
+  by auto
+
 proposition prop_1_3_3_a:
   shows "corr_dom (corr_inv \<Gamma>) = corr_range \<Gamma>"
   by auto
@@ -107,6 +131,10 @@ proposition prop_1_3_3_b:
 
 proposition prop_1_3_4:
   shows "corr_inv (corr_inv \<Gamma>) = \<Gamma>"
+  by auto
+
+proposition prop_1_3_b:
+  shows "corr_inv \<Gamma> b \<noteq> {} \<longleftrightarrow> b \<in> corr_range \<Gamma>"
   by auto
 
 subsection \<open>E) Maps\<close>
@@ -177,12 +205,6 @@ lemma set_eqI2:
   shows "A = B"
   using assms by blast
 
-lemma surj_onI:
-  assumes "\<And>a. a \<in> A \<Longrightarrow> f a \<in> B"
-    and "\<And>b. b \<in> B \<Longrightarrow> \<exists>a \<in> A. f a = b"
-  shows "f ` A = B"
-  using assms by auto
-
 lemma id_on_imp_surj_on:
   assumes "id_on f A"
   shows "f ` A = A"
@@ -216,41 +238,31 @@ lemma thm_1_2_b:
     "f ` A \<subseteq> B"
     and "corr_graph (as_corr_on f A) = G"
 proof -
-  let ?f = "\<lambda>a. (THE b. b \<in> B \<and> (a, b) \<in> G)"
-  have *: "?f a \<in> B \<and> (a, ?f a) \<in> G" if "a \<in> A" for a
-  proof (rule theI[where ?P = "\<lambda>b. b \<in> B \<and> (a, b) \<in> G"])
-    from that and assms(2) have *: "\<exists>!b \<in> B. (a, b) \<in> G" by simp
-    thus **: "?f a \<in> B \<and> (a, ?f a) \<in> G" by (rule theI')
-    fix b
-    assume "b \<in> B \<and> (a, b) \<in> G"
-    with * and ** show "b = ?f a" by blast
-  qed
-  from * have "?f ` A \<subseteq> B" by blast
-  moreover have "corr_graph (as_corr_on ?f A) = G" (is "?L = _")
+  define f where "f a \<equiv> THE b. b \<in> B \<and> (a, b) \<in> G" for a
+  have f0: "f a \<in> B" and f1: "(a, f a) \<in> G" if "a \<in> A" for a
   proof -
-    have "corr_graph (as_corr_on ?f A) = {(a, b). a \<in> A \<and> b = ?f a}" by auto
-    also have "\<dots> = G"
-    proof (intro set_eqI, split_pair)
-      fix a and b
-      have "(a, b) \<in> {(a, b). a \<in> A \<and> b = ?f a} \<longleftrightarrow> a \<in> A \<and> b = ?f a" by simp
-      also from * have "\<dots> \<longleftrightarrow> a \<in> A \<and> b = ?f a \<and> ?f a \<in> B \<and> (a, ?f a) \<in> G" by blast
-      also have "\<dots> \<longleftrightarrow> a \<in> A \<and> b \<in> B \<and> (a, b) \<in> G"
-      proof (intro iffI)
-        assume "a \<in> A \<and> b = ?f a \<and> ?f a \<in> B \<and> (a, ?f a) \<in> G"
-        thus "a \<in> A \<and> b \<in> B \<and> (a, b) \<in> G" by simp
-      next
-        assume **: "a \<in> A \<and> b \<in> B \<and> (a, b) \<in> G"
-        moreover from this and * have ***: "?f a \<in> B" and "(a, ?f a) \<in> G" by simp+
-        moreover note assms(2)
-        ultimately have "b = ?f a" by blast
-        with ** and *** show "a \<in> A \<and> b = ?f a \<and> ?f a \<in> B \<and> (a, ?f a) \<in> G" by simp
-      qed
-      also from assms(1) have "\<dots> \<longleftrightarrow> (a, b) \<in> G" by auto
-      finally show "(a, b) \<in> {(a, b). a \<in> A \<and> b = ?f a} \<longleftrightarrow> (a, b) \<in> G" .
-    qed
-    finally show "?thesis" .
+    from assms(2) and that have "\<exists>!b. b \<in> B \<and> (a, b) \<in> G" by simp
+    hence "f a \<in> B \<and> (a, f a) \<in> G" (is "?L \<and> ?R") unfolding f_def by (fact theI')
+    thus ?L and ?R by simp+
   qed
-  ultimately show "thesis" by (rule that)
+  from f0 have "f ` A \<subseteq> B" by auto
+  moreover have "corr_graph (as_corr_on f A) = G"
+  proof (rule set_eqI2, split_pair; split_pair)
+    fix a b
+    assume "(a, b) \<in> corr_graph (as_corr_on f A)"
+    hence "b \<in> as_corr_on f A a" by auto
+    hence "a \<in> A" and "f a = b" by auto
+    thus "(a, b) \<in> G" by (auto intro: f1)
+  next
+    fix a b
+    assume "(a, b) \<in> G"
+    with assms(1) have "a \<in> A" and "b \<in> B" by auto
+    from this(1) and assms(2) have "\<exists>!b \<in> B. (a, b) \<in> G" by simp
+    with \<open>b \<in> B\<close> and \<open>(a, b) \<in> G\<close> have "f a = b" unfolding f_def by auto
+    with \<open>a \<in> A\<close> have "b \<in> as_corr_on f A a" by auto
+    thus "(a, b) \<in> corr_graph (as_corr_on f A)" by auto
+  qed
+  ultimately show thesis by (fact that)
 qed
 
 theorem thm_1_2:

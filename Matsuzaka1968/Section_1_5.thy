@@ -569,7 +569,7 @@ next
   moreover note assms(2)
   ultimately obtain a where "a \<in> (\<Pi> l \<in> \<Lambda>. A l)" and "a l = al" by (elim Pi_one_point)
   from this(2) have "proj l a = al" unfolding proj_eq by simp
-  with \<open>a \<in> (\<Pi> l \<in> \<Lambda>. A l)\<close> show "\<exists>a \<in> (\<Pi> l \<in> \<Lambda>. A l). proj l a = al" by auto
+  with \<open>a \<in> (\<Pi> l \<in> \<Lambda>. A l)\<close> show "al \<in> proj l ` Pi \<Lambda> A" by auto
 qed
 
 proposition prob_1_5_8_a:
@@ -1113,6 +1113,136 @@ proof -
     thus "\<forall>f' \<in> A' \<rightarrow> B'. \<exists>f \<in> A \<rightarrow> B. ext_eq_on A' (\<Phi> f) f'" ..
   qed
   ultimately show "thesis" by (fact that)
+qed
+
+proposition prob_1_5_15_ext_a:
+  assumes "u ` A' = A"
+    and "inj_on v B"
+  defines "\<Phi> f \<equiv> \<lambda>a'. if a' \<in> A' then v (f (u a')) else undefined"
+  shows "inj_on \<Phi> (A \<rightarrow>\<^sub>E B)"
+proof (rule inj_onI)
+  fix f f'
+  assume f: "f \<in> A \<rightarrow>\<^sub>E B"
+    and f': "f' \<in> A \<rightarrow>\<^sub>E B"
+    and "\<Phi> f = \<Phi> f'"
+  {
+    fix a
+    consider "a \<in> A" | "a \<notin> A" by auto
+    moreover {
+      assume a: "a \<in> A"
+      with assms(1) obtain a' where "a' \<in> A'" and "u a' = a" by auto
+      with \<open>\<Phi> f = \<Phi> f'\<close> and \<Phi>_def have "v (f a) = v (f' a)" by metis
+      moreover from f and a have "f a \<in> B" by auto
+      moreover from f' and a have "f' a \<in> B" by auto
+      moreover note assms(2)
+      ultimately have "f a = f' a" by (simp only: inj_onD)
+    }
+    moreover {
+      assume "a \<notin> A"
+      with f and f' have "f a = f' a" by fastforce
+    }
+    ultimately have "f a = f' a" by auto
+  }
+  thus "f = f'" by auto
+qed
+
+proposition prob_1_5_15_ext_b:
+  fixes A :: "'a set"
+    and B :: "'b set"
+  assumes "A' = {} \<Longrightarrow> A = {}"
+    and "u ` A' \<subseteq> A"
+    and "inj_on u A'"
+    and "v ` B = B'"
+  defines "\<Phi> f \<equiv> \<lambda>a'. if a' \<in> A' then v (f (u a')) else undefined"
+  shows "\<Phi> ` (A \<rightarrow>\<^sub>E B) = (A' \<rightarrow>\<^sub>E B')"
+proof (rule surj_onI)
+  fix f
+  assume f: "f \<in> A \<rightarrow>\<^sub>E B"
+  {
+    fix a'
+    assume a': "a' \<in> A'"
+    with \<Phi>_def have "\<Phi> f a' = v (f (u a'))" by simp
+    also from a' and assms(2) and f and assms(4) have "\<dots> \<in> B'" by auto
+    finally have "\<Phi> f a' \<in> B'" .
+  }
+  moreover {
+    fix a'
+    assume "a' \<notin> A'"
+    with \<Phi>_def have "\<Phi> f a' = undefined" by simp
+  }
+  ultimately show "\<Phi> f \<in> A' \<rightarrow>\<^sub>E B'" by auto
+next
+  fix g
+  assume g: "g \<in> A' \<rightarrow>\<^sub>E B'"
+  consider "A' = {}" | "A' \<noteq> {}" by auto
+  moreover {
+    assume "A' = {}"
+    with assms(1) have "A = {}" by simp
+    moreover define f :: "'a \<Rightarrow> 'b" where "f a \<equiv> undefined" for a
+    ultimately have "f \<in> A \<rightarrow>\<^sub>E B" by auto
+    moreover have "\<Phi> f = g"
+    proof (rule ext)
+      fix a'
+      from \<Phi>_def and \<open>A' = {}\<close> and g show "\<Phi> f a' = g a'" by simp
+    qed
+    ultimately have "\<exists>f \<in> A \<rightarrow>\<^sub>E B. \<Phi> f = g" by auto
+  }
+  moreover {
+    assume "A' \<noteq> {}"
+    with g and assms(4) have "B \<noteq> {}" by auto
+    then obtain b where b: "b \<in> B" by auto
+    from assms(3) obtain u' where "left_inv_into A' u u'" by (rule left_inv_into)
+    hence u'1: "u' ` u ` A' \<subseteq> A'" and u'2: "id_on (u' \<circ> u) A'"
+      by (fact left_inv_intoD1, fact left_inv_intoD2_pf)
+    obtain v' where "right_inv_into B v v'" by (fact right_inv_into)
+    hence "v' ` v ` B \<subseteq> B" and "id_on (v \<circ> v') (v ` B)"
+      by (fact right_inv_intoD1, fact right_inv_intoD2_pf)
+    with assms(4) have v'1: "v' ` B' \<subseteq> B" and v'2: "id_on (v \<circ> v') B'" by simp+
+    define f where "f a \<equiv> if a \<in> u ` A' then v' (g (u' a)) else (if a \<in> A then b else undefined)" for a
+    {
+      fix a
+      assume "a \<in> A"
+      consider "a \<in> u ` A'" | "a \<notin> u ` A'" by auto
+      moreover {
+        assume "a \<in> u ` A'"
+        with f_def have "f a = v' (g (u' a))" by simp
+        also from \<open>a \<in> u ` A'\<close> and u'1 and g and v'1 have "\<dots> \<in> B" by auto
+        finally have "f a \<in> B" by simp
+      }
+      moreover {
+        assume "a \<notin> u ` A'"
+        with \<open>a \<in> A\<close> and f_def and b have "f a \<in> B" by simp
+      }
+      ultimately have "f a \<in> B" by auto
+    }
+    moreover {
+      fix a
+      assume "a \<notin> A"
+      moreover from this and assms(2) have "a \<notin> u ` A'" by auto
+      moreover note f_def
+      ultimately have "f a = undefined" by simp
+    }
+    ultimately have "f \<in> A \<rightarrow>\<^sub>E B" by auto
+    moreover have "\<Phi> f = g"
+    proof (rule ext)
+      fix a'
+      consider "a' \<in> A'" | "a' \<notin> A'" by auto
+      moreover {
+        assume a': "a' \<in> A'"
+        with \<Phi>_def have "\<Phi> f a' = v (f (u a'))" by simp
+        also from a' and f_def have "\<dots> = (v \<circ> v') (g ((u' \<circ> u) a'))" by auto
+        also from a' and u'2 and g and v'2 have "\<dots> = g a'" by fastforce
+        finally have "\<Phi> f a' = g a'" .
+      }
+      moreover {
+        assume a': "a' \<notin> A'"
+        with \<Phi>_def and g have "\<Phi> f a' = g a'" by auto
+      }
+      ultimately show "\<Phi> f a' = g a'" by auto
+    qed
+    ultimately have "\<exists>f \<in> A \<rightarrow>\<^sub>E B. \<Phi> f = g" by auto
+  }
+  ultimately show "g \<in> \<Phi> ` (A \<rightarrow>\<^sub>E B)" by auto
 qed
 
 end
