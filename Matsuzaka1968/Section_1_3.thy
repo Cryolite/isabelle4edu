@@ -26,13 +26,13 @@ proposition example_1_3_2:
 
 subsection \<open>B) Notion of Correspondence\<close>
 
-text {*
+text \<open>
   In this section, a correspondence is defined by a function of the type @{typ "'a => 'b set"}.
   Neither the initial nor target set of a correspondence is not explicitly specified. Instead, for
   a correspondence @{term "\<Gamma>"}, its initial set is implicitly specified by a set
   @{term [show_types] "A :: 'a set"} such that @{prop "\<forall>a. a \<notin> A \<longrightarrow> \<Gamma> a = {}"}, and its target
   set is implicitly specified by a set @{term "B :: 'b set"} such that @{prop "\<Gamma> `` A \<subseteq> B"}.
-*}
+\<close>
 
 subsection \<open>C) Graph of Correspondence\<close>
 
@@ -142,13 +142,13 @@ subsection \<open>E) Maps\<close>
 definition as_corr_on :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> 'b set"
   where "as_corr_on f A a = (if a \<in> A then {f a} else {})"
 
-text {*
+text \<open>
   @{const "as_corr_on"} transforms a function into the correspondence. Since a function
   @{term "f :: 'a \<Rightarrow> 'b"} in Isabelle/HOL is total, which means that the function is always
   defined on the universal set @{term "UNIV :: 'a set"} of the type @{typ "'a"},
   @{const "as_corr_on"} additionally specifies a set of the type @{typ "'a set"} that should be
   considered as the domain of the function.
-*}
+\<close>
 
 lemma as_corr_onI [intro]:
   assumes "a \<in> A"
@@ -176,11 +176,11 @@ definition corr_functional_on :: "('a \<Rightarrow> 'b set) \<Rightarrow> 'a set
 definition id_on :: "('a \<Rightarrow> 'a) \<Rightarrow> 'a set \<Rightarrow> bool"
   where "id_on f A \<longleftrightarrow> (\<forall>a \<in> A. f a = a)"
 
-text {*
-  @{prop "id_on f A"} states that the function @{term f} behaves as an identity function on the
-  set @{term A}. This proposition does not specify any other property of @{term f} on an element
-  out of @{term A}.
-*}
+text \<open>
+  @{prop "id_on f A"} states that the function @{term f} behaves as an identity function on
+  the set @{term A}. This proposition does not specify any other property of @{term f} on an
+  element out of @{term A}.
+\<close>
 
 lemmas id_on_iff = id_on_def
 
@@ -225,7 +225,7 @@ lemma id_on_imp_bij_betw:
   using assms by (auto intro: bij_betw_imageI dest: id_on_imp_surj_on id_on_imp_inj_on)
 
 lemma thm_1_2_a:
-  assumes -- \<open> The assumption @{prop "G \<subseteq> A \<times> B"} is not necessary.\<close>
+  assumes \<comment> \<open> The assumption @{prop "G \<subseteq> A \<times> B"} is not necessary.\<close>
     "f ` A \<subseteq> B"
     and "corr_graph (as_corr_on f A) = G"
   shows "\<forall>a \<in> A. \<exists>!b \<in> B. (a, b) \<in> G"
@@ -285,8 +285,8 @@ subsection \<open>Problems\<close>
 (* TODO: prob_1_3_2 *)
 
 proposition prob_1_3_3_a:
-  assumes -- \<open>The assumption @{prop "corr_graph \<Gamma> \<subseteq> A \<times> B"} is not necessary.\<close>
-    -- \<open>Since @{prop "corr_dom \<Gamma> = A"}* is an assumption, the assumption
+  assumes \<comment> \<open>The assumption @{prop "corr_graph \<Gamma> \<subseteq> A \<times> B"} is not necessary.\<close>
+    \<comment> \<open>Since @{prop "corr_dom \<Gamma> = A"}* is an assumption, the assumption
         @{prop "corr_graph \<Gamma> \<subseteq> A \<times> B"} can be replaced by @{prop "corr_range \<Gamma> \<subseteq> B"}.\<close>
     "corr_range \<Gamma> \<subseteq> B"
     and "corr_dom \<Gamma> = A"
@@ -309,7 +309,7 @@ proof -
         proof -
           from \<open>b \<in> \<Gamma> a\<close> have "a \<in> corr_inv \<Gamma> b" by auto
           moreover from \<open>(a, b') \<in> corr_graph \<Gamma>\<close> have "a \<in> corr_inv \<Gamma> b'" by auto
-          ultimately show "?thesis" by auto
+          ultimately show ?thesis by auto
         qed
         ultimately have "False" using assms(3) by simp
       }
@@ -327,8 +327,8 @@ proof -
 qed
 
 proposition prob_1_3_3_b:
-  assumes -- \<open>The assumption @{prop "corr_graph \<Gamma> \<subseteq> A \<times> B"} is not necessary.\<close>
-    -- \<open>Original assumptions would include @{prop "corr_graph \<Gamma> \<subseteq> A \<times> B"} but it can be weakened
+  assumes \<comment> \<open>The assumption @{prop "corr_graph \<Gamma> \<subseteq> A \<times> B"} is not necessary.\<close>
+    \<comment> \<open>Original assumptions would include @{prop "corr_graph \<Gamma> \<subseteq> A \<times> B"} but it can be weakened
         to the assumption @{prop "corr_dom \<Gamma> \<subseteq> A"}.\<close>
     "corr_dom \<Gamma> \<subseteq> A"
     and "f ` A \<subseteq> B"
@@ -381,7 +381,7 @@ proposition prob_1_3_4_a:
 proof -
   have "?L = {(a, b). a \<in> A \<and> b = f a}" by auto
   also from assms have "\<dots> = ?R" by auto
-  finally show "?thesis" .
+  finally show ?thesis .
 qed
 
 proposition prob_1_3_4_b:
@@ -390,7 +390,7 @@ proposition prob_1_3_4_b:
 proof -
   have "?L = {(a, b). a \<in> A \<and> b = f a}" by auto
   also from assms have "\<dots> = ?R" by fastforce
-  finally show "?thesis" .
+  finally show ?thesis .
 qed
 
 end

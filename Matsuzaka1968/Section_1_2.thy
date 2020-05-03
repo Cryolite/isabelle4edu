@@ -156,7 +156,7 @@ proposition prop_1_2_12_a:
   using assms by auto
 
 proposition prop_1_2_12_b:
-  -- \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
   shows "A \<inter> (X - A) = {}"
   by (fact Diff_disjoint)
 
@@ -180,14 +180,14 @@ proposition prop_1_2_15:
   using assms by auto
 
 proposition prop_1_2_16:
-  -- \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
   shows "X - (A \<union> B) = (X - A) \<inter> (X - B)"
   by (fact Diff_Un)
 
 proposition prop_1_2_16':
-  -- \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
   shows "X - (A \<inter> B) = (X - A) \<union> (X - B)"
   by (fact Diff_Int)
 
@@ -260,26 +260,26 @@ proposition prop_1_2_18':
 subsection \<open>Problems\<close>
 
 proposition prob_1_2_1_a:
-  -- \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
   shows "(A \<union> B) \<inter> (A \<union> (X - B)) = A"
   by auto
 
 proposition prob_1_2_1_b:
-  -- \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
-  -- \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
+  \<comment> \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
   shows "(A \<union> B) \<inter> ((X - A) \<union> B) \<inter> (A \<union> (X - B)) = A \<inter> B"
   by auto
 
 proposition prob_1_2_2_a:
-  assumes -- \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
+  assumes \<comment> \<open>The assumption @{prop "A \<subseteq> X"} is not necessary.\<close>
     "B \<subseteq> X"
   shows "A \<inter> B = {} \<longleftrightarrow> B \<subseteq> X - A"
   using assms by auto
 
 proposition prob_1_2_2_b:
   assumes "A \<subseteq> X"
-    -- \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
   shows "A \<inter> B = {} \<longleftrightarrow> A \<subseteq> X - B"
   using assms by auto
 
@@ -293,7 +293,7 @@ proposition prob_1_2_3_a_b:
 
 proposition prob_1_2_3_a_c:
   assumes "A \<subseteq> X"
-    -- \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
+    \<comment> \<open>The assumption @{prop "B \<subseteq> X"} is not necessary.\<close>
   shows "A - B = A \<inter> (X - B)"
   using assms by auto
 

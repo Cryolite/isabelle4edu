@@ -1,15 +1,16 @@
 theory Section_2_3
   imports Main
     "HOL-Library.Disjoint_Sets"
-    "HOL-Cardinals.Cardinal_Arithmetic"
     "Section_2_2"
 begin
+
+context includes cardinal_syntax begin
 
 proposition csum_definition:
   fixes A :: "'a set"
     and B :: "'b set"
   shows "|A| +c |B| = |A <+> B|"
-  by (simp add: csum_def)
+  unfolding csum_def by (simp only: Field_card_of)
 
 proposition csum_welldefinedness:
   assumes "|A| =o |A'|"
@@ -246,7 +247,7 @@ qed
 
 proposition cprod_definition:
   shows "|A| *c |B| = |A \<times> B|"
-  by (simp add: cprod_def)
+  unfolding cprod_def by (simp only: Field_card_of)
 
 lemma cprod_welldefinedness:
   assumes "|A| =o |A'|"
@@ -373,17 +374,6 @@ proof -
   ultimately show ?thesis by metis
 qed
 
-(*lemma czero_cprod_absorb2_sym:
-  shows "czero =o |A| *c czero"
-  using prop_2_3_7_a by (auto intro: ordIso_symmetric)
-
-lemma czero_cprod_cong2:
-  fixes A :: "'a set"
-    and B :: "'b set"
-  assumes "B = {}"
-  shows "|A| *c (czero :: 'd rel) =o |A| *c |B|"
-  sorry*)
-
 lemma inj_on_fst_Times_unit:
   shows "inj_on fst (A \<times> {()})"
   unfolding inj_on_def by simp
@@ -447,8 +437,8 @@ theorem thm_2_9:
   fixes A :: "'b \<Rightarrow> 'a set"
   assumes "|\<Lambda>| = \<nn>"
     and "\<And>l. l \<in> \<Lambda> \<Longrightarrow> |A l| =o \<mm>"
-    and "\<Lambda> = {} \<Longrightarrow> \<exists>X. |X| = \<mm>" -- \<open>This assumption guarantees that @{term "\<mm>"} is a cardinal
-                                      number even if @{prop "\<Lambda> = {}"}.\<close>
+    and "\<Lambda> = {} \<Longrightarrow> \<exists>X. |X| = \<mm>" \<comment> \<open>This assumption guarantees that @{term "\<mm>"} is a cardinal
+                                     number even if @{prop "\<Lambda> = {}"}.\<close>
     and "disjoint_family_on A \<Lambda>"
   shows "|\<Union>l \<in> \<Lambda>. A l| =o \<mm> *c \<nn>"
 proof -
@@ -531,7 +521,7 @@ proof -
     ultimately have "bij_betw ?f' (A l\<^sub>0 \<times> \<Lambda>) ?B" by (intro bij_betw_imageI)
     hence "|A l\<^sub>0 \<times> \<Lambda>| =o |?B|" by auto
     hence "|?B| =o |A l\<^sub>0 \<times> \<Lambda>|" by (fact ordIso_symmetric)
-    also have "|A l\<^sub>0 \<times> \<Lambda>| =o |A l\<^sub>0| *c |\<Lambda>|" by (fact Times_cprod)
+    also have "|A l\<^sub>0 \<times> \<Lambda>| = |A l\<^sub>0| *c |\<Lambda>|" unfolding cprod_definition ..
     also have "|A l\<^sub>0| *c |\<Lambda>| =o \<mm> *c |\<Lambda>|"
     proof -
       from \<open>l\<^sub>0 \<in> \<Lambda>\<close> have "|A l\<^sub>0| =o \<mm>" by (fact assms(2))
@@ -546,7 +536,7 @@ qed
 proposition cexp_definition:
   shows "|A| ^c |B| = |B \<rightarrow>\<^sub>E A|"
 proof -
-  have "|A| ^c |B| = |Func B A|" unfolding cexp_def by simp
+  have "|A| ^c |B| = |Func B A|" unfolding cexp_def by (simp only: Field_card_of)
   also have "\<dots> = |B \<rightarrow>\<^sub>E A|"
   proof -
     have "Func B A = B \<rightarrow>\<^sub>E A" unfolding Func_def by auto
@@ -685,7 +675,7 @@ qed
 proposition prop_2_3_11:
   assumes "|A| \<le>o |A'|"
     and "|B| \<le>o |B'|"
-    and "B = {} \<longleftrightarrow> B' = {}" -- \<open>Is this assumption necessary?\<close>
+    and "B = {} \<longleftrightarrow> B' = {}" \<comment> \<open>Is this assumption necessary?\<close>
   shows "|A| ^c |B| \<le>o |A'| ^c |B'|"
 proof -
   from assms(2) and assms(3)[THEN iffD1] obtain u where u: "u ` B' = B"
@@ -1166,5 +1156,7 @@ proof -
     unfolding cprod_definition and cexp_definition by simp
   ultimately show ?thesis by simp
 qed
+
+end (* context includes cardinal_syntax begin *)
 
 end
