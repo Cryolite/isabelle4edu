@@ -358,7 +358,7 @@ proof -
   from assms have "|A| =o czero" by (fact eq_empty_imp_card_eq_czero)
   have "|A| *c |B| = |A \<times> B|" unfolding cprod_definition ..
   moreover from assms(1) have "|A \<times> B| = |{}|" by simp
-  moreover have "|{} :: ('a \<times> 'b) set| =o (czero :: 'c rel)" try sorry
+  moreover have "|{} :: ('a \<times> 'b) set| =o (czero :: 'c rel)" by (fact empty_card_eq_czero)
   ultimately show ?thesis by simp
 qed
 
