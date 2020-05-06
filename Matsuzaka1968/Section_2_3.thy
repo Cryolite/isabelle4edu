@@ -1,10 +1,15 @@
 theory Section_2_3
   imports Main
     "HOL-Library.Disjoint_Sets"
+    "HOL-Library.FuncSet"
     "Section_2_2"
 begin
 
 context includes cardinal_syntax begin
+
+section \<open>3. Operations on Cardinalities\<close>
+
+subsection \<open>A) Sum and Product of Cardinalities\<close>
 
 proposition csum_definition:
   fixes A :: "'a set"
@@ -245,6 +250,112 @@ proof -
   finally show ?thesis .
 qed
 
+lemma union_card_leq_csum:
+  shows "|A \<union> B| \<le>o |A| +c |B|"
+proof -
+  define f where "f x \<equiv> if x \<in> A then Inl x else Inr x" for x
+  have "f ` (A \<union> B) \<subseteq> A <+> B"
+  proof (rule image_subsetI)
+    fix x
+    assume "x \<in> A \<union> B"
+    moreover {
+      assume "x \<in> A"
+      hence "f x \<in> A <+> B" unfolding f_def by auto
+    }
+    moreover {
+      assume "x \<in> B"
+      hence "f x \<in> A <+> B" unfolding f_def by auto
+    }
+    ultimately show "f x \<in> A <+> B" by auto
+  qed
+  moreover have "inj_on f (A \<union> B)"
+  proof (rule inj_onI)
+    fix x and y
+    assume "x \<in> A \<union> B"
+      and "y \<in> A \<union> B"
+      and f: "f x = f y"
+    from this(1,2) consider
+      (A) "x \<in> A" and "y \<in> A"
+      | (B) "x \<in> A" and "y \<in> B - A"
+      | (C) "x \<in> B - A" and "y \<in> A"
+      | (D) "x \<in> B - A" and "y \<in> B - A"
+      by auto
+    thus "x = y"
+    proof cases
+      case A
+      with f show ?thesis unfolding f_def by simp
+    next
+      case B
+      with f show ?thesis unfolding f_def by simp
+    next
+      case C
+      with f show ?thesis unfolding f_def by simp
+    next
+      case D
+      with f show ?thesis unfolding f_def by simp
+    qed
+  qed
+  ultimately show ?thesis unfolding csum_definition by auto
+qed
+
+fun fun_disjoint_union_card_eq_csum where
+  "fun_disjoint_union_card_eq_csum (Inl x) = x"
+| "fun_disjoint_union_card_eq_csum (Inr x) = x"
+
+lemma disjoint_union_card_eq_csum:
+  assumes "A \<inter> B = {}"
+  shows "|A \<union> B| =o |A| +c |B|"
+proof -
+  have "fun_disjoint_union_card_eq_csum ` (A <+> B) \<subseteq> A \<union> B"
+  proof (rule image_subsetI)
+    fix x
+    assume "x \<in> A <+> B"
+    moreover {
+      assume "x \<in> Inl ` A"
+      hence "fun_disjoint_union_card_eq_csum x \<in> A \<union> B" by auto
+    }
+    moreover {
+      assume "x \<in> Inr ` B"
+      hence "fun_disjoint_union_card_eq_csum x \<in> A \<union> B" by auto
+    }
+    ultimately show "fun_disjoint_union_card_eq_csum x \<in> A \<union> B" by auto
+  qed
+  moreover have "inj_on fun_disjoint_union_card_eq_csum (A <+> B)"
+  proof (rule inj_onI)
+    fix x and y
+    assume "x \<in> A <+> B"
+      and "y \<in> A <+> B"
+      and *: "fun_disjoint_union_card_eq_csum x = fun_disjoint_union_card_eq_csum y"
+    from this(1,2) consider
+      (A) "x \<in> Inl ` A" and "y \<in> Inl ` A"
+      | (B) "x \<in> Inl ` A" and "y \<in> Inr ` B"
+      | (C) "x \<in> Inr ` B" and "y \<in> Inl ` A"
+      | (D) "x \<in> Inr ` B" and "y \<in> Inr ` B"
+      by blast
+    thus "x = y"
+    proof cases
+      case A
+      with * show ?thesis by auto
+    next
+      case B
+      with * and assms show ?thesis by fastforce
+    next
+      case C
+      with * and assms show ?thesis by fastforce
+    next
+      case D
+      with * show ?thesis by auto
+    qed
+  qed
+  ultimately have "|A| +c |B| \<le>o |A \<union> B|" unfolding csum_definition by auto
+  moreover have "|A \<union> B| \<le>o |A <+> B|"
+  proof -
+    have "|A \<union> B| \<le>o |A| +c |B|" by (fact union_card_leq_csum)
+    thus ?thesis unfolding csum_definition .
+  qed
+  ultimately show "|A \<union> B| =o |A| +c |B|" unfolding csum_definition by (intro thm_2_3_2)
+qed
+
 proposition cprod_definition:
   shows "|A| *c |B| = |A \<times> B|"
   unfolding cprod_def by (simp only: Field_card_of)
@@ -426,11 +537,29 @@ lemma bij_betw_prod_sum_distribute:
   shows "bij_betw prod_sum_distribute (A \<times> (B <+> C)) (A \<times> B <+> A \<times> C)"
   using inj_on_prod_sum_distribute and prod_sum_distribute_surj_on by (intro bij_betw_imageI)
 
-proposition prop_2_3_9:
+proposition prop_2_3_9':
   shows "|A| *c ( |B| +c |C| ) =o |A| *c |B| +c |A| *c |C|"
 proof -
   from bij_betw_prod_sum_distribute have "|A \<times> (B <+> C)| =o |A \<times> B <+> A \<times> C|" by auto
   thus ?thesis unfolding csum_definition and cprod_definition by simp
+qed
+
+proposition prop_2_3_9:
+  shows "( |A| +c |B| ) *c |C| =o |A| *c |C| +c |B| *c |C|"
+proof -
+  have "( |A| +c |B| ) *c |C| = |A <+> B| *c |C|" unfolding csum_definition ..
+  also have "\<dots> =o |C| *c |A <+> B|" by (fact prop_2_3_5)
+  also have "|C| *c |A <+> B| = |C| *c ( |A| +c |B| )" unfolding csum_definition ..
+  also have "\<dots> =o |C| *c |A| +c |C| *c |B|" by (fact prop_2_3_9')
+  also have "|C| *c |A| +c |C| *c |B| = |C \<times> A| +c |C \<times> B|" unfolding cprod_definition ..
+  also have "\<dots> =o |A \<times> C| +c |B \<times> C|"
+  proof -
+    have "|C \<times> A| =o |A \<times> C|" unfolding cprod_definition by (fact Times_card_commute)
+    moreover have "|C \<times> B| =o |B \<times> C|" unfolding cprod_definition by (fact Times_card_commute)
+    ultimately show ?thesis by (fact csum_cong')
+  qed
+  also have "|A \<times> C| +c |B \<times> C| = |A| *c |C| +c |B| *c |C|" unfolding cprod_definition ..
+  finally show ?thesis .
 qed
 
 theorem thm_2_9:
@@ -532,6 +661,8 @@ proof -
   }
   ultimately show "?thesis" by blast
 qed
+
+subsection \<open>B) Power of Cardinalities\<close>
 
 proposition cexp_definition:
   shows "|A| ^c |B| = |B \<rightarrow>\<^sub>E A|"
@@ -1156,6 +1287,607 @@ proof -
     unfolding cprod_definition and cexp_definition by simp
   ultimately show ?thesis by simp
 qed
+
+proposition thm_2_3_b:
+  fixes \<Lambda> :: "'l set"
+    and B :: "'l \<Rightarrow> 'b set"
+    and B\<^sub>0 :: "'c set"
+  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> |B l| =o |B\<^sub>0|"
+  shows "|\<Prod>\<^sub>d l \<in> \<Lambda>. B l| =o |B\<^sub>0| ^c |\<Lambda>|"
+proof -
+  {
+    fix l
+    assume "l \<in> \<Lambda>"
+    with assms have "\<exists>\<sigma>. bij_betw (\<sigma> l) (B l) B\<^sub>0" by fast
+  }
+  then obtain \<sigma>' where \<sigma>': "\<sigma>' \<in> (\<Pi> l \<in> \<Lambda>. {\<sigma>. bij_betw (\<sigma> l) (B l) B\<^sub>0})" by (elim AC_E_ex)
+  define \<sigma> where "\<sigma> l \<equiv> (\<sigma>' l) l" for l
+  {
+    fix l
+    assume "l \<in> \<Lambda>"
+    with \<sigma>' have "bij_betw ((\<sigma>' l) l) (B l) B\<^sub>0" by auto
+  }
+  hence \<sigma>: "bij_betw (\<sigma> l) (B l) B\<^sub>0" if "l \<in> \<Lambda>" for l unfolding \<sigma>_def by (simp add: that)
+  hence \<sigma>_inj: "inj_on (\<sigma> l) (B l)" if "l \<in> \<Lambda>" for l by (auto intro: that)
+  from \<sigma> have \<sigma>_surj: "(\<sigma> l) ` (B l) = B\<^sub>0" if "l \<in> \<Lambda>" for l
+    by (simp add: bij_betw_imp_surj_on that)
+  define \<FF> where "\<FF> \<BB> l \<equiv> if l \<in> \<Lambda> then (\<sigma> l) (\<BB> l) else undefined" for \<BB> :: "'l \<Rightarrow> 'b" and l
+  have "bij_betw \<FF> (\<Prod>\<^sub>d l \<in> \<Lambda>. B l) (\<Lambda> \<rightarrow>\<^sub>E B\<^sub>0)"
+  proof (rule bij_betw_imageI)
+    show "inj_on \<FF> (\<Prod>\<^sub>d l \<in> \<Lambda>. B l)"
+    proof (rule inj_onI)
+      fix \<BB> and \<BB>'
+      assume \<BB>: "\<BB> \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. B l)"
+        and \<BB>': "\<BB>' \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. B l)"
+        and *: "\<FF> \<BB> = \<FF> \<BB>'"
+      show "\<BB> = \<BB>'"
+      proof (rule ext)
+        fix l
+        {
+          assume l: "l \<in> \<Lambda>"
+          with \<BB> and \<BB>' have "\<BB> l \<in> B l" and "\<BB>' l \<in> B l" by auto
+          moreover from * and l have "(\<sigma> l) (\<BB> l) = (\<sigma> l) (\<BB>' l)" unfolding \<FF>_def by meson
+          moreover from \<sigma>_inj and l have "inj_on (\<sigma> l) (B l)" by simp
+          ultimately have "\<BB> l = \<BB>' l" by (auto dest: inj_onD)
+        }
+        moreover {
+          assume l: "l \<notin> \<Lambda>"
+          with \<BB> and \<BB>' have "\<BB> l = \<BB>' l" by fastforce
+        }
+        ultimately show "\<BB> l = \<BB>' l" by auto
+      qed
+    qed
+  next
+    show "\<FF> ` (\<Prod>\<^sub>d l \<in> \<Lambda>. B l) = (\<Lambda> \<rightarrow>\<^sub>E B\<^sub>0)"
+    proof (rule surj_onI)
+      fix \<BB>
+      assume \<BB>: "\<BB> \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. B l)"
+      show "\<FF> \<BB> \<in> \<Lambda> \<rightarrow>\<^sub>E B\<^sub>0"
+      proof (rule PiE_I)
+        fix l
+        assume l: "l \<in> \<Lambda>"
+        hence "\<FF> \<BB> l = (\<sigma> l) (\<BB> l)" unfolding \<FF>_def by simp
+        also from \<BB> and l and \<sigma>_surj have "\<dots> \<in> B\<^sub>0" by fast
+        finally show "\<FF> \<BB> l \<in> B\<^sub>0" .
+      next
+        fix l
+        assume "l \<notin> \<Lambda>"
+        with \<FF>_def show "\<FF> \<BB> l = undefined" by simp
+      qed
+    next
+      fix f
+      assume f: "f \<in> \<Lambda> \<rightarrow>\<^sub>E B\<^sub>0"
+      define \<tau> where "\<tau> l \<equiv> the_inv_into (B l) (\<sigma> l)" for l
+      define \<BB> where "\<BB> l \<equiv> if l \<in> \<Lambda> then (\<tau> l) (f l) else undefined" for l
+      have "\<BB> \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. B l)"
+      proof (rule dprodI)
+        fix l
+        assume l: "l \<in> \<Lambda>"
+        with f have "f l \<in> B\<^sub>0" by auto
+        moreover have "(\<tau> l) ` B\<^sub>0 = B l"
+        proof -
+          from \<sigma> and l have "bij_betw (\<sigma> l) (B l) B\<^sub>0" by simp
+          hence "bij_betw (\<tau> l) B\<^sub>0 (B l)" unfolding \<tau>_def by (fact bij_betw_the_inv_into)
+          thus ?thesis by auto
+        qed
+        moreover note l
+        ultimately show "\<BB> l \<in> B l" unfolding \<BB>_def by auto
+      next
+        fix l
+        assume "l \<notin> \<Lambda>"
+        thus "\<BB> l = undefined" unfolding \<BB>_def by simp
+      qed
+      moreover have "\<FF> \<BB> = f"
+      proof (rule ext)
+        fix l
+        {
+          assume l: "l \<in> \<Lambda>"
+          hence "(\<FF> \<BB>) l = (\<sigma> l) ((\<tau> l) (f l))" unfolding \<FF>_def \<BB>_def by simp
+          moreover have "id_on ((\<sigma> l) \<circ> (\<tau> l)) B\<^sub>0"
+          proof (rule id_onI)
+            fix b
+            assume b: "b \<in> B\<^sub>0"
+            have "((\<sigma> l) \<circ> (\<tau> l)) b = (\<sigma> l) ((\<tau> l) b)" by simp
+            also have "\<dots> = (\<sigma> l) ((the_inv_into (B l) (\<sigma> l)) b)" unfolding \<tau>_def ..
+            also have "\<dots> = b"
+            proof (rule f_the_inv_into_f)
+              from \<sigma>_inj and l show "inj_on (\<sigma> l) (B l)" .
+            next
+              from \<sigma>_surj and l and b show "b \<in> (\<sigma> l) ` (B l)" by simp
+            qed
+            finally show "((\<sigma> l) \<circ> (\<tau> l)) b = b" .
+          qed
+          moreover from f and l have "f l \<in> B\<^sub>0" by auto
+          ultimately have "(\<FF> \<BB>) l = f l" by auto
+        }
+        moreover {
+          assume "l \<notin> \<Lambda>"
+          with f have "(\<FF> \<BB>) l = f l" unfolding \<FF>_def by fastforce
+        }
+        ultimately show "(\<FF> \<BB>) l = f l" by auto
+      qed
+      ultimately show "f \<in> \<FF> ` (\<Prod>\<^sub>d l \<in> \<Lambda>. B l)" by auto
+    qed
+  qed
+  thus ?thesis unfolding cexp_definition by auto
+qed
+
+proposition prop_2_3_15_a:
+  fixes M :: "'m set"
+  shows "|Pow M| =o ctwo ^c |M|"
+proof -
+  define \<FF> where "\<FF> X m \<equiv> if m \<in> M then m \<in> X else undefined" for X :: "'m set" and m
+  have "bij_betw \<FF> (Pow M) (M \<rightarrow>\<^sub>E (UNIV :: bool set))"
+  proof (rule bij_betw_imageI')
+    fix X and Y
+    assume "X \<in> Pow M"
+      and "Y \<in> Pow M"
+      and \<FF>: "\<FF> X = \<FF> Y"
+    show "X = Y"
+    proof (rule equalityI)
+      {
+        fix x
+        assume x: "x \<in> X"
+        with \<open>X \<in> Pow M\<close> have x': "x \<in> M" by auto
+        {
+          assume "x \<notin> Y"
+          with x and x' and \<FF> have "False" unfolding \<FF>_def by meson
+        }
+        hence "x \<in> Y" by auto
+      }
+      thus "X \<subseteq> Y" ..
+    next
+      {
+        fix y
+        assume y: "y \<in> Y"
+        with \<open>Y \<in> Pow M\<close> have y': "y \<in> M" by auto
+        {
+          assume "y \<notin> X"
+          with y and y' and \<FF> have "False" unfolding \<FF>_def by meson
+        }
+        hence "y \<in> X" by auto
+      }
+      thus "Y \<subseteq> X" ..
+    qed
+  next
+    fix X
+    assume "X \<in> Pow M"
+    show "\<FF> X \<in> M \<rightarrow>\<^sub>E UNIV"
+    proof (rule PiE_I)
+      fix x
+      show "\<FF> X x \<in> UNIV" ..
+    next
+      fix x
+      assume "x \<notin> M"
+      thus "\<FF> X x = undefined" unfolding \<FF>_def by simp
+    qed
+  next
+    fix f :: "'m \<Rightarrow> bool"
+    assume f: "f \<in> M \<rightarrow>\<^sub>E UNIV"
+    define X where "X \<equiv> {x \<in> M. f x}"
+    have "\<FF> X = f"
+    proof (rule ext)
+      fix x
+      {
+        assume x: "x \<in> M"
+        hence "\<FF> X x = f x" unfolding \<FF>_def and X_def by simp
+      }
+      moreover {
+        assume "x \<notin> M"
+        with f have "\<FF> X x = f x" unfolding \<FF>_def by auto
+      }
+      ultimately show "\<FF> X x = f x" by auto
+    qed
+    moreover have "X \<in> Pow M"
+    proof (rule PowI; rule subsetI)
+      fix x
+      assume "x \<in> X"
+      hence "x \<in> M" and "f x" unfolding X_def by simp_all
+      with f show "x \<in> M" by simp
+    qed
+    ultimately show "f \<in> \<FF> ` (Pow M)" by auto
+  qed
+  hence "|Pow M| =o |M \<rightarrow>\<^sub>E (UNIV :: bool set)|" by auto
+  thus ?thesis unfolding cexp_definition and ctwo_def .
+qed
+
+proposition prop_2_3_15_b:
+  shows "|M| <o ctwo ^c |M|"
+proof -
+  have "|M| <o |Pow M|" by (fact thm_2_8)
+  also have "|Pow M| =o ctwo ^c |M|" by (fact prop_2_3_15_a)
+  finally show ?thesis .
+qed
+
+subsection \<open>C) Operations on Cardinalities @{term "\<aleph>\<^sub>0"} and @{term "\<aleph>"}\<close>
+
+fun fun_2_11_a where
+  "fun_2_11_a f (Inl x) = 2 * (f x)"
+| "fun_2_11_a f (Inr x) = 2 * x + 1"
+
+theorem thm_2_11_a:
+  fixes M :: "'m set"
+  assumes "|M| \<le>o \<aleph>\<^sub>0"
+  shows "|M| +c \<aleph>\<^sub>0 =o \<aleph>\<^sub>0"
+proof -
+  have "|M <+> (UNIV :: nat set)| \<le>o |UNIV :: nat set|"
+  proof -
+    from assms obtain f where "f ` M \<subseteq> (UNIV :: nat set)" and f: "inj_on f M" by auto
+    have "inj_on (fun_2_11_a f) (M <+> (UNIV :: nat set))"
+    proof (rule inj_onI)
+      fix x and y
+      assume "x \<in> M <+> (UNIV :: nat set)"
+        and "y \<in> M <+> (UNIV :: nat set)"
+        and fun_2_11_a: "fun_2_11_a f x = fun_2_11_a f y"
+      from this(1,2) consider (A) "x \<in> Inl ` M" and "y \<in> Inl ` M"
+        | (B) "x \<in> Inl ` M" and "y \<in> Inr ` UNIV"
+        | (C) "x \<in> Inr ` UNIV" and "y \<in> Inl ` M"
+        | (D) "x \<in> Inr ` UNIV" and "y \<in> Inr ` UNIV" by blast
+      thus "x = y"
+      proof cases
+        case A
+        then obtain m and m' where "m \<in> M" and "Inl m = x" and "m' \<in> M" and "Inl m' = y" by auto
+        with fun_2_11_a have "2 * (f m) = 2 * (f m')" by auto
+        hence "f m = f m'" by simp
+        with f and \<open>m \<in> M\<close> and \<open>m' \<in> M\<close> have "m = m'" by (elim inj_onD)
+        with \<open>Inl m = x\<close> and \<open>Inl m' = y\<close> show ?thesis by simp
+      next
+        case B
+        then obtain m and n where "Inl m = x" and "Inr n = y" by auto
+        with fun_2_11_a have "2 * (f m) = 2 * n + 1" by auto
+        hence "False" by presburger
+        thus ?thesis by simp
+      next
+        case C
+        then obtain n and m where "Inr n = x" and "Inl m = y" by auto
+        with fun_2_11_a have "2 * n + 1 = 2 * (f m)" by auto
+        hence "False" by presburger
+        thus ?thesis by simp
+      next
+        case D
+        then obtain n and n' where n: "Inr n = x" and n': "Inr n' = y" by auto
+        with fun_2_11_a have "2 * n + 1 = 2 * n' + 1" by auto
+        hence "n = n'" by simp
+        with n and n' show ?thesis by simp
+      qed
+    qed
+    thus ?thesis by auto
+  qed
+  moreover have "|UNIV :: nat set| \<le>o |M <+> (UNIV :: nat set)|"
+  proof -
+    have "inj_on Inr (UNIV :: nat set)" by simp
+    thus ?thesis by auto
+  qed
+  ultimately have "|M <+> (UNIV :: nat set)| =o |UNIV :: nat set|" by (fact thm_2_3_2)
+  thus "|M| +c \<aleph>\<^sub>0 =o \<aleph>\<^sub>0" unfolding csum_definition by simp
+qed
+
+theorem thm_2_11_a':
+  shows "\<aleph>\<^sub>0 +c \<aleph>\<^sub>0 =o \<aleph>\<^sub>0"
+  by (rule thm_2_11_a; simp)
+
+lemma inj_on_map_sum:
+  assumes "inj_on f A"
+    and "inj_on g B"
+  shows "inj_on (map_sum f g) (A <+> B)"
+proof (rule inj_onI)
+  fix x and x'
+  assume "x \<in> A <+> B"
+    and "x' \<in> A <+> B"
+    and *: "(map_sum f g) x = (map_sum f g) x'"
+  from this(1,2) consider
+    (A) "x \<in> Inl ` A" and "x' \<in> Inl ` A"
+    | (B) "x \<in> Inl ` A" and "x' \<in> Inr ` B"
+    | (C) "x \<in> Inr ` B" and "x' \<in> Inl ` A"
+    | (D) "x \<in> Inr ` B" and "x' \<in> Inr ` B"
+    by blast
+  thus "x = x'"
+  proof cases
+    case A
+    then obtain a and a' where "a \<in> A" and "Inl a = x" and "a' \<in> A" and "Inl a' = x'" by auto
+    with * have "Inl (f a) = Inl (f a')" by auto
+    hence "f a = f a'" by simp
+    with assms(1) and \<open>a \<in> A\<close> and \<open>a' \<in> A\<close> have "a = a'" by (elim inj_onD)
+    with \<open>Inl a = x\<close> and \<open>Inl a' = x'\<close> show ?thesis by simp
+  next
+    case B
+    with * have "False" by auto
+    thus ?thesis ..
+  next
+    case C
+    with * have "False" by auto
+    thus ?thesis ..
+  next
+    case D
+    then obtain b and b' where "b \<in> B" and "Inr b = x" and "b' \<in> B" and "Inr b' = x'" by auto
+    with * have "Inr (g b) = Inr (g b')" by auto
+    hence "g b = g b'" by simp
+    with assms(2) and \<open>b \<in> B\<close> and \<open>b' \<in> B\<close> have "b = b'" by (elim inj_onD)
+    with \<open>Inr b = x\<close> and \<open>Inr b' = x'\<close> show ?thesis by simp
+  qed
+qed
+
+theorem thm_2_11_b:
+  assumes "|M| \<le>o \<aleph>"
+  shows "|M| +c \<aleph> =o \<aleph>"
+proof -
+  let ?A = "{-(1 :: real) <..< (0 :: real)}"
+  let ?B = "{(0 :: real) <..< (1 :: real)}"
+  have "|UNIV :: real set| \<le>o |M <+> (UNIV :: real set)|" by auto
+  moreover have "|M <+> (UNIV :: real set)| \<le>o |UNIV :: real set|"
+  proof -
+    have "|M <+> (UNIV :: real set)| = |M| +c |UNIV :: real set|" unfolding csum_definition ..
+    also have "\<dots> =o |M| +c |?B|"
+    proof -
+      have "equipotent ?B (UNIV :: real set)" by (simp add: ex_2_5''')
+      hence "|?B| =o |UNIV :: real set|" by auto
+      hence "|UNIV :: real set| =o |?B|" by auto
+      thus ?thesis by (fact csum_cong2')
+    qed
+    also have "|M| +c |?B| = |M <+> ?B|" unfolding csum_definition ..
+    also have "\<dots> \<le>o |?A <+> ?B|"
+    proof -
+      have "equipotent ?A (UNIV :: real set)" by (simp add: ex_2_5''')
+      hence "|?A| =o |UNIV :: real set|" by auto
+      hence "|UNIV :: real set| =o |?A|" by auto
+      with assms have "|M| \<le>o |?A|" by (fact card_leq_card_eq_trans)
+      then obtain f where f: "f ` M \<subseteq> ?A" and f': "inj_on f M" by auto
+      have id: "id ` ?B \<subseteq> ?B" and id': "inj_on id ?B" by simp_all
+      from f and id have "(map_sum f id) ` (M <+> ?B) \<subseteq> ?A <+> ?B" by fastforce
+      moreover from f' and id' have "inj_on (map_sum f id) (M <+> ?B)" by (fact inj_on_map_sum)
+      ultimately show ?thesis by auto
+    qed
+    also have "|?A <+> ?B| \<le>o |?A \<union> ?B|"
+    proof -
+      have "?A \<inter> ?B = {}" by simp
+      hence "|?A \<union> ?B| =o |?A| +c |?B|" by (fact disjoint_union_card_eq_csum)
+      thus ?thesis unfolding csum_definition by fast
+    qed
+    also have "|?A \<union> ?B| \<le>o |UNIV :: real set|" by auto
+    finally show ?thesis by simp
+  qed
+  ultimately have "|M <+> (UNIV :: real set)| =o |UNIV :: real set|" by (elim thm_2_3_2)
+  thus ?thesis unfolding csum_definition by simp
+qed
+
+(* TODO:
+theorem thm_2_11_b':
+  shows "\<aleph>\<^sub>0 +c \<aleph> =o \<aleph>"
+proof -
+  have "\<aleph>\<^sub>0 \<le>o \<aleph>" sorry
+  thus ?thesis by (fact thm_2_11_b)
+qed
+*)
+
+theorem thm_2_11_b'':
+  shows "\<aleph> +c \<aleph> =o \<aleph>"
+  by (simp add: thm_2_11_b)
+
+theorem thm_2_11_c:
+  fixes M :: "'m set"
+  assumes "cone \<le>o |M|"
+    and "|M| \<le>o \<aleph>\<^sub>0"
+  shows "|M| *c \<aleph>\<^sub>0 =o \<aleph>\<^sub>0"
+proof -
+  have "|M \<times> (UNIV :: nat set)| \<le>o |UNIV :: nat set|"
+  proof -
+    from assms(2) obtain f where f: "f ` M \<subseteq> (UNIV :: nat set)" and f': "inj_on f M" by auto
+    define \<FF> :: "'m \<times> nat \<Rightarrow> nat \<times> nat" where "\<FF> \<equiv> map_prod f id"
+    have id: "id ` (UNIV :: nat set) \<subseteq> (UNIV :: nat set)" by simp
+    have id': "inj_on id (UNIV :: nat set)" by simp
+    from f and id have "\<FF> ` (M \<times> (UNIV :: nat set)) \<subseteq> (UNIV :: nat set) \<times> (UNIV :: nat set)"
+      unfolding \<FF>_def by simp
+    moreover from f' and id' have "inj_on \<FF> (M \<times> (UNIV :: nat set))"
+      unfolding \<FF>_def by (fact map_prod_inj_on)
+    ultimately have "|M \<times> (UNIV :: nat set)| \<le>o |(UNIV :: nat set) \<times> (UNIV :: nat set)|" by auto
+    also have "|(UNIV :: nat set) \<times> (UNIV :: nat set)| =o |UNIV :: nat set|"
+      by (fact nat_Times_nat_card_eq_aleph_zero)
+    finally show ?thesis unfolding cprod_definition .
+  qed
+  moreover have "|UNIV :: nat set| \<le>o |M \<times> (UNIV :: nat set)|"
+  proof -
+    from assms(1) have "|{()}| \<le>o |M|" unfolding cone_def by simp
+    then obtain f where "f ` {()} \<subseteq> M" by auto
+    hence "f () \<in> M" by simp
+    define \<FF> where "\<FF> n \<equiv> (f (), n)" for n :: nat
+    from \<open>f () \<in> M\<close> have "\<FF> ` (UNIV :: nat set) \<subseteq> M \<times> (UNIV :: nat set)" unfolding \<FF>_def by auto
+    moreover have "inj_on \<FF> (UNIV :: nat set)" unfolding \<FF>_def by (meson injI prod.inject)
+    ultimately show ?thesis by auto
+  qed
+  ultimately show ?thesis unfolding cprod_definition by (fact thm_2_3_2)
+qed
+
+lemma surj_Real:
+  shows "surj Real.Real"
+proof -
+  obtain rr :: "(real \<Rightarrow> bool) \<Rightarrow> nat \<Rightarrow> rat" where
+    "\<forall>p r. p r \<or> \<not> p (Real.Real (rr p)) \<and> realrel (rr p) (rr p)"
+    by (metis real.abs_induct)
+  hence "surj (quot_type.abs realrel Abs_real)" using Real_def by auto
+  thus ?thesis unfolding Real.Real_def .
+qed
+
+lemma aleph_card_leq_rational_sequence:
+  shows "|UNIV :: real set| \<le>o |UNIV :: (nat \<Rightarrow> rat) set|"
+  using surj_Real by (fact surj_on_imp_card_leq)
+
+(* TODO:
+lemma rational_sequence_card_leq_aleph:
+  shows "|UNIV :: (nat \<Rightarrow> rat) set| \<le>o |UNIV :: real set|"
+  sorry
+*)
+
+(* TODO:
+theorem thm_2_11_d:
+  assumes "ctwo \<le>o |M|"
+    and "|M| \<le>o \<aleph>\<^sub>0"
+  shows "|M| ^c \<aleph>\<^sub>0 =o \<aleph>"
+  sorry
+*)
+
+(* TODO:
+theorem thm_2_11_e:
+  assumes "cone \<le>o |M|"
+    and "|M| \<le> \<aleph>"
+  shows "|M| *c \<aleph> =o \<aleph>"
+  sorry
+*)
+
+(* TODO:
+theorem thm_2_11_f:
+  assumes "ctwo \<le>o |M|"
+    and "|M| \<le>o \<aleph>"
+  shows "ctwo ^c \<aleph> =o \<aleph>\<^sub>0 ^c \<aleph>"
+  sorry
+*)
+
+(* TODO:
+proposition
+  shows "equipotent ((UNIV :: nat set) \<times> (UNIV :: real set)) (UNIV :: real set)"
+  sorry
+*)
+
+(* TODO:
+proposition
+  shows "equipotent ((UNIV :: real set) \<times> (UNIV :: real set)) (UNIV :: real set)"
+  sorry
+*)
+
+(* TODO:
+proposition
+  shows "equipotent (Pow (UNIV :: nat set)) (UNIV :: real set)"
+  sorry
+*)
+
+(* TODO:
+proposition
+  shows "equipotent ((UNIV :: nat set) \<rightarrow>\<^sub>E (UNIV :: bool set)) (UNIV :: real set)"
+  sorry
+*)
+
+(* TODO:
+proposition
+  shows "equipotent ((UNIV :: nat set) \<rightarrow>\<^sub>E (UNIV :: nat set)) (UNIV :: real set)"
+  sorry
+*)
+
+subsection \<open>Problems\<close>
+
+proposition prob_2_3_1_a:
+  shows "|M| +c |N| =o |N| +c |M|"
+  by (fact prop_2_3_1)
+
+proposition prob_2_3_1_b:
+  shows "( |M| +c |N| ) +c |P| =o |M| +c ( |N| +c |P| )"
+  by (fact prop_2_3_2)
+
+proposition prob_2_3_1_c:
+  shows "|M| +c czero =o |M|"
+  by (fact prop_2_3_3)
+
+proposition prob_2_3_1_d:
+  assumes "|M| \<le>o |M'|"
+    and "|N| \<le>o |N'|"
+  shows "|M| +c |N| \<le>o |M'| +c |N'|"
+  using assms by (fact prop_2_3_4)
+
+proposition prob_2_3_1_e:
+  shows "|M| *c |N| =o |N| *c |M|"
+  by (fact prop_2_3_5)
+
+proposition prob_2_3_1_f:
+  shows "( |M| *c |N| ) *c |P| =o |M| *c ( |N| *c |P| )"
+  by (fact prop_2_3_6)
+
+proposition prob_2_3_1_g_a:
+  shows "|M| *c czero =o czero"
+  by (fact prop_2_3_7_a)
+
+proposition prob_2_3_1_g_b:
+  shows "|M| *c cone =o |M|"
+  by (fact prop_2_3_7_b)
+
+proposition prob_2_3_1_h:
+  assumes "|M| \<le>o |M'|"
+    and "|N| \<le>o |N'|"
+  shows "|M| *c |N| \<le>o |M'| *c |N'|"
+  using assms by (fact prop_2_3_8)
+
+proposition prob_2_3_1_i:
+  shows "( |M| +c |N| ) *c |P| =o |M| *c |P| +c |N| *c |P|"
+  by (fact prop_2_3_9)
+
+proposition prob_2_3_2:
+  assumes "equipotent A A'"
+    and "equipotent B B'"
+  shows "equipotent (A \<times> B) (A' \<times> B')"
+proof -
+  from assms have "|A| =o |A'|" and "|B| =o |B'|" by auto
+  hence "|A| *c |B| =o |A'| *c |B'|" by (fact cprod_cong')
+  thus ?thesis unfolding cprod_definition by auto
+qed
+
+proposition prob_2_3_3:
+  assumes "|N| \<le>o |N'|"
+    and "|M| \<le>o |M'|"
+    and "M = {} \<longleftrightarrow> M' = {}" \<comment> \<open>Is this assumption really necessary?\<close>
+  shows "|N| ^c |M| \<le>o |N'| ^c |M'|"
+  using assms by (fact prop_2_3_11)
+
+(*
+proposition prob_2_3_4:
+  assumes "ctwo \<le>o |M|"
+    and "|M| \<le> \<aleph>"
+  shows "ctwo ^c \<aleph> =o |M| ^c \<aleph>"
+  using assms sorry
+*)
+
+proposition prob_2_3_5:
+  fixes M :: "'m set"
+  assumes "infinite M"
+  shows "|M| +c \<aleph>\<^sub>0 =o |M|"
+proof -
+  define N :: "('m + nat) set" where "N \<equiv> Inr ` UNIV"
+  have "infinite (M <+> (UNIV :: nat set))" by simp
+  moreover have "N \<subseteq> M <+> UNIV" unfolding N_def by auto
+  moreover have "|N| \<le>o \<aleph>\<^sub>0" unfolding N_def by (fact card_of_image)
+  moreover have "infinite ((M <+> UNIV) - N)"
+  proof -
+    have "(M <+> UNIV) - N = Inl ` M" unfolding N_def by auto
+    moreover have "infinite (Inl ` M)"
+    proof -
+      have "inj_on Inl M" by simp
+      with assms show ?thesis by (simp add: finite_image_iff)
+    qed
+    ultimately show ?thesis by simp
+  qed
+  ultimately have "equipotent ((M <+> UNIV) - N) (M <+> (UNIV :: nat set))" by (fact thm_2_6)
+  moreover have "equipotent M ((M <+> UNIV) - N)"
+  proof -
+    have "bij_betw Inl M (Inl ` M)" by (metis bij_betw_imageI' image_eqI sum.inject(1))
+    hence "equipotent M (Inl ` M)" by auto
+    moreover have "Inl ` M = (M <+> UNIV) - N" unfolding N_def by auto
+    ultimately show ?thesis by metis
+  qed
+  ultimately have "equipotent M (M <+> (UNIV :: nat set))" by (auto dest: prop_2_1_3)
+  hence "|M| =o |M <+> (UNIV :: nat set)|" by auto
+  thus ?thesis unfolding csum_definition by auto
+qed
+
+(*
+proposition prob_2_3_6_a:
+  assumes "cone \<le>o |M|"
+    and "|M| \<le>o \<aleph>\<^sub>0"
+  shows "\<aleph> ^c |M| =o \<aleph>"
+  using assms sorry
+*)
+
+(*
+proposition prob_2_3_6_b:
+  assumes "|M| \<le>o \<ff>"
+  shows "|M| +c \<ff> =o \<ff>"
+  using assms sorry
+*)
 
 end (* context includes cardinal_syntax begin *)
 

@@ -1,6 +1,7 @@
 theory Section_2_1
   imports Complex_Main
     "HOL-Library.Disjoint_Sets"
+    "HOL-Library.Quadratic_Discriminant"
     "HOL-Computational_Algebra.Primes"
     "Split_Pair"
     "Section_1_6"
@@ -41,7 +42,7 @@ proposition prop_2_1_1 [simp]:
   shows "equipotent A A"
   by auto
 
-proposition prop_2_1_2 [sym]:
+proposition prop_2_1_2:
   assumes "equipotent A B"
   shows "equipotent B A"
 proof -
@@ -114,6 +115,234 @@ proof -
   ultimately have "bij_betw ?f (UNIV \<times> UNIV) UNIV" by (intro bij_betw_imageI)
   thus "equipotent ((UNIV :: nat set) \<times> (UNIV :: nat set)) (UNIV :: nat set)" by auto
 qed
+
+proposition ex_2_4:
+  assumes "(a :: real) < (b :: real)"
+    and "(c :: real) < (d :: real)"
+  shows "equipotent {a .. b} {c .. d}"
+proof -
+  define f where "f x \<equiv> (d - c) * (x - a) / (b - a) + c" for x
+  have "bij_betw f {a .. b} {c .. d}"
+  proof (rule bij_betw_imageI')
+    fix x and x'
+    assume "x \<in> {a .. b}"
+      and "x' \<in> {a .. b}"
+      and "f x = f x'"
+    with f_def have "(d - c) * (x - a) / (b - a) = (d - c) * (x' - a) / (b - a)" by simp
+    with assms(1) have "(d - c) * (x - a) = (d - c) * (x' - a)" by simp
+    with assms(2) show "x = x'" by simp
+  next
+    fix x
+    assume x: "x \<in> {a .. b}"
+    have "c \<le> f x"
+    proof -
+      from assms(2) have "0 \<le> d - c" by simp
+      moreover from x have "0 \<le> x - a" by simp
+      moreover from assms(1) have "0 \<le> b - a" by simp
+      ultimately have "0 \<le> (d - c) * (x - a) / (b - a)" by simp
+      with f_def show ?thesis by simp
+    qed
+    moreover have "f x \<le> d"
+    proof -
+      from x and assms(1) have "(x - a) / (b - a) \<le> 1" by simp
+      moreover from assms(2) have "0 \<le> d - c" by simp
+      ultimately have "(d - c) * ((x - a) / (b - a)) \<le> d - c" by (fact mult_left_le)
+      thus ?thesis unfolding f_def by simp
+    qed
+    ultimately show "f x \<in> {c .. d}" by simp
+  next
+    fix y
+    assume y: "y \<in> {c .. d}"
+    define x where "x \<equiv> (y - c) * (b - a) / (d - c) + a"
+    with f_def have "f x = y"
+    proof -
+      have "f x = (d - c) * (((y - c) * (b - a) / (d - c) + a) - a) / (b - a) + c"
+        unfolding f_def and x_def ..
+      also from assms have "\<dots> = y" by simp
+      finally show ?thesis .
+    qed
+    moreover have "x \<in> {a .. b}"
+    proof -
+      have "a \<le> x"
+      proof -
+        from y have "0 \<le> y - c" by simp
+        moreover from assms(1) have "0 \<le> b - a" by simp
+        moreover from assms(2) have "0 \<le> d - c" by simp
+        ultimately have "0 \<le> (y - c) * (b - a) / (d - c)" by simp
+        thus ?thesis unfolding x_def by simp
+      qed
+      moreover have "x \<le> b"
+      proof -
+        from y and assms(2) have "(y - c) / (d - c) \<le> 1" by simp
+        moreover from assms(1) have "0 \<le> (b - a)" by simp
+        ultimately have "(b - a) * ((y - c) / (d - c)) \<le> b - a" by (fact mult_left_le)
+        hence "(y - c) * (b - a) / (d - c) + a \<le> b" by argo
+        thus ?thesis unfolding x_def by simp
+      qed
+      ultimately show ?thesis by simp
+    qed
+    ultimately show "y \<in> f ` {a .. b}" by auto
+  qed
+  thus ?thesis by (fact equipotentI)
+qed
+
+lemma non_negative_quadratic_discriminant_implies_real_root:
+  assumes "a \<noteq> 0"
+    and "discrim a b c \<ge> 0"
+  obtains x where "a * x\<^sup>2 + b * x + c = 0"
+    and "x = (-b + sqrt(discrim a b c)) / (2 * a)"
+  using assms and discriminant_iff by blast
+
+proposition ex_2_5:
+  shows "equipotent {-(1 :: real) <..< (1 :: real)} (UNIV :: real set)"
+proof -
+  define f where "f x \<equiv> x / (1 - x\<^sup>2)" for x :: real
+  have "bij_betw f {-(1 ::real) <..< (1 :: real)} (UNIV :: real set)"
+  proof (rule bij_betw_imageI')
+    fix x and x'
+    assume x: "x \<in> {-1 <..< 1}"
+      and x': "x' \<in> {-1 <..< 1}"
+      and "f x = f x'"
+    from this(3) have "x / (1 - x\<^sup>2) = x' / (1 - x'\<^sup>2)" unfolding f_def .
+    hence "(1 - x\<^sup>2) * (1 - x'\<^sup>2) * (x / (1 - x\<^sup>2)) = (1 - x\<^sup>2) * (1 - x'\<^sup>2) * (x' / (1 - x'\<^sup>2))" by simp
+    moreover have "1 - x\<^sup>2 \<noteq> 0"
+    proof (rule notI)
+      assume "1 - x\<^sup>2 = 0"
+      hence "x = 1 \<or> x = -1" by algebra
+      with x show "False" by simp
+    qed
+    moreover have "1 - x'\<^sup>2 \<noteq> 0"
+    proof (rule notI)
+      assume "1 - x'\<^sup>2 = 0"
+      hence "x' = 1 \<or> x' = -1" by algebra
+      with x' show "False" by simp
+    qed
+    ultimately have "(1 - x'\<^sup>2) * x = (1 - x\<^sup>2) * x'" by auto
+    hence "x - x * x'\<^sup>2 - x' + x' * x\<^sup>2 = 0" by argo
+    hence *: "x - x' + x * x' * (x - x') = 0" by algebra
+    {
+      assume "x \<noteq> x'"
+      with * have "1 + x * x' = 0" by algebra
+      moreover from x and x' have "-1 < x * x'"
+      proof -
+        consider (A) "x * x' \<ge> 0"
+            | (B) "x > 0"
+            | (C) "x' > 0"
+          by (metis less_eq_real_def linorder_neqE_linordered_idom zero_le_mult_iff)
+        thus ?thesis
+        proof cases
+          case A
+          thus ?thesis by simp
+        next
+          case B
+          moreover from x' have "-1 < x'" by simp
+          ultimately have "x * (-1) < x * x'" by (blast dest: mult_strict_left_mono)
+          hence "-x < x * x'" by simp
+          moreover from x have "-1 < -x" by simp
+          ultimately show ?thesis by simp
+        next
+          case C
+          moreover from x have "-1 < x" by simp
+          ultimately have "(-1) * x' < x * x'" by (blast dest: mult_strict_right_mono)
+          hence "-x' < x * x'" by simp
+          moreover from x' have "-1 < -x'" by simp
+          ultimately show ?thesis by simp
+        qed
+      qed
+      ultimately have "False" by simp
+    }
+    thus "x = x'" by (fact ccontr)
+  next
+    fix x :: real
+    show "f x \<in> UNIV" by simp
+  next
+    fix y :: real
+    {
+      assume y: "y = 0"
+      with f_def have  "f 0 = y" by simp
+      hence "y \<in> f ` {-1 <..< 1}" by auto
+    }
+    moreover {
+      assume "y \<noteq> 0"
+      have discrim: "discrim y 1 (-y) \<ge> 0" unfolding discrim_def by simp
+      from \<open>y \<noteq> 0\<close> and discrim obtain x where x_root: "y * x\<^sup>2 + 1 * x + (-y) = 0"
+        and x: "x = (-1 + sqrt(discrim y 1 (-y))) / (2 * y)"
+        by (elim non_negative_quadratic_discriminant_implies_real_root)
+      have "f x = y"
+      proof -
+        from x_root have "(1 - x\<^sup>2) * y = x" by argo
+        moreover have "1 - x\<^sup>2 \<noteq> 0"
+        proof (rule notI)
+          assume "1 - x\<^sup>2 = 0"
+          moreover from this and x_root have "x = 0" by simp
+          ultimately show "False" by simp
+        qed
+        ultimately have "y = x / (1 - x\<^sup>2)" by (metis nonzero_mult_div_cancel_left)
+        thus ?thesis unfolding f_def by simp
+      qed
+      moreover have "x \<in> {-1 <..< 1}"
+      proof -
+        {
+          assume "y > 0"
+          have "0 < x"
+          proof -
+            from \<open>y > 0\<close> have "0 < -1 + sqrt(1 + 4 * y * y)" by simp
+            moreover from \<open>y > 0\<close> have "0 < 2 * y" by simp
+            ultimately have "0 < (-1 + sqrt(1 + 4 * y * y)) / (2 * y)" by simp
+            with x show "0 < x" unfolding discrim_def by simp
+          qed
+          moreover have "x < 1"
+          proof -
+            from \<open>y > 0\<close> have "1 + 4 * y * y < (1 + 2 * y) * (1 + 2 * y)" by argo
+            hence "sqrt(1 + 4 * y * y) < sqrt((1 + 2 * y) * (1 + 2 * y))"
+              by (fact real_sqrt_less_mono)
+            moreover from \<open>y > 0\<close> have "0 < 1 + 2 * y" by simp
+            ultimately have "sqrt(1 + 4 * y * y) < 1 + 2 * y" by simp
+            hence "-1 + sqrt(1 + 4 * y * y) < 2 * y" by simp
+            moreover from \<open>y > 0\<close> have "0 < 2 * y" by simp
+            ultimately have "(-1 + sqrt(1 + 4 * y * y)) / (2 * y) < 1" by simp
+            with x show "x < 1" unfolding discrim_def by simp
+          qed
+          ultimately have "x \<in> {-1 <..< 1}" by simp
+        }
+        moreover {
+          assume "y < 0"
+          have "-1 < x"
+          proof -
+            from \<open>y < 0\<close> have "0 < -4 * y" by simp
+            hence "1 + 4 * y * y < (1 - 2 * y) * (1 - 2 * y)" by argo
+            hence "sqrt(1 + 4 * y * y) < sqrt((1 - 2 * y) * (1 - 2 * y))"
+              by (fact real_sqrt_less_mono)
+            moreover from \<open>y < 0\<close> have "0 < 1 - 2 * y" by simp
+            ultimately have "sqrt(1 + 4 * y * y) < 1 - 2 * y" by simp
+            hence "2 * y < 1 - sqrt(1 + 4 * y * y)" by simp
+            moreover from \<open>y < 0\<close> have "2 * y < 0" by simp
+            ultimately have "(1 - sqrt(1 + 4 * y * y)) / (2 * y) < 1" by simp
+            hence "-1 < (-1 + sqrt(1 + 4 * y * y)) / (2 * y)" by argo
+            with x show ?thesis unfolding discrim_def by simp
+          qed
+          moreover have "x < 0"
+          proof -
+            from \<open>y < 0\<close> have "y \<noteq> 0" by simp
+            hence "0 < y * y" using not_real_square_gt_zero by blast
+            hence "0 < -1 + sqrt(1 + 4 * y * y)" by simp
+            moreover from \<open>y < 0\<close> have "2 * y < 0" by simp
+            ultimately have "(-1 + sqrt(1 + 4 * y * y)) / (2 * y) < 0" by (fact divide_pos_neg)
+            with x show ?thesis unfolding discrim_def by simp
+          qed
+          ultimately have "x \<in> {-1 <..< 1}" by simp
+        }
+        moreover note \<open>y \<noteq> 0\<close>
+        ultimately show "x \<in> {-1 <..< 1}" by argo
+      qed
+      ultimately have "y \<in> f ` {-1 <..< 1}" by auto
+    }
+    ultimately show "y \<in> f ` {-1 <..< 1}" by auto
+  qed
+  thus ?thesis by auto
+qed
+
+\<comment> \<open>Proof for the remaining propositions of example 2.5 is postponed after theorem 2.2\<close>
 
 subsection \<open>B) Bernstein Theorem\<close>
 
@@ -319,6 +548,70 @@ proof -
   qed
   ultimately have "bij_betw ?F A B" by (intro bij_betw_imageI)
   thus ?thesis by auto
+qed
+
+lemma ex_2_5':
+  assumes "(a :: real) < (b :: real)"
+    and "(c :: real) < (d :: real)"
+  obtains f where "f ` {a <..< b} \<subseteq> {c <..< d}"
+    and "inj_on f {a <..< b}"
+proof -
+  define f where "f x \<equiv> (d - c) * (x - a) / (b - a) + c" for x
+  have "f ` {a <..< b} \<subseteq> {c <..< d}"
+  proof (rule image_subsetI)
+    fix x
+    assume x: "x \<in> {a <..< b}"
+    have "c < f x"
+    proof -
+      from assms(1) have "0 < b - a" by simp
+      moreover from assms(2) have "0 < d - c" by simp
+      moreover from x have "0 < x - a" by simp
+      ultimately show ?thesis unfolding f_def by simp
+    qed
+    moreover have "f x < d"
+    proof -
+      from assms(1) have "0 < b - a" by simp
+      moreover from x have "0 < x - a" by simp
+      moreover from x have "x - a < b - a" by simp
+      ultimately have "(x - a) / (b - a) < 1" by simp
+      moreover from assms(2) have "0 < d - c" by simp
+      ultimately have "(d - c) * ((x - a) / (b - a)) < (d - c) * 1" by (fact mult_strict_left_mono)
+      thus ?thesis unfolding f_def by simp
+    qed
+    ultimately show "f x \<in> {c <..< d}" by simp
+  qed
+  moreover have "inj_on f {a <..< b}"
+  proof (rule inj_onI)
+    fix x and x'
+    assume "f x = f x'"
+    hence "(d - c) * (x - a) / (b - a) = (d - c) * (x' - a) / (b - a)" unfolding f_def by simp
+    moreover from assms(1) have "b - a \<noteq> 0" by simp
+    ultimately have "(d - c) * (x - a) = (d - c) * (x' - a)" by simp
+    moreover from assms(2) have "d - c \<noteq> 0" by simp
+    ultimately show "x = x'" by simp
+  qed
+  ultimately show thesis by (fact that)
+qed
+
+lemma ex_2_5'':
+  assumes "(a :: real) < (b :: real)"
+    and "(c :: real) < (d :: real)"
+  shows "equipotent {a <..< b} {c <..< d}"
+proof -
+  from assms obtain f where f1: "f ` {a <..< b} \<subseteq> {c <..< d}"
+    and f2: "inj_on f {a <..< b}" by (auto elim: ex_2_5')
+  from assms obtain g where g1: "g ` {c <..< d} \<subseteq> {a <..< b}"
+    and g2: "inj_on g {c <..< d}" by (auto elim: ex_2_5')
+  from f1 and f2 and g1 and g2 show ?thesis by (fact thm_2_2)
+qed
+
+lemma ex_2_5''':
+  assumes "(a :: real) < (b :: real)"
+  shows "equipotent {a <..< b} (UNIV :: real set)"
+proof -
+  from assms have "equipotent {a <..< b} {-(1 :: real) <..< (1 :: real)}" by (simp add: ex_2_5'')
+  moreover have "equipotent {-(1 :: real) <..< (1 :: real)} (UNIV :: real set)" by (fact ex_2_5)
+  ultimately show ?thesis by (fact prop_2_1_3)
 qed
 
 theorem thm_2_2':
@@ -564,6 +857,15 @@ proof -
   hence "|{a}| =o |{()}|" by auto
   thus ?thesis unfolding cone_def by simp
 qed
+
+lemma ctwo_definition:
+  shows "ctwo = |UNIV :: bool set|"
+  unfolding ctwo_def ..
+
+lemma doubleton_card_eq_ctwo:
+  assumes "a \<noteq> b"
+  shows "|{a, b}| =o ctwo"
+  using assms unfolding ctwo_definition by (simp add: card_of_bool ordIso_symmetric)
 
 lemma card_leqI [intro]:
   assumes "f ` A \<subseteq> B"

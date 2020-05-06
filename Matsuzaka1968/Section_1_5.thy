@@ -61,6 +61,38 @@ proposition prop_1_5_4':
 
 subsection \<open>Generalized Direct Product, Axiom of Choice\<close>
 
+definition dprod :: "'a set \<Rightarrow> ('a \<Rightarrow> 'b set) \<Rightarrow> ('a \<Rightarrow> 'b) set" where
+  "dprod \<Lambda> A \<equiv> {a \<in> \<Lambda> \<rightarrow>\<^sub>E \<Union>(A ` \<Lambda>). \<forall>l \<in> \<Lambda>. a l \<in> A l}"
+
+syntax "_dprod" :: "pttrn \<Rightarrow> 'a set \<Rightarrow> ('a \<Rightarrow> 'b set) \<Rightarrow> ('a \<Rightarrow> 'b) set"
+  ("(3\<Prod>\<^sub>d _\<in>_./ _)" 10)
+
+translations "\<Prod>\<^sub>d l \<in> \<Lambda>. A" \<rightleftharpoons> "CONST dprod \<Lambda> (\<lambda>l. A)"
+
+lemma dprodI [intro]:
+  assumes "\<And>l. l \<in> \<Lambda> \<Longrightarrow> a l \<in> A l"
+    and "\<And>l. l \<notin> \<Lambda> \<Longrightarrow> a l = undefined"
+  shows "a \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. A l)"
+  using assms unfolding dprod_def by auto
+
+lemma dprodD1 [dest]:
+  assumes "a \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. A l)"
+    and "l \<in> \<Lambda>"
+  shows "a l \<in> A l"
+  using assms unfolding dprod_def by blast
+
+lemma dprodD2 [dest]:
+  assumes "a \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. A l)"
+    and "l \<notin> \<Lambda>"
+  shows "a l = undefined"
+  using assms unfolding dprod_def by blast
+
+lemma dprodE [elim]:
+  assumes "a \<in> (\<Prod>\<^sub>d l \<in> \<Lambda>. A l)"
+  obtains "\<And>l. l \<in> \<Lambda> \<Longrightarrow> a l \<in> A l"
+    and "\<And>l. l \<notin> \<Lambda> \<Longrightarrow> a l = undefined"
+  using assms unfolding dprod_def by blast
+
 theorem AC:
   assumes "\<forall>l \<in> \<Lambda>. A l \<noteq> {}"
   shows "(\<Pi> l \<in> \<Lambda>. A l) \<noteq> {}"
