@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>Theory Section_1_2 (Isabelle2020: April 2020)</title>
+<link media="all" rel="stylesheet" type="text/css" href="isabelle.css"/>
+</head>
+
+<body>
+<div class="head"><h1>Theory Section_1_2</h1>
+
+<span class="command">theory</span> <span class="name">Section_1_2</span><br/>
+<span class="keyword">imports</span> <a href="Section_1_1.html"><span class="name">Section_1_1</span></a><br/>
+
+</div>
+<div class="source">
+<pre class="source"><span class="keyword1"><span class="command">theory</span></span><span> </span><span>Section_1_2</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">imports</span></span><span> </span><span>Main</span><span>
+</span><span>    </span><span class="string"><span class="delete"><span class="delete">&quot;Section_1_1&quot;</span></span></span><span>
+</span><span class="keyword2"><span class="keyword">begin</span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">section</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;Operations among Sets&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">subsection</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;A) Union&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">defines</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8801; {1, 2, 3, 4, 5}&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8801; {3, 5, 7, 9}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; B = {1, 2, 3, 4, 5, 7, 9}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">unfolding</span></span><span> </span><span>A_def</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>B_def</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">defines</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8801; {n :: nat. even n}&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8801; {n :: nat. odd n}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; B = UNIV&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">unfolding</span></span><span> </span><span>A_def</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>B_def</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_1</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; B = {x. x &#8712; A &#8744; x &#8712; B}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_def</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_2_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; A &#8746; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_upper1</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_2_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8838; A &#8746; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_upper2</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_3</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; C&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8838; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; B &#8838; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_least</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_4</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; A = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_absorb</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_5</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; B = B &#8746; A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_6</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8746; B) &#8746; C = A &#8746; (B &#8746; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_6_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;((A &#8746; B) &#8746; C) &#8746; D = (A &#8746; B) &#8746; (C &#8746; D)&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8746; B) &#8746; (C &#8746; D) = A &#8746; (B &#8746; (C &#8746; D))&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; (B &#8746; (C &#8746; D)) = A &#8746; ((B &#8746; C) &#8746; D)&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; ((B &#8746; C) &#8746; D) = (A &#8746; (B &#8746; C)) &#8746; D&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_7</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; B = B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_absorb1</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_8</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; C &#8838; B &#8746; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_9</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;{} &#8746; A = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>prop_1_1_5</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>rule</span><span> </span><span>prop_1_2_7</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">subsection</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;B) Intersection&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_c</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">defines</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A :: nat set &#8801; {1, 2, 3, 4, 5}&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8801; {3, 5, 7, 9}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B = {3, 5}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">unfolding</span></span><span> </span><span>A_def</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>B_def</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>simp</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_d</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">defines</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8801; {n :: nat. even n}&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8801; {n :: nat. odd n}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B = {}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">unfolding</span></span><span> </span><span>A_def</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>B_def</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_2&#39;_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B &#8838; A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Int_lower1</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_2&#39;_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B &#8838; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Int_lower2</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_3&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;C &#8838; A&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;C &#8838; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;C &#8838; A &#8745; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Int_greatest</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_4&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; A = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Int_absorb</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_5&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B = B &#8745; A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_6&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8745; B) &#8745; C = A &#8745; (B &#8745; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_7&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span class="delimiter">(</span><span>fact</span><span> </span><span>Int_absorb2</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_8&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; C &#8838; B &#8745; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_9&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;{} &#8745; A = {}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>prop_1_1_5</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>rule</span><span> </span><span>prop_1_2_7&#39;</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_10</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8746; B) &#8745; C = A &#8745; C &#8746; B &#8745; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Int_Un_distrib2</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_10&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8745; B) &#8746; C = (A &#8746; C) &#8745; (B &#8746; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_Int_distrib2</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_11</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8746; B) &#8745; A = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_11&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8745; B) &#8746; A = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">subsection</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;C) Difference&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_e</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">defines</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A :: nat set &#8801; {1, 2, 3, 4, 5}&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8801; {3, 5, 7, 9}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - B = {1, 2, 4}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">unfolding</span></span><span> </span><span>A_def</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>B_def</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">subsection</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;D) Universal Set&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_12_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; (X - A) = X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_12_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;A &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; (X - A) = {}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Diff_disjoint</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_13</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;X - (X - A) = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>simp</span><span> </span><span>only</span><span class="delimiter">:</span><span> </span><span>double_diff</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_14_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;X - {} = X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Diff_empty</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_14_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;X - X = {}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Diff_cancel</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_15</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; X&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8838; X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; B &#10231; X - A &#8839; X - B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_16</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;A &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;B &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;X - (A &#8746; B) = (X - A) &#8745; (X - B)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Diff_Un</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_16&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;A &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;B &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;X - (A &#8745; B) = (X - A) &#8746; (X - B)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Diff_Int</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">subsection</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;E) Family of Sets, Power Set&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_f</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">fixes</span></span><span> </span><span>a</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>b</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>c</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">defines</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;X &#8801; {a, b, c}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;Pow X = {{}, {a}, {b}, {c}, {a, b}, {b, c}, {c, a}, {a, b, c}}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">unfolding</span></span><span> </span><span>X_def</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>blast</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_g</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;Pow {} = {{}}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Pow_empty</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_0_h</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;finite X&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;card X = n&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;card (Pow X) = 2 ^ n&quot;</span></span></span><span>
+</span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">proof</span></span><span> </span><span class="delimiter">(</span><span>induct</span><span> </span><span>n</span><span> </span><span>arbitrary</span><span class="delimiter">:</span><span> </span><span>X</span><span class="delimiter">)</span><span>
+</span><span>  </span><span class="keyword3"><span class="command">case</span></span><span> </span><span>0</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">from</span></span><span> </span><span>0</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>assms</span><span class="delimiter">(</span><span>1</span><span class="delimiter">)</span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;X = {}&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>simp</span><span>
+</span><span>  </span><span class="keyword3"><span class="command">thus</span></span><span> </span><span class="var">?case</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>simp</span><span>
+</span><span class="keyword1"><span class="command">next</span></span><span>
+</span><span>  </span><span class="keyword3"><span class="command">case</span></span><span> </span><span class="delimiter">(</span><span>Suc</span><span> </span><span>n&#39;</span><span class="delimiter">)</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">from</span></span><span> </span><span>Suc.prems</span><span> </span><span class="keyword3"><span class="command">obtain</span></span><span> </span><span>x</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>X&#39;</span><span> </span><span class="keyword2"><span class="keyword">where</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;card X&#39; = n&#39;&quot;</span></span></span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;insert x X&#39; = X&quot;</span></span></span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;x &#8713; X&#39;&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>blast</span><span> </span><span>dest</span><span class="delimiter">:</span><span> </span><span>card_eq_SucD</span><span class="delimiter">)</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">from</span></span><span> </span><span>Suc.prems</span><span class="delimiter">(</span><span>1</span><span class="delimiter">)</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span>this</span><span class="delimiter">(</span><span>2</span><span class="delimiter">)</span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;finite X&#39;&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">with</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;card X&#39; = n&#39;&#8250;</span></span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;card (Pow X&#39;) = 2 ^ n&#39;&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>intro</span><span> </span><span>Suc.hyps</span><span class="delimiter">)</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">note</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;finite X&#39;&#8250;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">moreover</span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;Pow (insert x X&#39;) = Pow X&#39; &#8746; insert x ` Pow X&#39;&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Pow_insert</span><span class="delimiter">)</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">moreover</span></span><span> </span><span class="keyword1"><span class="command">from</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;x &#8713; X&#39;&#8250;</span></span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;Pow X&#39; &#8745; insert x ` Pow X&#39; = {}&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">ultimately</span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;card (Pow (insert x X&#39;)) = card (Pow X&#39;) + card (insert x ` Pow X&#39;)&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>simp</span><span> </span><span>add</span><span class="delimiter">:</span><span> </span><span>card_Un_disjoint</span><span class="delimiter">)</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">moreover</span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;card (insert x ` Pow X&#39;) = card (Pow X&#39;)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">proof</span></span><span> </span><span class="delimiter">(</span><span>rule</span><span> </span><span>card_image</span><span class="delimiter">,</span><span> </span><span>rule</span><span> </span><span>inj_onI</span><span class="delimiter">)</span><span>
+</span><span>    </span><span class="keyword3"><span class="command">fix</span></span><span> </span><span>A</span><span> </span><span>B</span><span>
+</span><span>    </span><span class="keyword3"><span class="command">assume</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8712; Pow X&#39;&quot;</span></span></span><span>
+</span><span>      </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8712; Pow X&#39;&quot;</span></span></span><span>
+</span><span>      </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;insert x A = insert x B&quot;</span></span></span><span>
+</span><span>    </span><span class="keyword1"><span class="command">from</span></span><span> </span><span>this</span><span class="delimiter">(</span><span>1</span><span class="delimiter">,</span><span>2</span><span class="delimiter">)</span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;x &#8713; X&#39;&#8250;</span></span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;x &#8713; A&quot;</span></span></span><span> </span><span class="keyword2"><span class="keyword">and</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;x &#8713; B&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>    </span><span class="keyword1"><span class="command">with</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;insert x A = insert x B&#8250;</span></span></span><span> </span><span class="keyword3"><span class="command">show</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A = B&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">qed</span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">moreover</span></span><span> </span><span class="keyword1"><span class="command">note</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;insert x X&#39; = X&#8250;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">ultimately</span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;card (Pow X) = card (Pow X&#39;) + card (Pow X&#39;)&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>simp</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">also</span></span><span> </span><span class="keyword1"><span class="command">from</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;card (Pow X&#39;) = 2 ^ n&#39;&#8250;</span></span></span><span> </span><span class="keyword1"><span class="command">have</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#8230; = 2 ^ (Suc n&#39;)&quot;</span></span></span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>simp</span><span>
+</span><span>  </span><span class="keyword1"><span class="command">finally</span></span><span> </span><span class="keyword3"><span class="command">show</span></span><span> </span><span class="var">?case</span><span> </span><span class="keyword1"><span class="command">.</span></span><span>
+</span><span class="keyword1"><span class="command">qed</span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">subsection</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;F) Union and Intersection of Family of Sets&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_17</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#8704;A &#8712; &#120068;. A &#8838; &#8899;&#120068;&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_18</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#8704;A &#8712; &#120068;. A &#8838; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#8899;&#120068; &#8838; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_17&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#8704;A &#8712; &#120068;. &#8898;&#120068; &#8838; A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prop_1_2_18&#39;</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#8704;A &#8712; &#120068;. C &#8838; A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;C &#8838; &#8898;&#120068;&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">subsection</span></span><span> </span><span class="cartouche"><span class="delete"><span class="delete">&#8249;Problems&#8250;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_1_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;A &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;B &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8746; B) &#8745; (A &#8746; (X - B)) = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_1_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;A &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;B &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8746; B) &#8745; ((X - A) &#8746; B) &#8745; (A &#8746; (X - B)) = A &#8745; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_2_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;A &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>    </span><span class="string"><span class="delete"><span class="delete">&quot;B &#8838; X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B = {} &#10231; B &#8838; X - A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_2_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; X&quot;</span></span></span><span>
+</span><span>    </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;B &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; B = {} &#10231; A &#8838; X - B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_3_a_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - B = (A &#8746; B) - B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_3_a_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - B = A - (A &#8745; B)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_3_a_c</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; X&quot;</span></span></span><span>
+</span><span>    </span><span class="comment">&#8213; &#8249;The assumption @{prop &quot;B &#8838; X&quot;} is not necessary.&#8250;</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - B = A &#8745; (X - B)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_3_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - B = A &#10231; A &#8745; B = {}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_3_c</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - B = {} &#10231; A &#8838; B&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Diff_eq_empty_iff</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_4_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - (B &#8746; C) = (A - B) &#8745; (A - C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>prop_1_2_16</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_4_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - (B &#8745; C) = (A - B) &#8746; (A - C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>prop_1_2_16&#39;</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_4_c</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8746; B) - C = (A - C) &#8746; (B - C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Un_Diff</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_4_d</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#8745; B) - C = (A - C) &#8745; (B - C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_4_e</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; (B - C) = (A &#8745; B) - (A &#8745; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span class="delimiter">(</span><span>fact</span><span> </span><span>Diff_Int_distrib</span><span class="delimiter">)</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_5_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A - B) - C = A - (B &#8746; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_5_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A - (B - C) = (A - B) &#8746; (A &#8745; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_6</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8746; (B &#8745; C) = (A &#8746; B) &#8745; C&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">definition</span></span><span> </span><span>sym_diff</span><span> </span><span class="delimiter">::</span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#39;a set &#8658; &#39;a set &#8658; &#39;a set&quot;</span></span></span><span> </span><span class="delimiter">(</span><span class="keyword2"><span class="keyword">infixl</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;&#9651;&quot;</span></span></span><span> </span><span>65</span><span class="delimiter">)</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">where</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;sym_diff A B = (A - B) &#8746; (B - A)&quot;</span></span></span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">lemmas</span></span><span> </span><span>sym_diff_eq</span><span> </span><span class="delimiter">[</span><span>iff</span><span class="delimiter">]</span><span> </span><span class="delimiter">=</span><span> </span><span>sym_diff_def</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_7_a</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#9651; B = B &#9651; A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_7_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#9651; B = (A &#8746; B) - (A &#8745; B)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_7_c</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;(A &#9651; B) &#9651; C = A &#9651; (B &#9651; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_7_d</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8745; (B &#9651; C) = (A &#8745; B) &#9651; (A &#8745; C)&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_8_a</span><span> </span><span class="delimiter">[</span><span>simp</span><span class="delimiter">]</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#9651; {} = A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>simp</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_8_b</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#9651; X = X - A&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_8_c</span><span> </span><span class="delimiter">[</span><span>simp</span><span class="delimiter">]</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#9651; A = {}&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>simp</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_8_d</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#8838; X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A &#9651; (X - A) = X&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword1"><span class="command">proposition</span></span><span> </span><span>prob_1_2_9</span><span class="delimiter">:</span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">assumes</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A<span class="hidden">&#8681;</span><sub>1</sub> &#9651; A<span class="hidden">&#8681;</span><sub>2</sub> = B<span class="hidden">&#8681;</span><sub>1</sub> &#9651; B<span class="hidden">&#8681;</span><sub>2</sub>&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword2"><span class="keyword">shows</span></span><span> </span><span class="string"><span class="delete"><span class="delete">&quot;A<span class="hidden">&#8681;</span><sub>1</sub> &#9651; B<span class="hidden">&#8681;</span><sub>1</sub> = A<span class="hidden">&#8681;</span><sub>2</sub> &#9651; B<span class="hidden">&#8681;</span><sub>2</sub>&quot;</span></span></span><span>
+</span><span>  </span><span class="keyword1"><span class="command">using</span></span><span> </span><span>assms</span><span> </span><span class="keyword1"><span class="command">by</span></span><span> </span><span>auto</span><span>
+</span><span>
+</span><span class="keyword2"><span class="keyword">end</span></span><span>
+</span></pre>
+
+</div>
+</body>
+</html>

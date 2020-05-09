@@ -19,7 +19,7 @@ if [ "$("$ISABELLE_HOME/bin/isabelle" getenv -b ISABELLE_PDFLATEX)" != "$BIN_DIR
 fi
 
 rm -rf "$ISABELLE_BROWSER_INFO/Unsorted/Matsuzaka1968"
-(cd "$THIS_DIR" && "$HOME/isabelle/bin/isabelle" build -D . -c -j `nproc` -v -o 'browser_info' -o 'document=pdf')
+(cd "$THIS_DIR" && "$ISABELLE_HOME/bin/isabelle" build -D . -c -j `nproc` -v -o 'browser_info' -o 'document=pdf')
 
-(cd "$THIS_DIR" && rm -rf output && mkdir -p output)
-cp -r "$ISABELLE_BROWSER_INFO/Unsorted/Matsuzaka1968" -t output
+(cd "$THIS_DIR" && rm -rf ../output && mkdir -p ../output)
+cp -r "$ISABELLE_BROWSER_INFO/Unsorted/Matsuzaka1968" -t ../output
