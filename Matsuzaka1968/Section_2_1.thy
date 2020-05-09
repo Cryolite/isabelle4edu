@@ -862,10 +862,23 @@ lemma ctwo_definition:
   shows "ctwo = |UNIV :: bool set|"
   unfolding ctwo_def ..
 
+lemma ctwo_definition_sym:
+  shows "|UNIV :: bool set| = ctwo"
+  by (fact ctwo_definition[THEN sym])
+
 lemma doubleton_card_eq_ctwo:
   assumes "a \<noteq> b"
   shows "|{a, b}| =o ctwo"
   using assms unfolding ctwo_definition by (simp add: card_of_bool ordIso_symmetric)
+
+lemma ctwo_card_eq_doubleton:
+  assumes "a \<noteq> b"
+  shows "ctwo =o |{a, b}|"
+proof -
+  have "ctwo = |UNIV :: bool set|" unfolding ctwo_definition ..
+  also from assms have "\<dots> =o |{a, b}|" by (fact card_of_bool)
+  finally show ?thesis .
+qed
 
 lemma card_leqI [intro]:
   assumes "f ` A \<subseteq> B"

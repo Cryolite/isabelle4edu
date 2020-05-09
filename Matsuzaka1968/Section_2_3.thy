@@ -1708,13 +1708,368 @@ proof -
 qed
 
 lemma aleph_card_leq_rational_sequence:
-  shows "|UNIV :: real set| \<le>o |UNIV :: (nat \<Rightarrow> rat) set|"
+  shows "\<aleph> \<le>o |UNIV :: (nat \<Rightarrow> rat) set|"
   using surj_Real by (fact surj_on_imp_card_leq)
 
 (* TODO:
-lemma rational_sequence_card_leq_aleph:
-  shows "|UNIV :: (nat \<Rightarrow> rat) set| \<le>o |UNIV :: real set|"
-  sorry
+lemma aleph_card_leq_ctwo_cexp_aleph_naught:
+  shows "\<aleph> \<le>o ctwo ^c \<aleph>\<^sub>0"
+proof -
+  have "|UNIV ::real set| \<le>o |UNIV :: (nat \<Rightarrow> rat) set|" by (fact aleph_card_leq_rational_sequence)
+  also have "|UNIV :: (nat \<Rightarrow> rat) set| =o |UNIV :: (nat \<Rightarrow> bool) set|" sorry
+  finally show ?thesis unfolding cexp_definition and ctwo_definition by simp
+qed
+*)
+
+lemma ctwo_cexp_aleph_naught_card_leq_aleph:
+  shows "ctwo ^c \<aleph>\<^sub>0 \<le>o \<aleph>"
+proof -
+  have "ctwo ^c \<aleph>\<^sub>0 = |UNIV :: bool set| ^c \<aleph>\<^sub>0" unfolding ctwo_definition ..
+  also have "\<dots> =o |{1 :: rat, 2 :: rat}| ^c \<aleph>\<^sub>0"
+  proof -
+    have "|UNIV :: bool set| =o |{1 :: rat, 2 :: rat}|" by (simp add: card_of_bool)
+    thus ?thesis by (fact cexp_cong1')
+  qed
+  also have "|{1 :: rat, 2 :: rat}| ^c \<aleph>\<^sub>0 = |(UNIV :: nat set) \<rightarrow>\<^sub>E {1 :: rat, 2 :: rat}|"
+    unfolding cexp_definition ..
+  also have "\<dots> \<le>o |UNIV :: real set|"
+  proof -
+    define a where "a f n \<equiv> (f n) / (3^n)" for f :: "nat \<Rightarrow> rat" and n
+    define g where "g f n \<equiv> \<Sum>i \<in> {0 .. n}. a f i" for f :: "nat \<Rightarrow> rat" and n
+    have f_inf: "1 \<le> f n" if "f \<in> UNIV \<rightarrow>\<^sub>E {1, 2}" for f :: "nat \<Rightarrow> rat" and n
+    proof -
+      from that have "f n \<in> {1, 2}" by auto
+      moreover have "f n \<ge> 1" if "f n = 1" by (simp only: that)
+      moreover have "f n \<ge> 1" if "f n = 2" by (simp only: that)
+      ultimately show ?thesis by auto
+    qed
+    have f_sup: "f n \<le> 2" if "f \<in> UNIV \<rightarrow>\<^sub>E {1, 2}" for f :: "nat \<Rightarrow> rat" and n
+    proof -
+      from that have "f n \<in> {1, 2}" by auto
+      moreover have "f n \<le> 2" if "f n = 1" by (simp only: that)
+      moreover have "f n \<le> 2" if "f n = 2" by (simp only: that)
+      ultimately show ?thesis by auto
+    qed
+    have *: "g f m - g f n = (\<Sum>i \<in> {n + 1 .. m}. a f i)" if "n \<le> m" for f and m and n
+      using that proof (induct rule: Nat.dec_induct)
+      case base
+      show ?case by simp
+    next
+      case (step k)
+      have "g f (Suc k) - g f n = (g f k + a f (Suc k)) - g f n" unfolding g_def and a_def by auto
+      also have "\<dots> = (g f k - g f n) + a f (Suc k)" by simp
+      also from step.hyps(3) have "\<dots> = (\<Sum>i \<in> {n + 1 .. k}. a f i) + a f (Suc k)" by simp
+      also from step.hyps(1) have "\<dots> = (\<Sum>i \<in> {n + 1 .. (Suc k)}. a f i)" by simp
+      finally show ?case .
+    qed
+    have **: "0 \<le> g f m - g f n" if "f \<in> UNIV \<rightarrow>\<^sub>E {1, 2}" and "n \<le> m" for f and m and n
+    proof -
+      from that(1) have "f i \<in> {1, 2}" for i by auto
+      moreover have "0 \<le> f i" if "f i = 1" for i by (simp only: that)
+      moreover have "0 \<le> f i" if "f i = 2" for i by (simp only: that)
+      ultimately have "0 \<le> f i" for i by blast
+      moreover have "(0 :: rat) < 3^i" for i by simp
+      ultimately have "0 \<le> a f i" for i unfolding a_def by simp
+      hence "0 \<le> (\<Sum>i \<in> {n + 1 .. m}. a f i)" by (simp only: sum_nonneg)
+      also from that(2) have "\<dots> = g f m - g f n" by (simp only: *)
+      finally show ?thesis .
+    qed
+    have ***: "g f m - g f n < 1 / (3^n)" if "f \<in> UNIV \<rightarrow>\<^sub>E {1, 2}" and "n \<le> m" for f and m and n
+    proof -
+      have "g f m - g f n = (\<Sum>i \<in> {n + 1 .. m}. a f i)"
+        using that(2) proof (induct rule: Nat.dec_induct)
+        case base
+        show ?case unfolding g_def by simp
+      next
+        case (step k)
+        have "g f (Suc k) - g f n = (g f k + a f (Suc k)) - g f n"
+          unfolding g_def and a_def by simp
+        also have "\<dots> = (g f k - g f n) + a f (Suc k)" by simp
+        also from step.hyps(3) have "\<dots> = (\<Sum>i \<in> {n + 1 .. k}. a f i) + a f (Suc k)"
+          by simp
+        also from step.hyps(1) have "\<dots> = (\<Sum>i \<in> {n + 1 .. (Suc k)}. a f i)" by simp
+        finally show ?case .
+      qed
+      also have "\<dots> \<le> (\<Sum>i \<in> {n + 1 .. m}. 2 / (3 ^ i))"
+      proof (rule sum_mono)
+        fix i
+        from that(1) have "f i \<le> 2" by (fact f_sup)
+        moreover have "(0 :: rat) < 3 ^ i" by simp
+        ultimately show "a f i \<le> 2 / (3 ^ i)" unfolding a_def by (simp add: divide_right_mono)
+      qed
+      also have "\<dots> = 1 / (3 ^ n) - 1 / (3 ^ m)"
+        using that(2) proof (induct rule: Nat.dec_induct)
+        case base
+        show ?case by simp
+      next
+        case (step k)
+        from step.hyps(3) have "(\<Sum>i \<in> {n + 1 .. (Suc k)}. (2 :: rat) / (3 ^ i)) = 1 / (3 ^ n) - 1 / (3 ^ k) + 2 / (3 ^ (Suc k))" by auto
+        also have "\<dots> = 1 / (3 ^ n) - 1 / (3 ^ (Suc k))" by simp
+        finally show ?case .
+      qed
+      also have "\<dots> < 1 / (3 ^ n)" by simp
+      finally show ?thesis .
+    qed
+    have g: "Real.cauchy (g f)" if "f \<in> (UNIV :: nat set) \<rightarrow>\<^sub>E {1 :: rat, 2 :: rat}" for f
+    proof (rule Real.cauchyI)
+      fix r :: rat
+      assume "0 < r"
+      then obtain k' :: nat where k': "1 < (of_nat k') * r" using ex_less_of_nat_mult by blast
+      obtain k :: nat where "k' < 3 ^ k"
+        by (metis of_nat_eq_of_nat_power_cancel_iff of_nat_less_iff of_nat_numeral one_less_numeral_iff real_arch_pow semiring_norm(77))
+      with \<open>0 < r\<close> have "(of_nat k') * r < (3 ^ k) * r" by simp
+      with k' have "1 < (3 ^ k) * r" by simp
+      hence "1 < r * (3 ^ k)" by (simp add: mult.commute)
+      moreover have "(0 :: rat) < 3 ^ k" by simp
+      ultimately have k: "1 / (3 ^ k) < r" by (simp only: mult_imp_div_pos_less)
+      {
+        fix m :: nat and n :: nat
+        assume m: "m \<ge> k"
+          and n: "n \<ge> k"
+        {
+          assume "m \<le> n"
+          have "\<bar>g f m - g f n\<bar> = g f n - g f m"
+          proof -
+            from that and \<open>m \<le> n\<close> have "g f m - g f n \<le> 0" using ** by auto
+            thus ?thesis by simp
+          qed
+          also from that and \<open>m \<le> n\<close> have "\<dots> < 1 / (3 ^ m)" by (fact ***)
+          also have "\<dots> \<le> 1 / (3 ^ k)"
+          proof -
+            from m have "(3 :: rat) ^ k \<le> 3 ^ m" by simp
+            moreover have "(0 :: rat) < 3 ^ k" by simp
+            ultimately show ?thesis by (simp add: frac_le)
+          qed
+          also from k have "\<dots> < r" by simp
+          finally have "\<bar>g f m - g f n\<bar> < r" .
+        }
+        moreover {
+          assume "n \<le> m"
+          hence "\<bar>g f m - g f n\<bar> = g f m - g f n"
+          proof -
+            from that and \<open>n \<le> m\<close> have "0 \<le> g f m - g f n" using ** by auto
+            thus ?thesis by simp
+          qed
+          also from that and \<open>n \<le> m\<close> have "\<dots> < 1 / (3 ^ n)" by (fact ***)
+          also have "\<dots> \<le> 1 / (3 ^ k)"
+          proof -
+            from n have "(3 :: rat) ^ k \<le> 3 ^ n" by simp
+            moreover have "(0 :: rat) < 3 ^ k" by simp
+            ultimately show ?thesis by (simp add: frac_le)
+          qed
+          also from k have "\<dots> < r" by simp
+          finally have "\<bar>g f m - g f n\<bar> < r" .
+        }
+        ultimately have "\<bar>g f m - g f n\<bar> < r" by linarith
+      }
+      thus "\<exists>k. \<forall>m \<ge> k. \<forall>n \<ge> k. \<bar>g f m - g f n\<bar> < r" by auto
+    qed
+    have "(Real.Real \<circ> g) ` ((UNIV :: nat set) \<rightarrow>\<^sub>E {1 :: rat, 2 :: rat}) \<subseteq> (UNIV :: real set)"
+      by simp
+    moreover have "inj_on (Real.Real \<circ> g) ((UNIV :: nat set) \<rightarrow>\<^sub>E {1 :: rat, 2 :: rat})"
+    proof (rule inj_onI)
+      fix f and f'
+      assume f: "f \<in> (UNIV :: nat set) \<rightarrow>\<^sub>E {1 :: rat, 2 :: rat}"
+        and f': "f' \<in> (UNIV :: nat set) \<rightarrow>\<^sub>E {1 :: rat, 2 :: rat}"
+        and "(Real.Real \<circ> g) f = (Real.Real \<circ> g) f'"
+      from this(3) have "Real.Real (g f) = Real.Real (g f')" by simp
+      moreover from f have "Real.cauchy (g f)" by (fact g)
+      moreover from f' have "Real.cauchy (g f')" by (fact g)
+      ultimately have "realrel (g f) (g f')" by (smt Quotient3_def Quotient3_real realrel_refl)
+      hence "Real.vanishes (\<lambda>i. (g f) i - (g f') i)" unfolding realrel_def by simp
+      hence vanishes: "\<forall>\<epsilon> > 0. \<exists>k. \<forall>n \<ge> k. \<bar>(g f) n - (g f') n\<bar> < \<epsilon>" unfolding Real.vanishes_def .
+      show "f = f'"
+      proof (rule ccontr)
+        assume "f \<noteq> f'"
+        hence "\<exists>n. f n \<noteq> f' n" by auto
+        hence "\<exists>n. f n \<noteq> f' n \<and> (\<forall>i < n. \<not>(f i \<noteq> f' i))" by (auto cong: exists_least_iff)
+        then obtain n where "f n \<noteq> f' n" and f_eq: "\<forall>i < n. f i = f' i" by auto
+        from this(1) and f and f' consider
+          (A) "f n = 2" and "f' n = 1"
+          | (B) "f n = 1" and "f' n = 2" by force
+        hence "\<bar>f n - f' n\<bar> = 1" by (cases, simp_all)
+        have ****: "g f n - g f' n = a f n - a f' n"
+        proof -
+          {
+            assume "n = 0"
+            hence ?thesis unfolding g_def by simp
+          }
+          moreover {
+            assume "n \<noteq> 0"
+            have "g f n - g f' n = (\<Sum>i \<in> {0 .. n}. a f i - a f' i)"
+              unfolding g_def by (simp only: sum_subtractf)
+            also from \<open>n \<noteq> 0\<close> have "\<dots> = (\<Sum>i \<in> {0 .. Suc (n - 1)}. a f i - a f' i)" by simp
+            also have "\<dots> = (\<Sum>i \<in> {0 .. n - 1}. a f i - a f' i) + (a f (Suc (n - 1)) - a f' (Suc (n - 1)))"
+              by simp
+            also have "\<dots> = a f n - a f' n"
+            proof -
+              have "\<forall>i \<in> {0 .. n - 1}. a f i = a f' i"
+              proof (rule ballI)
+                fix i
+                assume "i \<in> {0 .. n - 1}"
+                with \<open>n \<noteq> 0\<close> have "i < n" by simp
+                with f_eq have "f i = f' i" by simp
+                thus "a f i = a f' i" unfolding a_def by simp
+              qed
+              hence "(\<Sum>i \<in> {0 .. n - 1}. a f i - a f' i) = 0" by simp
+              with \<open>n \<noteq> 0\<close> show ?thesis by simp
+            qed
+            finally have ?thesis .
+          }
+          ultimately show ?thesis by blast
+        qed
+        from vanishes obtain k where *****: "\<forall>m \<ge> k. \<bar>(g f) m - (g f') m\<bar> < 1 / (2 * 3^n)"
+          by fastforce
+        {
+          assume "k \<le> n"
+          with ***** have "\<bar>g f n - g f' n\<bar> < 1 / (2 * 3^n)" by simp
+          also have "\<dots> < 1 / (3^n)"
+          proof -
+            have "(1 :: rat) / (2 * 3^n) = (1 / 2) * (1 / 3^n)" by simp
+            moreover have "(0 :: rat) < 1 / 3^n" by simp
+            ultimately show ?thesis by linarith
+          qed
+          also have "\<dots> = \<bar>g f n - g f' n\<bar>"
+          proof -
+            have "g f n - g f' n = a f n - a f' n" by (fact ****)
+            also have "\<dots> = ((f n) - (f' n)) / (3^n)" unfolding a_def by algebra
+            finally have "g f n - g f' n = ((f n) - (f' n)) / (3^n)" .
+            with \<open>\<bar>f n - f' n\<bar> = 1\<close> show ?thesis by simp
+          qed
+          finally have False by simp
+        }
+        moreover {
+          assume "n < k"
+          with ***** have "\<bar>g f k - g f' k\<bar> < 1 / (2 * 3^n)" by simp
+          also have "\<dots> = 1 / (3^n) - 1 / (2 * 3^n)" by simp
+          also have "\<dots> \<le> \<bar>g f n - g f' n\<bar> - \<bar>\<Sum>i \<in> {n + 1 .. k}. a f i - a f' i\<bar>" (is "_ \<le> _ - \<bar>?\<Delta>'\<bar>")
+          proof -
+            have "\<bar>g f n - g f' n\<bar> = 1 / (3^n)"
+            proof -
+              have "g f n - g f' n = a f n - a f' n" by (fact ****)
+              also have "\<dots> = (f n - f' n) / (3^n)" unfolding a_def by algebra
+              finally have "\<bar>g f n - g f' n\<bar> = \<bar>(f n - f' n) / (3^n)\<bar>" by simp
+              also have "\<dots> = \<bar>f n - f' n\<bar> / (3^n)" by simp
+              also from \<open>\<bar>f n - f' n\<bar> = 1\<close> have "\<dots> = 1 / (3^n)" by simp
+              finally show ?thesis .
+            qed
+            moreover have "\<bar>?\<Delta>'\<bar> \<le> 1 / (2 * 3^n)"
+            proof -
+              have "?\<Delta>' \<le> 1 / (2 * 3^n)"
+              proof -
+                have "?\<Delta>' \<le> 1 / (2 * 3^n) - 1 / (2 * 3^k)"
+                proof -
+                  have \<delta>_sup: "a f i - a f' i \<le> 1 / (3^i)" for i
+                  proof -
+                    from f and f' consider
+                      "f i = 1" and "f' i = 1"
+                      | "f i = 1" and "f' i = 2"
+                      | "f i = 2" and "f' i = 1"
+                      | "f i = 2" and "f' i = 2"
+                      by blast
+                    thus ?thesis unfolding a_def by (cases, simp_all)
+                  qed
+                  from \<open>n < k\<close> have "n \<le> k" by simp
+                  thus ?thesis
+                  proof (induct rule: Nat.dec_induct)
+                    case base
+                    show ?case by simp
+                  next
+                    case (step k)
+                    from step.hyps(1) have "(\<Sum>i \<in> {n + 1 .. Suc k}. a f i - a f' i) = (\<Sum>i \<in> {n + 1 .. k}. a f i - a f' i) + (a f (Suc k) - (a f' (Suc k)))" by simp
+                    also from step.hyps(3) have "\<dots> \<le> 1 / (2 * 3^n) - (1 / (2 * 3^k)) + a f (k + 1) - a f' (k + 1)" by simp
+                    also from \<delta>_sup[where i = "k + 1"] have "\<dots> \<le> 1 / (2 * 3^n) - (1 / (2 * 3^k)) + 1 / (3^(k + 1))" by simp
+                    also have "\<dots> = 1 / (2 * 3^n) - (1 / (2 * 3^(Suc k)))" by simp
+                    finally show ?case .
+                  qed
+                qed
+                also have "\<dots> \<le> 1 / (2 * 3^n)" by simp
+                finally show ?thesis .
+              qed
+              moreover have "-(1 / (2 * 3^n)) \<le> ?\<Delta>'"
+              proof -
+                have "-((1 :: rat) / (2 * 3^n)) \<le> 1 / (2 * 3^k) - (1 / (2 * 3^n))" by simp
+                also have "\<dots> \<le> ?\<Delta>'"
+                proof -
+                  have \<delta>_inf: "-(1 / (3^i)) \<le> a f i - a f' i" for i
+                  proof -
+                    from f and f' consider
+                      "f i = 1" and "f' i = 1"
+                      | "f i = 1" and "f' i = 2"
+                      | "f i = 2" and "f' i = 1"
+                      | "f i = 2" and "f' i = 2" by blast
+                    thus ?thesis unfolding a_def by (cases, simp_all)
+                  qed
+                  from \<open>n < k\<close> have "n \<le> k" by simp
+                  thus ?thesis
+                  proof (induct rule: Nat.dec_induct)
+                    case base
+                    show ?case by simp
+                  next
+                    case (step k)
+                    have "(1 :: rat) / (2 * 3^(Suc k)) - (1 / (2 * 3^n)) = 1 / (2 * 3^k) - (1 / (2 * 3^n)) - (1 / (3^(k + 1)))" by simp
+                    also from step.hyps(3) and \<delta>_inf[where i = "k + 1"] have "\<dots> \<le> (\<Sum>i \<in> {n + 1 .. k}. a f i - a f' i) + (a f (k + 1) - a f' (k + 1))" by simp
+                    also from step.hyps(1) have "\<dots> = (\<Sum>i \<in> {n + 1 .. Suc k}. a f i - a f' i)" by simp
+                    finally show ?case .
+                  qed
+                qed
+                finally show ?thesis .
+              qed
+              ultimately show ?thesis by simp
+            qed
+            ultimately show ?thesis by simp
+          qed
+          also have "\<dots> \<le> \<bar>(g f n - g f' n) + ?\<Delta>'\<bar>" by simp
+          also have "\<dots> = \<bar>g f k - g f' k\<bar>"
+          proof -
+            have "g f n - g f' n = (\<Sum>i \<in> {0 .. n}. a f i - a f' i)" (is "_ = ?\<Delta>")
+              unfolding g_def by (simp only: sum_subtractf)
+            hence "(g f n - g f' n) + ?\<Delta>' = ?\<Delta> + ?\<Delta>'" by simp
+            also have "\<dots> = (\<Sum>i \<in> {0 .. k}. a f i - a f' i)" (is "_ = ?R")
+            proof -
+              have "finite {0 .. n}" by simp
+              moreover have "finite {n + 1 .. k}" by simp
+              moreover have "\<forall>i \<in> {0 .. n} \<inter> {n + 1 .. k}. a f i - a f' i = 0" by simp
+              ultimately have "?\<Delta> + ?\<Delta>' = (\<Sum>i \<in> {0 .. n} \<union> {n + 1 .. k}. a f i - a f' i)"
+                by (fact sum.union_inter_neutral[THEN sym])
+              also have "\<dots> = ?R"
+              proof -
+                from \<open>n < k\<close> have "{0 .. n} \<union> {n + 1 .. k} = {0 .. k}" by auto
+                thus ?thesis by simp
+              qed
+              finally show ?thesis .
+            qed
+            also have "\<dots> = g f k - g f' k" unfolding g_def by (simp only: sum_subtractf)
+            finally show ?thesis by simp
+          qed
+          finally have "False" by simp
+        }
+        ultimately show False by linarith
+      qed
+    qed
+    ultimately have "|(UNIV :: nat set) \<rightarrow>\<^sub>E {1 :: rat, 2 :: rat}| \<le>o |UNIV :: real set|" by auto
+    thus ?thesis unfolding cexp_definition .
+  qed
+  finally show ?thesis .
+qed
+
+(* TODO:
+lemma ctwo_cexp_aleph_naught_card_eq_aleph:
+  shows "ctwo ^c \<aleph>\<^sub>0 =o \<aleph>"
+proof -
+  have "|UNIV :: (nat \<Rightarrow> bool) set| \<le>o |UNIV :: real set|"
+  proof -
+    have "ctwo ^c \<aleph>\<^sub>0 \<le>o \<aleph>" by (fact ctwo_cexp_aleph_naught_card_leq_aleph)
+    thus ?thesis unfolding ctwo_definition and cexp_definition by simp
+  qed
+  moreover have "|UNIV :: real set| \<le>o |UNIV :: (nat \<Rightarrow> bool) set|"
+  proof -
+    have "\<aleph> \<le>o ctwo ^c \<aleph>\<^sub>0" by (fact aleph_card_leq_ctwo_cexp_aleph_naught)
+    thus ?thesis unfolding ctwo_definition and cexp_definition by simp
+  qed
+  ultimately have "|UNIV :: (nat \<Rightarrow> bool) set| =o |UNIV :: real set|" by (fact thm_2_3_2)
+  thus ?thesis unfolding cexp_definition and ctwo_definition by simp
+qed
 *)
 
 (* TODO:
